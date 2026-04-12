@@ -138,7 +138,7 @@ function BadgeCard({ badge, large }: { badge: Badge; large?: boolean }) {
 export default function ConquistasPage() {
   const allBadges = Object.values(BADGES).flat();
   const unlocked = allBadges.filter((b) => b.unlocked).length;
-  const plaques = allBadges.filter((b) => b.hasPlaque).length;
+  const plaques = allBadges.filter((b) => "hasPlaque" in b && b.hasPlaque).length;
 
   return (
     <div className="space-y-12">
