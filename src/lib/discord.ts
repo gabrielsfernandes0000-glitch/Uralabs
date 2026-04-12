@@ -11,7 +11,7 @@ const ROLE_ELITE = process.env.DISCORD_ROLE_ELITE!;
 const ROLE_VIP = process.env.DISCORD_ROLE_VIP!;
 
 const REDIRECT_URI =
-  process.env.NODE_ENV === "production"
+  process.env.VERCEL_URL
     ? "https://www.uralabs.com.br/api/auth/callback"
     : "http://localhost:3001/api/auth/callback";
 

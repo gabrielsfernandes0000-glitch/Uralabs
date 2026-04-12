@@ -50,9 +50,8 @@ export async function GET(request: NextRequest) {
     res.cookies.delete("oauth_state");
     return res;
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error("[OAuth callback] FULL ERROR:", msg);
-    console.error("[OAuth callback] ENV CHECK - CLIENT_ID:", !!process.env.DISCORD_CLIENT_ID, "CLIENT_SECRET:", !!process.env.DISCORD_CLIENT_SECRET, "BOT_TOKEN:", !!process.env.DISCORD_BOT_TOKEN);
+    const msg = error instanceof Error ? `${error.message} | ${error.stack?.split("\n")[1]}` : String(error);
+    console.error("[OAuth] FAIL:", msg, "| VERCEL_URL:", process.env.VERCEL_URL, "| CLIENT_ID:", process.env.DISCORD_CLIENT_ID?.slice(0, 6), "| SECRET:", !!process.env.DISCORD_CLIENT_SECRET);
     return NextResponse.redirect(new URL("/login?error=auth_failed", request.url));
   }
 }
