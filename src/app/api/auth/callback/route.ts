@@ -8,30 +8,32 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state");
   const storedState = request.cookies.get("oauth_state")?.value;
 
-  // Validate state
+  console.log("[OAuth] code:", !!code, "state:", !!state, "storedState:", !!storedState);
+
   if (!code || !state || state !== storedState) {
+    console.error("[OAuth] State mismatch", { state, storedState });
     return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
   }
 
   try {
-    // Exchange code for tokens
+    console.log("[OAuth] Exchanging code...");
     const tokens = await exchangeCode(code);
+    console.log("[OAuth] Got tokens, getting user...");
 
-    // Get user profile
     const user = await getDiscordUser(tokens.access_token);
+    console.log("[OAuth] User:", user.username, user.id);
 
-    // Get guild member data (roles) using bot token
     const member = await getGuildMember(user.id);
+    console.log("[OAuth] Member roles:", member?.roles?.length ?? "not in guild");
 
     if (!member) {
-      // User is not in the Discord server
       return NextResponse.redirect(new URL("/login?error=not_in_server", request.url));
     }
 
     const isElite = hasEliteRole(member.roles);
     const isVip = hasVipRole(member.roles);
+    console.log("[OAuth] isElite:", isElite, "isVip:", isVip);
 
-    // Create session
     await createSession({
       userId: user.id,
       username: user.username,
@@ -42,15 +44,15 @@ export async function GET(request: NextRequest) {
       isVip,
     });
 
-    // Clear the oauth state cookie
     const res = NextResponse.redirect(
       new URL(isElite ? "/elite" : "/login?error=not_elite", request.url),
     );
     res.cookies.delete("oauth_state");
-
     return res;
   } catch (error) {
-    console.error("[OAuth callback] Error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[OAuth callback] FULL ERROR:", msg);
+    console.error("[OAuth callback] ENV CHECK - CLIENT_ID:", !!process.env.DISCORD_CLIENT_ID, "CLIENT_SECRET:", !!process.env.DISCORD_CLIENT_SECRET, "BOT_TOKEN:", !!process.env.DISCORD_BOT_TOKEN);
     return NextResponse.redirect(new URL("/login?error=auth_failed", request.url));
   }
 }
