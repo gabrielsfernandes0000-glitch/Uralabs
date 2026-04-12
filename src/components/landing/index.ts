@@ -1,0 +1,13 @@
+export { Navbar } from "./Navbar";
+export { Hero } from "./Hero";
+export { Results } from "./Results";
+export { TraderEvolution } from "./TraderEvolution";
+export { Methodology } from "./Methodology";
+export { CourseModules } from "./CourseModules";
+export { Services } from "./Services";
+export { About } from "./About";
+export { TargetAudience } from "./TargetAudience";
+export { Pricing } from "./Pricing";
+export { FAQ } from "./FAQ";
+export { Footer } from "./Footer";
+export { FloatingCTA } from "./FloatingCTA";
