@@ -40,7 +40,10 @@ export async function exchangeCode(code: string) {
       redirect_uri: REDIRECT_URI,
     }),
   });
-  if (!res.ok) throw new Error(`Token exchange failed: ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Token exchange failed: ${res.status} | ${body} | redirect_uri=${REDIRECT_URI} | client_id=${CLIENT_ID?.slice(0, 6)}`);
+  }
   return res.json() as Promise<{
     access_token: string;
     token_type: string;
