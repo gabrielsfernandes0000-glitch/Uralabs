@@ -42,7 +42,10 @@ export async function exchangeCode(code: string) {
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Token exchange failed: ${res.status} | ${body} | redirect_uri=${REDIRECT_URI} | client_id=${CLIENT_ID?.slice(0, 6)}`);
+    console.error("DISCORD_ERR:", res.status, body);
+    console.error("USED_REDIRECT:", REDIRECT_URI);
+    console.error("USED_CLIENT:", CLIENT_ID);
+    throw new Error(`exchange:${res.status}`);
   }
   return res.json() as Promise<{
     access_token: string;
