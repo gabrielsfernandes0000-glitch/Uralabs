@@ -72,24 +72,24 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
 
       {/* Emotional state */}
       <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
-        <p className="text-[14px] text-white/70 font-semibold mb-4">Como você está se sentindo agora?</p>
-        <div className="flex gap-3">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Como voc&ecirc; est&aacute; se sentindo agora?</p>
+        <div className="flex flex-col gap-1.5">
           {[
-            { v: 1, emoji: "😰", label: "Péssimo", color: "#EF4444" },
-            { v: 2, emoji: "😕", label: "Ruim", color: "#F59E0B" },
-            { v: 3, emoji: "😐", label: "Normal", color: "#6B7280" },
-            { v: 4, emoji: "😊", label: "Bom", color: "#10B981" },
-            { v: 5, emoji: "🔥", label: "Excelente", color: "#FF5500" },
+            { v: 1, label: "P\u00e9ssimo", color: "#EF4444" },
+            { v: 2, label: "Ruim", color: "#F59E0B" },
+            { v: 3, label: "Normal", color: "#6B7280" },
+            { v: 4, label: "Bom", color: "#10B981" },
+            { v: 5, label: "Excelente", color: "#FF5500" },
           ].map((e) => (
             <button key={e.v} onClick={() => setEmotional(e.v)}
-              className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all duration-200 ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ${
                 emotional === e.v
-                  ? "scale-[1.03] shadow-lg"
+                  ? "border-white/[0.12] bg-white/[0.05]"
                   : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
-              }`}
-              style={emotional === e.v ? { borderColor: e.color + "40", backgroundColor: e.color + "08", boxShadow: `0 4px 20px ${e.color}15` } : undefined}>
-              <span className="text-[28px]">{e.emoji}</span>
-              <span className={`text-[11px] font-medium ${emotional === e.v ? "text-white/70" : "text-white/30"}`}>{e.label}</span>
+              }`}>
+              <div className="w-1 h-5 rounded-full shrink-0" style={{ backgroundColor: emotional === e.v ? e.color : e.color + "40" }} />
+              <span className={`text-[13px] font-medium ${emotional === e.v ? "text-white/80" : "text-white/35"}`}>{e.label}</span>
+              <span className={`ml-auto text-[11px] font-mono ${emotional === e.v ? "text-white/40" : "text-white/15"}`}>{e.v}</span>
             </button>
           ))}
         </div>
@@ -249,18 +249,18 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
 
       {/* Entry / SL / TP */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border-2 border-blue-500/10 bg-gradient-to-b from-blue-500/[0.03] to-[#111114] p-5 hover:border-blue-500/25 transition-all duration-300">
-          <p className="text-[11px] text-blue-400/70 font-semibold uppercase tracking-wider mb-2">Entry</p>
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+          <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider mb-2">Entry</p>
           <input type="text" value={entry} onChange={(e) => setEntry(e.target.value)} placeholder="18.100"
             className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
-        <div className="rounded-xl border-2 border-red-500/10 bg-gradient-to-b from-red-500/[0.03] to-[#111114] p-5 hover:border-red-500/25 transition-all duration-300">
-          <p className="text-[11px] text-red-400/70 font-semibold uppercase tracking-wider mb-2">Stop Loss</p>
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+          <p className="text-[11px] text-red-400/50 font-semibold uppercase tracking-wider mb-2">Stop Loss</p>
           <input type="text" value={sl} onChange={(e) => setSl(e.target.value)} placeholder="18.050"
             className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
-        <div className="rounded-xl border-2 border-green-500/10 bg-gradient-to-b from-green-500/[0.03] to-[#111114] p-5 hover:border-green-500/25 transition-all duration-300">
-          <p className="text-[11px] text-green-400/70 font-semibold uppercase tracking-wider mb-2">Take Profit</p>
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+          <p className="text-[11px] text-green-400/50 font-semibold uppercase tracking-wider mb-2">Take Profit</p>
           <input type="text" value={tp} onChange={(e) => setTp(e.target.value)} placeholder="18.250"
             className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
@@ -312,23 +312,24 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
 
       {/* Emotional after */}
       <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
-        <p className="text-[14px] text-white/70 font-semibold mb-4">Como você está se sentindo depois do trade?</p>
-        <div className="flex gap-3">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Como voc&ecirc; est&aacute; se sentindo depois do trade?</p>
+        <div className="flex flex-col gap-1.5">
           {[
-            { v: 1, emoji: "😰", color: "#EF4444" },
-            { v: 2, emoji: "😕", color: "#F59E0B" },
-            { v: 3, emoji: "😐", color: "#6B7280" },
-            { v: 4, emoji: "😊", color: "#10B981" },
-            { v: 5, emoji: "🔥", color: "#FF5500" },
+            { v: 1, label: "P\u00e9ssimo", color: "#EF4444" },
+            { v: 2, label: "Ruim", color: "#F59E0B" },
+            { v: 3, label: "Normal", color: "#6B7280" },
+            { v: 4, label: "Bom", color: "#10B981" },
+            { v: 5, label: "Excelente", color: "#FF5500" },
           ].map((e) => (
             <button key={e.v} onClick={() => setEmotionalAfter(e.v)}
-              className={`flex-1 py-4 rounded-xl border-2 text-[28px] transition-all duration-200 ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ${
                 emotionalAfter === e.v
-                  ? "scale-[1.03] shadow-lg"
+                  ? "border-white/[0.12] bg-white/[0.05]"
                   : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
-              }`}
-              style={emotionalAfter === e.v ? { borderColor: e.color + "40", backgroundColor: e.color + "08", boxShadow: `0 4px 20px ${e.color}15` } : undefined}>
-              {e.emoji}
+              }`}>
+              <div className="w-1 h-5 rounded-full shrink-0" style={{ backgroundColor: emotionalAfter === e.v ? e.color : e.color + "40" }} />
+              <span className={`text-[13px] font-medium ${emotionalAfter === e.v ? "text-white/80" : "text-white/35"}`}>{e.label}</span>
+              <span className={`ml-auto text-[11px] font-mono ${emotionalAfter === e.v ? "text-white/40" : "text-white/15"}`}>{e.v}</span>
             </button>
           ))}
         </div>
@@ -391,11 +392,7 @@ const TREINOS: Treino[] = [
   { id: "t-entrada", title: "Execute o Trade", desc: "Cenário completo: identifique a zona, defina entrada, stop e alvo.", requiredLesson: "entrada-saida", requiredLessonTitle: "Entrada & Saída", module: "Execução", moduleColor: "#10B981", difficulty: "avançado", type: "execução" },
 ];
 
-const DIFFICULTY_COLORS = {
-  "iniciante": { bg: "bg-green-500/10", text: "text-green-400", border: "border-green-500/20" },
-  "intermediário": { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/20" },
-  "avançado": { bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/20" },
-};
+/* difficulty shown as subtle inline text — no colored pills */
 
 function TreinoTab() {
   const { completedLessons } = useProgress();
@@ -413,16 +410,29 @@ function TreinoTab() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-7">
-        <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.04] blur-[100px] pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-[22px] font-bold text-white tracking-tight">Treino</h2>
-            <span className="text-[12px] text-white/30 font-mono">{totalUnlocked}/{TREINOS.length} desbloqueados</span>
+      <div className="relative overflow-hidden rounded-2xl bg-[#111114] border border-white/[0.06]">
+        <div className="absolute top-[-50%] left-[20%] w-[600px] h-[400px] bg-brand-500/[0.04] blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-[-30%] right-[10%] w-[400px] h-[300px] bg-white/[0.02] blur-[120px] pointer-events-none" />
+
+        <div className="relative z-10 p-8 lg:p-10">
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6">
+            <div>
+              <h1 className="text-[32px] lg:text-[40px] font-bold text-white tracking-tight leading-none">
+                Treino
+              </h1>
+              <p className="text-[14px] text-white/40 mt-3 max-w-md">
+                Cada treino &eacute; desbloqueado ao completar a aula correspondente. Pratique o que aprendeu com cen&aacute;rios reais.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <p className="text-[36px] lg:text-[42px] font-bold text-white leading-none tracking-tight">{totalUnlocked}</p>
+              <div>
+                <p className="text-[12px] text-white/30">de {TREINOS.length}</p>
+                <p className="text-[12px] text-white/30">desbloqueados</p>
+              </div>
+            </div>
           </div>
-          <p className="text-[13px] text-white/40 max-w-lg">
-            Cada treino é desbloqueado ao completar a aula correspondente. Pratique o que aprendeu com cenários reais.
-          </p>
         </div>
       </div>
 
@@ -441,48 +451,49 @@ function TreinoTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {treinos.map((treino) => {
                 const unlocked = isUnlocked(treino.requiredLesson);
-                const diff = DIFFICULTY_COLORS[treino.difficulty];
 
                 return (
                   <div
                     key={treino.id}
-                    className={`relative overflow-hidden rounded-xl border p-5 transition-all duration-300 ${
+                    className={`relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 ${
                       unlocked
-                        ? "border-white/[0.08] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.15] cursor-pointer hover:-translate-y-0.5"
-                        : "border-white/[0.04] bg-[#0c0c0e] opacity-50 cursor-default"
+                        ? "border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] cursor-pointer hover:-translate-y-0.5"
+                        : "border-white/[0.04] bg-[#0c0c0e] opacity-40 cursor-default"
                     }`}
                   >
                     {/* Top accent line */}
                     {unlocked && (
-                      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${moduleColor}40, transparent)` }} />
+                      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${moduleColor}40, transparent)` }} />
                     )}
 
                     <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3">
                         {unlocked ? (
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: moduleColor + "15" }}>
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: moduleColor + "12" }}>
                             <Target className="w-4 h-4" style={{ color: moduleColor }} />
                           </div>
                         ) : (
                           <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="w-4 h-4 text-white/[0.08]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                           </div>
                         )}
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${diff.bg} ${diff.text} border ${diff.border}`}>
-                          {treino.difficulty}
-                        </span>
+                        <div>
+                          <h4 className={`text-[15px] font-bold leading-tight ${unlocked ? "text-white/90" : "text-white/25"}`}>
+                            {treino.title}
+                          </h4>
+                          <span className={`text-[11px] ${unlocked ? "text-white/30" : "text-white/15"}`}>
+                            {treino.difficulty.charAt(0).toUpperCase() + treino.difficulty.slice(1)}
+                          </span>
+                        </div>
                       </div>
                       {unlocked && (
                         <ChevronRight className="w-4 h-4 text-white/15 mt-1" />
                       )}
                     </div>
 
-                    <h4 className={`text-[15px] font-bold mb-1 ${unlocked ? "text-white/90" : "text-white/25"}`}>
-                      {treino.title}
-                    </h4>
-                    <p className={`text-[12px] leading-relaxed ${unlocked ? "text-white/40" : "text-white/15"}`}>
+                    <p className={`text-[12px] leading-relaxed ml-11 ${unlocked ? "text-white/40" : "text-white/15"}`}>
                       {unlocked ? treino.desc : `Complete "${treino.requiredLessonTitle}" para desbloquear.`}
                     </p>
                   </div>
