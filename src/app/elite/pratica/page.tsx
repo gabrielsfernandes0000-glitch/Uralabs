@@ -397,7 +397,8 @@ const TREINOS: Treino[] = [
 function TreinoTab() {
   const { completedLessons } = useProgress();
 
-  const isUnlocked = (lessonId: string) => completedLessons.includes(lessonId);
+  // DEV: tudo desbloqueado pra teste
+  const isUnlocked = (_lessonId: string) => true;
 
   // Group by module
   const grouped = TREINOS.reduce<Record<string, Treino[]>>((acc, t) => {
