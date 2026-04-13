@@ -29,7 +29,7 @@ function getDaySteps(): DayStep[] {
     { id: "call", label: "Call de Operação", description: "Participe da call com o URA", icon: Radio, href: "#", accent: "#FF5500", timeHint: "10:30 — 12:30", done: false },
     { id: "trade", label: "Registrar Trade", description: "Documente o que aconteceu", icon: PenLine, href: "/elite/pratica", accent: "#FF5500", timeHint: "Depois do mercado", done: false },
     { id: "study", label: "Aula do Dia", description: "Continue o currículo", icon: Play, href: "/elite/aulas", accent: "#FF5500", timeHint: "Quando quiser", done: false },
-    { id: "review", label: "Revisão", description: "Flashcards ou simulador", icon: Brain, href: "/elite/pratica", accent: "#FF5500", timeHint: "Final do dia", done: false },
+    { id: "review", label: "Revisão", description: "Revise o dia e treine", icon: Brain, href: "/elite/pratica", accent: "#FF5500", timeHint: "Final do dia", done: false },
   ];
 }
 
@@ -201,8 +201,8 @@ export default async function EliteDashboard() {
             <Zap className="w-5 h-5 text-white/40" />
             <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
           </div>
-          <p className="text-[15px] text-white/80 font-bold">Simulador</p>
-          <p className="text-[11px] text-white/30">Treinar sem risco</p>
+          <p className="text-[15px] text-white/80 font-bold">Treino</p>
+          <p className="text-[11px] text-white/30">Pratique o que aprendeu</p>
         </Link>
 
         <Link href="/elite/conquistas" className="animate-in-up delay-7 group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-5 hover:border-white/[0.15] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] transition-all duration-300">
