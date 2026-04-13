@@ -438,6 +438,23 @@ function TreinoTab() {
         </div>
       </div>
 
+      {/* Treino Livre — destaque */}
+      <Link href="/elite/treino/livre" className="group block relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-brand-500/20 transition-all duration-300">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/30 to-transparent" />
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-brand-500/10 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-brand-500" />
+            </div>
+            <div>
+              <h3 className="text-[16px] font-bold text-white">Treino Livre</h3>
+              <p className="text-[12px] text-white/35 mt-0.5">28 cenários aleatórios · Todos os temas · Modo infinito</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/15 group-hover:text-brand-500/50 transition-colors" />
+        </div>
+      </Link>
+
       {/* Treinos por módulo */}
       {Object.entries(grouped).map(([moduleName, treinos]) => {
         const moduleColor = treinos[0].moduleColor;
