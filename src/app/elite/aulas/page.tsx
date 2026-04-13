@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Play, Check, Lock, Clock, BookOpen, FileText, Calendar, Target, ChevronRight } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 
@@ -828,8 +829,9 @@ function ModuleSection({ mod }: { mod: Module }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {MODULE_TREINOS[mod.id].map((treino) => (
-              <button
+              <Link
                 key={treino.id}
+                href={`/elite/treino/${treino.id}`}
                 className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-4 text-left hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300"
               >
                 <div className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(90deg, transparent, ${mod.accentHex}50, transparent)` }} />
@@ -844,7 +846,7 @@ function ModuleSection({ mod }: { mod: Module }) {
                 <h4 className="text-[13px] font-bold text-white/80 mb-0.5">{treino.title}</h4>
                 <p className="text-[11px] text-white/30 leading-relaxed line-clamp-2">{treino.desc}</p>
                 <span className="text-[10px] text-white/20 mt-2 block">· {treino.difficulty}</span>
-              </button>
+              </Link>
             ))}
           </div>
         </div>

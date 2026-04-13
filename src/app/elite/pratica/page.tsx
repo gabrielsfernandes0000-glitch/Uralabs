@@ -7,6 +7,7 @@ import {
   Play, Pause, SkipForward, RotateCcw,
 } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
+import Link from "next/link";
 
 /* ────────────────────────────────────────────
    Tab Navigation
@@ -453,10 +454,14 @@ function TreinoTab() {
               {treinos.map((treino) => {
                 const unlocked = isUnlocked(treino.requiredLesson);
 
+                const Wrapper = unlocked ? Link : "div";
+                const wrapperProps = unlocked ? { href: `/elite/treino/${treino.id}` } : {};
+
                 return (
-                  <div
+                  <Wrapper
                     key={treino.id}
-                    className={`relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 ${
+                    {...wrapperProps as Record<string, string>}
+                    className={`relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 block ${
                       unlocked
                         ? "border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] cursor-pointer hover:-translate-y-0.5"
                         : "border-white/[0.04] bg-[#0c0c0e] opacity-40 cursor-default"
@@ -497,7 +502,7 @@ function TreinoTab() {
                     <p className={`text-[12px] leading-relaxed ml-11 ${unlocked ? "text-white/40" : "text-white/15"}`}>
                       {unlocked ? treino.desc : `Complete "${treino.requiredLessonTitle}" para desbloquear.`}
                     </p>
-                  </div>
+                  </Wrapper>
                 );
               })}
             </div>
