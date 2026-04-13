@@ -10,9 +10,9 @@ import { avatarUrl } from "@/lib/discord";
 const NAV_ITEMS = [
   { href: "/elite", letter: "D", label: "Dashboard", exact: true },
   { href: "/elite/aulas", letter: "A", label: "Aulas", exact: false },
+  { href: "/elite/pratica", letter: "P", label: "Prática", exact: false },
   { href: "/elite/conquistas", letter: "C", label: "Conquistas", exact: false },
-  { href: "/elite/perfil", letter: "P", label: "Perfil", exact: false },
-  { href: "/elite/comunidade", letter: "T", label: "Turma", exact: false },
+  { href: "/elite/turma", letter: "T", label: "Turma", exact: false },
 ];
 
 export function EliteSidebar({ session }: { session: SessionPayload }) {
