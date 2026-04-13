@@ -44,9 +44,9 @@ export async function exchangeCode(code: string) {
 
   if (!res.ok) {
     const body = await res.text();
-    console.error("EXCHANGE_FAIL:" + res.status + "|" + body.slice(0, 80));
-    console.error("REDIRECT:" + redirectUri + "|ID:" + clientId + "|SECRET_LEN:" + clientSecret.length);
-    throw new Error(`exchange:${res.status}`);
+    // Log everything we need in one short line
+    console.error(`X:${res.status}|SL:${clientSecret.length}|ID:${clientId.slice(-4)}|R:${redirectUri.slice(-20)}`);
+    throw new Error(`${res.status}:${body.slice(0, 50)}`);
   }
 
   return res.json() as Promise<{
