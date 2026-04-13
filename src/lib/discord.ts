@@ -42,9 +42,9 @@ export async function exchangeCode(code: string) {
   });
   if (!res.ok) {
     const body = await res.text();
-    console.error("DISCORD_ERR:", res.status, body);
-    console.error("USED_REDIRECT:", REDIRECT_URI);
-    console.error("USED_CLIENT:", CLIENT_ID);
+    console.error("ERR1:" + res.status + "|" + body.slice(0, 100));
+    console.error("ERR2:redirect=" + REDIRECT_URI);
+    console.error("ERR3:id=" + CLIENT_ID + "|secret=" + CLIENT_SECRET?.slice(0, 8));
     throw new Error(`exchange:${res.status}`);
   }
   return res.json() as Promise<{
