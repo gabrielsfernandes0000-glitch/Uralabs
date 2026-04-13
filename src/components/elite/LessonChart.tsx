@@ -437,7 +437,7 @@ export function LessonChart({ scenario }: { scenario: ChartScenario }) {
 
       const chart = createChart(containerRef.current, {
         width: containerRef.current.clientWidth,
-        height: data.height ?? 300,
+        height: (data as ScenarioData).height ?? 300,
         layout: {
           background: { type: ColorType.Solid, color: "#0a0e1a" },
           textColor: "#787b86",

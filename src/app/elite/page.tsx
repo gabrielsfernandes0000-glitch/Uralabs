@@ -16,7 +16,7 @@ interface DayStep {
   id: string;
   label: string;
   description: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   href: string;
   accent: string;
   timeHint: string;

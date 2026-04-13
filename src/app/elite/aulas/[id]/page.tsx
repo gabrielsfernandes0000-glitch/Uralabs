@@ -900,7 +900,7 @@ function ChecklistSection({ items, accent }: { items: string[]; accent: string }
 
 function Section({ title, icon: Icon, defaultOpen, accent, children }: {
   title: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   defaultOpen?: boolean;
   accent: string;
   children: React.ReactNode;

@@ -14,7 +14,7 @@ import { useProgress } from "@/hooks/useProgress";
 
 type Tab = "prep" | "diario" | "simulador";
 
-const TABS: { id: Tab; label: string; icon: React.ElementType; accent: string }[] = [
+const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; accent: string }[] = [
   { id: "prep", label: "Prep Sheet", icon: FileText, accent: "#FF5500" },
   { id: "diario", label: "Diário de Trade", icon: TrendingUp, accent: "#FF5500" },
   { id: "simulador", label: "Simulador", icon: Zap, accent: "#FF5500" },

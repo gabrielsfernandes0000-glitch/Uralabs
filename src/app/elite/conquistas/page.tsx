@@ -69,7 +69,7 @@ type SkillNode = {
   id: string;
   name: string;
   desc: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   unlocked: boolean;
   progress: number; // 0-100
   accent: string;
@@ -483,7 +483,7 @@ export default function ConquistasPage() {
 
   const allBadges = Object.values(dynamicBadges).flat();
   const unlocked = allBadges.filter((b) => b.unlocked).length;
-  const plaques = allBadges.filter((b) => b.unlocked && b.hasPlaque).length;
+  const plaques = allBadges.filter((b) => b.unlocked && (b as Badge).hasPlaque).length;
 
   return (
     <div className="space-y-8">
