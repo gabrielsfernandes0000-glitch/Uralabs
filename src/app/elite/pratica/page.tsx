@@ -6,6 +6,7 @@ import {
   Clock, Target, Brain, ArrowUp, ArrowDown, Minus,
   Play, Pause, SkipForward, RotateCcw,
 } from "lucide-react";
+import { useProgress } from "@/hooks/useProgress";
 
 /* ────────────────────────────────────────────
    Tab Navigation
@@ -14,8 +15,8 @@ import {
 type Tab = "prep" | "diario" | "simulador";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType; accent: string }[] = [
-  { id: "prep", label: "Prep Sheet", icon: FileText, accent: "#F59E0B" },
-  { id: "diario", label: "Diário de Trade", icon: TrendingUp, accent: "#3B82F6" },
+  { id: "prep", label: "Prep Sheet", icon: FileText, accent: "#FF5500" },
+  { id: "diario", label: "Diário de Trade", icon: TrendingUp, accent: "#FF5500" },
   { id: "simulador", label: "Simulador", icon: Zap, accent: "#FF5500" },
 ];
 
@@ -23,7 +24,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType; accent: string }[
    Prep Sheet
    ──────────────────────────────────────────── */
 
-function PrepSheet() {
+function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; biasReason: string; keyLevels: string; plan: string; emotional: number }) => void }) {
   const [bias, setBias] = useState<"bullish" | "bearish" | null>(null);
   const [biasReason, setBiasReason] = useState("");
   const [liquidity, setLiquidity] = useState("");
@@ -53,91 +54,117 @@ function PrepSheet() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h3 className="text-[18px] font-bold text-white/90 mb-1">Plano Pré-Mercado</h3>
-        <p className="text-[13px] text-white/30">Preencha antes do mercado abrir. Monte sua análise e defina o plano.</p>
+    <div className="space-y-5">
+      {/* Header with accent */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#151518] to-[#111114] p-6">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+        <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-white/[0.02] blur-[100px] pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
+              <FileText className="w-4 h-4 text-white/50" />
+            </div>
+            <h3 className="text-[20px] font-bold text-white tracking-tight">Plano Pré-Mercado</h3>
+          </div>
+          <p className="text-[13px] text-white/40 ml-11">Preencha antes do mercado abrir. Monte sua análise e defina o plano.</p>
+        </div>
       </div>
 
       {/* Emotional state */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Como você está se sentindo agora?</p>
-        <div className="flex gap-2">
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Como você está se sentindo agora?</p>
+        <div className="flex gap-3">
           {[
-            { v: 1, emoji: "😰", label: "Péssimo" },
-            { v: 2, emoji: "😕", label: "Ruim" },
-            { v: 3, emoji: "😐", label: "Normal" },
-            { v: 4, emoji: "😊", label: "Bom" },
-            { v: 5, emoji: "🔥", label: "Excelente" },
+            { v: 1, emoji: "😰", label: "Péssimo", color: "#EF4444" },
+            { v: 2, emoji: "😕", label: "Ruim", color: "#F59E0B" },
+            { v: 3, emoji: "😐", label: "Normal", color: "#6B7280" },
+            { v: 4, emoji: "😊", label: "Bom", color: "#10B981" },
+            { v: 5, emoji: "🔥", label: "Excelente", color: "#FF5500" },
           ].map((e) => (
             <button key={e.v} onClick={() => setEmotional(e.v)}
-              className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all ${
+              className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all duration-200 ${
                 emotional === e.v
-                  ? "border-brand-500/30 bg-brand-500/[0.06]"
-                  : "border-white/[0.04] hover:border-white/[0.08]"
-              }`}>
-              <span className="text-[20px]">{e.emoji}</span>
-              <span className={`text-[10px] ${emotional === e.v ? "text-brand-500/80" : "text-white/20"}`}>{e.label}</span>
+                  ? "scale-[1.03] shadow-lg"
+                  : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
+              }`}
+              style={emotional === e.v ? { borderColor: e.color + "40", backgroundColor: e.color + "08", boxShadow: `0 4px 20px ${e.color}15` } : undefined}>
+              <span className="text-[28px]">{e.emoji}</span>
+              <span className={`text-[11px] font-medium ${emotional === e.v ? "text-white/70" : "text-white/30"}`}>{e.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Daily bias */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Viés do dia</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Viés do dia</p>
         <div className="flex gap-3 mb-4">
           <button onClick={() => setBias("bullish")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border transition-all ${
-              bias === "bullish" ? "border-green-500/30 bg-green-500/[0.06] text-green-400" : "border-white/[0.04] text-white/30 hover:border-white/[0.08]"
+            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-200 ${
+              bias === "bullish"
+                ? "border-green-500/40 bg-green-500/[0.08] text-green-400 shadow-lg shadow-green-500/10 scale-[1.01]"
+                : "border-white/[0.04] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
             }`}>
-            <ArrowUp className="w-4 h-4" />
-            <span className="text-[14px] font-bold">Bullish</span>
+            <ArrowUp className="w-5 h-5" />
+            <span className="text-[15px] font-bold">Bullish</span>
           </button>
           <button onClick={() => setBias("bearish")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border transition-all ${
-              bias === "bearish" ? "border-red-500/30 bg-red-500/[0.06] text-red-400" : "border-white/[0.04] text-white/30 hover:border-white/[0.08]"
+            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-200 ${
+              bias === "bearish"
+                ? "border-red-500/40 bg-red-500/[0.08] text-red-400 shadow-lg shadow-red-500/10 scale-[1.01]"
+                : "border-white/[0.04] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
             }`}>
-            <ArrowDown className="w-4 h-4" />
-            <span className="text-[14px] font-bold">Bearish</span>
+            <ArrowDown className="w-5 h-5" />
+            <span className="text-[15px] font-bold">Bearish</span>
           </button>
         </div>
         <textarea
           value={biasReason}
           onChange={(e) => setBiasReason(e.target.value)}
           placeholder="Por que esse viés? (semanal, diário, liquidez varrida, sessão anterior...)"
-          className="w-full h-24 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[13px] text-white/70 placeholder-white/15 resize-none focus:outline-none focus:border-white/[0.10] transition-colors"
+          className="w-full h-28 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
         />
       </div>
 
       {/* Key levels */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Níveis-chave (OBs, FVGs, Liquidez)</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
+          <p className="text-[14px] text-white/70 font-semibold">Níveis-chave (OBs, FVGs, Liquidez)</p>
+        </div>
         <textarea
           value={keyLevels}
           onChange={(e) => setKeyLevels(e.target.value)}
           placeholder="Ex: OB bullish 4h em 18.050 · BSL acima de 18.200 · FVG em 18.100-18.120"
-          className="w-full h-20 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[13px] text-white/70 placeholder-white/15 resize-none focus:outline-none focus:border-white/[0.10] transition-colors"
+          className="w-full h-24 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
         />
       </div>
 
       {/* Plan */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Plano de ação</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
+          <p className="text-[14px] text-white/70 font-semibold">Plano de ação</p>
+        </div>
         <textarea
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
           placeholder="Se o preço varrer a SSL e reagir no OB 4h, busco long com alvo em BSL. Se não varrer, fico de fora."
-          className="w-full h-24 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[13px] text-white/70 placeholder-white/15 resize-none focus:outline-none focus:border-white/[0.10] transition-colors"
+          className="w-full h-28 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
         />
       </div>
 
       {/* Submit */}
       <button
-        onClick={() => isComplete && setSubmitted(true)}
+        onClick={() => {
+          if (isComplete && bias && emotional) {
+            onSave({ bias, biasReason, keyLevels, plan, emotional });
+            setSubmitted(true);
+          }
+        }}
         disabled={!isComplete}
-        className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[14px] font-bold transition-all ${
-          isComplete ? "bg-[#F59E0B] text-white hover:brightness-110 shadow-lg shadow-[#F59E0B]/20" : "bg-white/[0.03] text-white/15 cursor-not-allowed"
+        className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[15px] font-bold transition-all duration-200 ${
+          isComplete ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 hover:scale-[1.01]" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <Check className="w-4 h-4" />
         Salvar Prep Sheet
@@ -150,7 +177,7 @@ function PrepSheet() {
    Diário de Trade
    ──────────────────────────────────────────── */
 
-function TradeJournal() {
+function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"; entry: string; sl: string; tp: string; result: "win" | "loss" | "be"; rr: string; followedPlan: boolean; emotionalAfter: number; notes: string }) => void }) {
   const [direction, setDirection] = useState<"long" | "short" | null>(null);
   const [entry, setEntry] = useState("");
   const [sl, setSl] = useState("");
@@ -181,120 +208,152 @@ function TradeJournal() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h3 className="text-[18px] font-bold text-white/90 mb-1">Registrar Trade</h3>
-        <p className="text-[13px] text-white/30">Documente cada trade. Com o tempo, a plataforma identifica padrões no seu operacional.</p>
+    <div className="space-y-5">
+      {/* Header with accent */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#151518] to-[#111114] p-6">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+        <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-white/[0.02] blur-[100px] pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-white/50" />
+            </div>
+            <h3 className="text-[20px] font-bold text-white tracking-tight">Registrar Trade</h3>
+          </div>
+          <p className="text-[13px] text-white/40 ml-11">Documente cada trade. Com o tempo, a plataforma identifica padrões no seu operacional.</p>
+        </div>
       </div>
 
       {/* Direction */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Direção</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Direção</p>
         <div className="flex gap-3">
           <button onClick={() => setDirection("long")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border transition-all ${
-              direction === "long" ? "border-green-500/30 bg-green-500/[0.06] text-green-400" : "border-white/[0.04] text-white/30 hover:border-white/[0.08]"
+            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-200 ${
+              direction === "long"
+                ? "border-green-500/40 bg-green-500/[0.08] text-green-400 shadow-lg shadow-green-500/10 scale-[1.01]"
+                : "border-white/[0.04] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
             }`}>
-            <ArrowUp className="w-4 h-4" /> <span className="text-[14px] font-bold">Long</span>
+            <ArrowUp className="w-5 h-5" /> <span className="text-[15px] font-bold">Long</span>
           </button>
           <button onClick={() => setDirection("short")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border transition-all ${
-              direction === "short" ? "border-red-500/30 bg-red-500/[0.06] text-red-400" : "border-white/[0.04] text-white/30 hover:border-white/[0.08]"
+            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-200 ${
+              direction === "short"
+                ? "border-red-500/40 bg-red-500/[0.08] text-red-400 shadow-lg shadow-red-500/10 scale-[1.01]"
+                : "border-white/[0.04] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
             }`}>
-            <ArrowDown className="w-4 h-4" /> <span className="text-[14px] font-bold">Short</span>
+            <ArrowDown className="w-5 h-5" /> <span className="text-[15px] font-bold">Short</span>
           </button>
         </div>
       </div>
 
       {/* Entry / SL / TP */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-4">
-          <p className="text-[11px] text-white/30 mb-2">Entry</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="rounded-xl border-2 border-blue-500/10 bg-gradient-to-b from-blue-500/[0.03] to-[#111114] p-5 hover:border-blue-500/25 transition-all duration-300">
+          <p className="text-[11px] text-blue-400/70 font-semibold uppercase tracking-wider mb-2">Entry</p>
           <input type="text" value={entry} onChange={(e) => setEntry(e.target.value)} placeholder="18.100"
-            className="w-full bg-transparent text-[16px] text-white/80 font-mono focus:outline-none placeholder-white/10" />
+            className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
-        <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-4">
-          <p className="text-[11px] text-red-400/40 mb-2">Stop Loss</p>
+        <div className="rounded-xl border-2 border-red-500/10 bg-gradient-to-b from-red-500/[0.03] to-[#111114] p-5 hover:border-red-500/25 transition-all duration-300">
+          <p className="text-[11px] text-red-400/70 font-semibold uppercase tracking-wider mb-2">Stop Loss</p>
           <input type="text" value={sl} onChange={(e) => setSl(e.target.value)} placeholder="18.050"
-            className="w-full bg-transparent text-[16px] text-white/80 font-mono focus:outline-none placeholder-white/10" />
+            className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
-        <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-4">
-          <p className="text-[11px] text-green-400/40 mb-2">Take Profit</p>
+        <div className="rounded-xl border-2 border-green-500/10 bg-gradient-to-b from-green-500/[0.03] to-[#111114] p-5 hover:border-green-500/25 transition-all duration-300">
+          <p className="text-[11px] text-green-400/70 font-semibold uppercase tracking-wider mb-2">Take Profit</p>
           <input type="text" value={tp} onChange={(e) => setTp(e.target.value)} placeholder="18.250"
-            className="w-full bg-transparent text-[16px] text-white/80 font-mono focus:outline-none placeholder-white/10" />
+            className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
       </div>
 
       {/* Result */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Resultado</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Resultado</p>
         <div className="flex gap-3">
           {([
-            { id: "win" as const, label: "Gain", color: "green", icon: ArrowUp },
-            { id: "loss" as const, label: "Loss", color: "red", icon: ArrowDown },
-            { id: "be" as const, label: "Breakeven", color: "yellow", icon: Minus },
+            { id: "win" as const, label: "Gain", icon: ArrowUp, color: "#10B981" },
+            { id: "loss" as const, label: "Loss", icon: ArrowDown, color: "#EF4444" },
+            { id: "be" as const, label: "Breakeven", icon: Minus, color: "#F59E0B" },
           ]).map((r) => (
             <button key={r.id} onClick={() => setResult(r.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl border-2 transition-all duration-200 ${
                 result === r.id
-                  ? `border-${r.color}-500/30 bg-${r.color}-500/[0.06] text-${r.color}-400`
-                  : "border-white/[0.04] text-white/30 hover:border-white/[0.08]"
-              }`}>
-              <r.icon className="w-4 h-4" />
-              <span className="text-[13px] font-bold">{r.label}</span>
+                  ? "scale-[1.01] shadow-lg"
+                  : "border-white/[0.04] text-white/35 hover:border-white/[0.10]"
+              }`}
+              style={result === r.id ? { borderColor: r.color + "40", backgroundColor: r.color + "08", color: r.color, boxShadow: `0 4px 20px ${r.color}15` } : undefined}>
+              <r.icon className="w-5 h-5" />
+              <span className="text-[14px] font-bold">{r.label}</span>
             </button>
           ))}
         </div>
         {result && (
-          <div className="mt-3">
+          <div className="mt-4">
             <input type="text" value={rr} onChange={(e) => setRr(e.target.value)} placeholder="R:R (ex: 2.5)"
-              className="w-full px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[13px] text-white/70 placeholder-white/15 focus:outline-none focus:border-white/[0.10]" />
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[14px] text-white/70 font-mono placeholder-white/20 focus:outline-none focus:border-white/[0.15] transition-all" />
           </div>
         )}
       </div>
 
       {/* Followed plan? */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Seguiu o plano do Prep Sheet?</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Seguiu o plano do Prep Sheet?</p>
         <div className="flex gap-3">
           <button onClick={() => setFollowedPlan(true)}
-            className={`flex-1 py-3 rounded-xl border text-[13px] font-bold transition-all ${
-              followedPlan === true ? "border-green-500/30 bg-green-500/[0.06] text-green-400" : "border-white/[0.04] text-white/30"
+            className={`flex-1 py-4 rounded-xl border-2 text-[14px] font-bold transition-all duration-200 ${
+              followedPlan === true ? "border-green-500/40 bg-green-500/[0.08] text-green-400 shadow-lg shadow-green-500/10" : "border-white/[0.04] text-white/35 hover:border-green-500/15"
             }`}>Sim</button>
           <button onClick={() => setFollowedPlan(false)}
-            className={`flex-1 py-3 rounded-xl border text-[13px] font-bold transition-all ${
-              followedPlan === false ? "border-red-500/30 bg-red-500/[0.06] text-red-400" : "border-white/[0.04] text-white/30"
+            className={`flex-1 py-4 rounded-xl border-2 text-[14px] font-bold transition-all duration-200 ${
+              followedPlan === false ? "border-red-500/40 bg-red-500/[0.08] text-red-400 shadow-lg shadow-red-500/10" : "border-white/[0.04] text-white/35 hover:border-red-500/15"
             }`}>Não</button>
         </div>
       </div>
 
       {/* Emotional after */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">Como você está se sentindo depois do trade?</p>
-        <div className="flex gap-2">
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <p className="text-[14px] text-white/70 font-semibold mb-4">Como você está se sentindo depois do trade?</p>
+        <div className="flex gap-3">
           {[
-            { v: 1, emoji: "😰" }, { v: 2, emoji: "😕" }, { v: 3, emoji: "😐" }, { v: 4, emoji: "😊" }, { v: 5, emoji: "🔥" },
+            { v: 1, emoji: "😰", color: "#EF4444" },
+            { v: 2, emoji: "😕", color: "#F59E0B" },
+            { v: 3, emoji: "😐", color: "#6B7280" },
+            { v: 4, emoji: "😊", color: "#10B981" },
+            { v: 5, emoji: "🔥", color: "#FF5500" },
           ].map((e) => (
             <button key={e.v} onClick={() => setEmotionalAfter(e.v)}
-              className={`flex-1 py-3 rounded-xl border text-[20px] transition-all ${
-                emotionalAfter === e.v ? "border-brand-500/30 bg-brand-500/[0.06]" : "border-white/[0.04] hover:border-white/[0.08]"
-              }`}>{e.emoji}</button>
+              className={`flex-1 py-4 rounded-xl border-2 text-[28px] transition-all duration-200 ${
+                emotionalAfter === e.v
+                  ? "scale-[1.03] shadow-lg"
+                  : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
+              }`}
+              style={emotionalAfter === e.v ? { borderColor: e.color + "40", backgroundColor: e.color + "08", boxShadow: `0 4px 20px ${e.color}15` } : undefined}>
+              {e.emoji}
+            </button>
           ))}
         </div>
       </div>
 
       {/* Notes */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0a0d18] p-5">
-        <p className="text-[13px] text-white/60 font-medium mb-3">O que você aprendeu com esse trade?</p>
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
+          <p className="text-[14px] text-white/70 font-semibold">O que você aprendeu com esse trade?</p>
+        </div>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
           placeholder="O que deu certo, o que errou, o que faria diferente..."
-          className="w-full h-24 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[13px] text-white/70 placeholder-white/15 resize-none focus:outline-none focus:border-white/[0.10]" />
+          className="w-full h-28 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all" />
       </div>
 
-      <button onClick={() => direction && result && setSubmitted(true)}
+      <button onClick={() => {
+          if (direction && result) {
+            onSave({ direction, entry, sl, tp, result, rr, followedPlan: followedPlan ?? false, emotionalAfter: emotionalAfter ?? 3, notes });
+            setSubmitted(true);
+          }
+        }}
         disabled={!direction || !result}
-        className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[14px] font-bold transition-all ${
-          direction && result ? "bg-[#3B82F6] text-white hover:brightness-110 shadow-lg shadow-[#3B82F6]/20" : "bg-white/[0.03] text-white/15 cursor-not-allowed"
+        className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[15px] font-bold transition-all duration-200 ${
+          direction && result ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 hover:scale-[1.01]" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <TrendingUp className="w-4 h-4" />
         Registrar Trade
@@ -510,84 +569,39 @@ function TradeSimulator() {
     },
   };
 
-  // Add chart markers/lines at decision points
+  // Add chart markers/lines at decision points — tracked to avoid duplicates
+  const addedLinesRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     if (!seriesRef.current || !chartRef.current) return;
+    const added = addedLinesRef.current;
 
-    // Add range lines after accumulation is visible (index >= 15)
+    const addLine = (key: string, opts: { price: number; color: string; title: string; lineStyle?: number }) => {
+      if (added.has(key)) return;
+      seriesRef.current!.createPriceLine({
+        price: opts.price,
+        color: opts.color,
+        lineWidth: 1,
+        lineStyle: opts.lineStyle ?? 2,
+        axisLabelVisible: true,
+        title: opts.title,
+      });
+      added.add(key);
+    };
+
     if (candleIndex >= 15) {
-      try {
-        // Range high/low lines
-        const rangeHigh = 18108;
-        const rangeLow = 18068;
-
-        seriesRef.current.createPriceLine({
-          price: rangeHigh,
-          color: "#787b86",
-          lineWidth: 1,
-          lineStyle: 2, // Dashed
-          axisLabelVisible: true,
-          title: "Range High",
-        });
-        seriesRef.current.createPriceLine({
-          price: rangeLow,
-          color: "#787b86",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: true,
-          title: "Range Low",
-        });
-      } catch {
-        // Lines may already exist
-      }
+      addLine("range-high", { price: 18108, color: "#787b86", title: "Range High" });
+      addLine("range-low", { price: 18068, color: "#787b86", title: "Range Low" });
     }
 
-    // Add sweep low marker after the sweep
     if (candleIndex >= 19) {
-      try {
-        seriesRef.current.createPriceLine({
-          price: 17982,
-          color: "#ef5350",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: true,
-          title: "Sweep Low",
-        });
-      } catch {
-        // Already exists
-      }
+      addLine("sweep-low", { price: 17982, color: "#ef5350", title: "Sweep Low" });
     }
 
-    // Add entry/SL/TP after decision 3
     if (candleIndex >= 22 && decisions.length >= 3) {
-      try {
-        seriesRef.current.createPriceLine({
-          price: 18042,
-          color: "#2962ff",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: true,
-          title: "Entry (OB)",
-        });
-        seriesRef.current.createPriceLine({
-          price: 17978,
-          color: "#ef5350",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: true,
-          title: "Stop Loss",
-        });
-        seriesRef.current.createPriceLine({
-          price: 18250,
-          color: "#26a69a",
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: true,
-          title: "Take Profit",
-        });
-      } catch {
-        // Already exists
-      }
+      addLine("entry", { price: 18042, color: "#2962ff", title: "Entry (OB)" });
+      addLine("sl", { price: 17978, color: "#ef5350", title: "Stop Loss" });
+      addLine("tp", { price: 18250, color: "#26a69a", title: "Take Profit" });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candleIndex, decisions.length]);
@@ -641,6 +655,7 @@ function TradeSimulator() {
     setShowDecision(false);
     setAnsweredQ(null);
     setPlaying(false);
+    addedLinesRef.current.clear();
   };
 
   const finished = candleIndex >= candles.length - 1 && !showDecision && !answeredQ;
@@ -658,7 +673,7 @@ function TradeSimulator() {
         <p className="text-[14px] text-white/35 text-center max-w-md mb-3">
           Aperte play e assista o mercado se desenrolar. Nos momentos-chave, a simulação pausa e pergunta: o que você faz?
         </p>
-        <p className="text-[12px] text-white/20 text-center max-w-sm mb-8">
+        <p className="text-[12px] text-white/30 text-center max-w-sm mb-8">
           Cenário: NQ 5min · Sessão NY · Padrão AMD com sweep de liquidez
         </p>
         <button onClick={() => { setStarted(true); setPlaying(true); }}
@@ -674,7 +689,7 @@ function TradeSimulator() {
   const lastCandle = candles[candleIndex];
 
   return (
-    <div className="-mx-5 lg:-mx-10">
+    <div className="-mx-5 lg:-mx-10 overflow-x-hidden">
       {/* Header bar — TradingView style */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-[#2a2e39]" style={{ background: "#1e222d" }}>
         <div className="flex items-center gap-4">
@@ -818,6 +833,7 @@ function TradeSimulator() {
 
 export default function PraticaPage() {
   const [activeTab, setActiveTab] = useState<Tab>("prep");
+  const { savePrep, saveTrade } = useProgress();
 
   return (
     <div className="space-y-6">
@@ -827,10 +843,10 @@ export default function PraticaPage() {
           const active = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-[13px] font-medium transition-all ${
+              className={`flex items-center gap-2.5 px-6 py-3.5 rounded-xl border text-[14px] font-semibold transition-all ${
                 active
-                  ? "border-white/[0.12] bg-white/[0.04] text-white"
-                  : "border-white/[0.04] text-white/30 hover:text-white/50 hover:border-white/[0.08]"
+                  ? "border-white/[0.20] bg-white/[0.05] text-white"
+                  : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12] hover:bg-white/[0.02]"
               }`}>
               <tab.icon className="w-4 h-4" style={active ? { color: tab.accent } : undefined} />
               {tab.label}
@@ -840,8 +856,8 @@ export default function PraticaPage() {
       </div>
 
       {/* Tab content */}
-      {activeTab === "prep" && <PrepSheet />}
-      {activeTab === "diario" && <TradeJournal />}
+      {activeTab === "prep" && <PrepSheet onSave={savePrep} />}
+      {activeTab === "diario" && <TradeJournal onSave={saveTrade} />}
       {activeTab === "simulador" && <TradeSimulator />}
     </div>
   );

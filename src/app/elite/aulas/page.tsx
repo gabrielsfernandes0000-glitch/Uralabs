@@ -101,7 +101,7 @@ const CURRICULUM: Module[] = [
 
 function ThumbShell({ accent, children }: { accent: string; children: React.ReactNode }) {
   return (
-    <div className="absolute inset-0 overflow-hidden select-none" style={{ background: "#080c18" }}>
+    <div className="absolute inset-0 overflow-hidden select-none" style={{ background: "#0e0e10" }}>
       {/* Grid */}
       <div className="absolute inset-0" style={{
         backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
@@ -598,7 +598,7 @@ function LessonThumbnail({ lesson, mod, index }: { lesson: Lesson; mod: Module; 
       {thumbMap[lesson.id] || null}
       {/* Soft bottom fade — no text, just blends into content area */}
       <div className="absolute bottom-0 left-0 right-0 h-12 z-10"
-        style={{ background: "linear-gradient(to top, #0c0f1a, transparent)" }} />
+        style={{ background: "linear-gradient(to top, #141417, transparent)" }} />
     </ThumbShell>
   );
 }
@@ -668,34 +668,34 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
         </div>
 
         {/* Content — fixed height */}
-        <div className="px-4 pt-3 pb-4 bg-[#0c0f1a] h-[110px] flex flex-col">
+        <div className="px-4 pt-3 pb-4 bg-[#141417] h-[110px] flex flex-col">
           <div className="flex items-baseline gap-2 mb-1.5">
             <span className="text-[12px] font-bold font-mono shrink-0" style={{ color: lesson.locked ? "rgba(255,255,255,0.1)" : mod.accentHex + "70" }}>
               {String(index + 1).padStart(2, "0")}
             </span>
-            <h3 className={`text-[14px] font-bold tracking-tight leading-snug line-clamp-1 ${lesson.locked ? "text-white/20" : "text-white/90"}`}>
+            <h3 className={`text-[14px] font-bold tracking-tight leading-snug line-clamp-1 ${lesson.locked ? "text-white/30" : "text-white/90"}`}>
               {lesson.title}
             </h3>
           </div>
 
-          <p className={`text-[11px] leading-relaxed line-clamp-2 flex-1 ${lesson.locked ? "text-white/12" : "text-white/40"}`}>
+          <p className={`text-[11px] leading-relaxed line-clamp-2 flex-1 ${lesson.locked ? "text-white/20" : "text-white/40"}`}>
             {lesson.subtitle}
           </p>
 
           <div className="flex items-center gap-3 mt-auto pt-1.5">
-            <div className={`flex items-center gap-1.5 ${lesson.locked ? "text-white/10" : "text-white/35"}`}>
+            <div className={`flex items-center gap-1.5 ${lesson.locked ? "text-white/20" : "text-white/35"}`}>
               <Clock className="w-3 h-3" />
               <span className="text-[10px] font-medium">{lesson.duration}</span>
             </div>
             <div className={`w-px h-3 ${lesson.locked ? "bg-white/5" : "bg-white/10"}`} />
             {lesson.hasQuiz && (
-              <div className={`flex items-center gap-1 ${lesson.locked ? "text-white/10" : "text-white/30"}`}>
+              <div className={`flex items-center gap-1 ${lesson.locked ? "text-white/20" : "text-white/30"}`}>
                 <BookOpen className="w-3 h-3" />
                 <span className="text-[10px]">Quiz</span>
               </div>
             )}
             {lesson.hasPdf && (
-              <div className={`flex items-center gap-1 ${lesson.locked ? "text-white/10" : "text-white/30"}`}>
+              <div className={`flex items-center gap-1 ${lesson.locked ? "text-white/20" : "text-white/30"}`}>
                 <FileText className="w-3 h-3" />
                 <span className="text-[10px]">PDF</span>
               </div>
@@ -725,7 +725,7 @@ function ModuleSection({ mod }: { mod: Module }) {
           <h2 className="text-[22px] font-bold text-white tracking-tight">{mod.title}</h2>
           <span className="text-[13px] text-white/40 font-medium">{mod.subtitle}</span>
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c0f1a]">
+        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141417]">
           <div className="absolute inset-0" style={{
             background: `radial-gradient(ellipse 60% 60% at 70% 30%, ${mod.accentHex}12, transparent)`
           }} />
@@ -811,7 +811,7 @@ function Hero() {
   const heroAccent = next?.mod.accentHex || "#FF5500";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] min-h-[320px]" style={{ background: "#0a0d18" }}>
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] min-h-[320px]" style={{ background: "#111114" }}>
       {/* Background effects */}
       <div className="absolute inset-0" style={{
         background: `radial-gradient(ellipse 80% 80% at 80% 30%, ${heroAccent}15, transparent 60%),
@@ -826,7 +826,7 @@ function Hero() {
       }} />
       {/* Left fade for readability */}
       <div className="absolute inset-0" style={{
-        background: "linear-gradient(90deg, #0a0d18 30%, #0a0d18aa 50%, transparent 75%)"
+        background: "linear-gradient(90deg, #111114 30%, #111114aa 50%, transparent 75%)"
       }} />
 
       <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-8 min-h-[320px]">
@@ -1011,7 +1011,7 @@ function LiveCard({ live }: { live: LiveRecording }) {
         style={hovered ? { boxShadow: `0 8px 32px ${tc.accent}12` } : undefined}>
 
         {/* Thumbnail — square, left side */}
-        <div className="relative w-[140px] shrink-0 overflow-hidden" style={{ background: "#080c18" }}>
+        <div className="relative w-[140px] shrink-0 overflow-hidden" style={{ background: "#0e0e10" }}>
           {/* Glow */}
           <div className="absolute inset-0" style={{
             background: `radial-gradient(ellipse 80% 80% at 50% 50%, ${tc.accent}12, transparent 60%)`
@@ -1043,7 +1043,7 @@ function LiveCard({ live }: { live: LiveRecording }) {
         </div>
 
         {/* Content — right side */}
-        <div className="flex-1 px-4 py-3.5 bg-[#0c0f1a] flex flex-col justify-between min-h-[100px]">
+        <div className="flex-1 px-4 py-3.5 bg-[#141417] flex flex-col justify-between min-h-[100px]">
           {/* Type + date row */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -1111,7 +1111,7 @@ export default function AulasPage() {
       ))}
 
       <div className="text-center py-6">
-        <p className="text-[12px] text-white/20">
+        <p className="text-[12px] text-white/30">
           Conteúdo exclusivo Elite 4.0 · Aulas gravadas + lives semanais + calls diárias
         </p>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { findLesson, getNextLesson, getPrevLesson } from "@/lib/curriculum";
 import type { QuizQuestion, LessonData } from "@/lib/curriculum";
+import { LessonChart, hasLiveChart } from "@/components/elite/LessonChart";
 
 /* ────────────────────────────────────────────
    Confetti — lightweight celebration particles
@@ -289,11 +290,16 @@ function ScenarioChart({ type }: { type: string }) {
     ),
   };
 
+  // Use interactive Lightweight Charts when available
+  if (hasLiveChart(type)) {
+    return <LessonChart scenario={type} />;
+  }
+
   if (!charts[type]) return null;
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#060810] p-4 mb-5 overflow-hidden">
-      <p className="text-[10px] text-white/20 uppercase tracking-wider mb-3 font-mono">Cenário</p>
+    <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0c] p-4 mb-5 overflow-hidden">
+      <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3 font-mono">Cenário</p>
       {charts[type]}
     </div>
   );
@@ -380,7 +386,7 @@ function QuizSection({ questions, accent, onComplete }: {
         <div className="flex gap-1 mb-6">
           {[0, 1, 2].map((i) => (
             <Star key={i} className={`w-6 h-6 transition-all duration-500 ${
-              i < (pct === 100 ? 3 : pct >= 60 ? 2 : pct >= 40 ? 1 : 0) ? "text-yellow-400 fill-yellow-400" : "text-white/10"
+              i < (pct === 100 ? 3 : pct >= 60 ? 2 : pct >= 40 ? 1 : 0) ? "text-yellow-400 fill-yellow-400" : "text-white/20"
             }`} style={{ transitionDelay: `${i * 200}ms` }} />
           ))}
         </div>
@@ -437,7 +443,7 @@ function QuizSection({ questions, accent, onComplete }: {
             if (revealed) {
               if (isCorrectOpt) cls = "border-green-500/40 bg-green-500/[0.08] text-green-400";
               else if (isSelected && !isCorrectOpt) cls = "border-red-500/40 bg-red-500/[0.08] text-red-400";
-              else cls = "border-white/[0.03] bg-transparent text-white/20";
+              else cls = "border-white/[0.03] bg-transparent text-white/30";
             } else if (isSelected) {
               cls = "border-white/[0.20] bg-white/[0.04] text-white/90";
             }
@@ -445,7 +451,7 @@ function QuizSection({ questions, accent, onComplete }: {
             return (
               <button key={optIdx} onClick={() => handleSelect(optIdx)} disabled={revealed}
                 className={`w-full text-left px-5 py-4 rounded-xl border ${cls} text-[14px] transition-all duration-200`}>
-                <span className="font-mono text-white/20 mr-3">{String.fromCharCode(65 + optIdx)}</span>
+                <span className="font-mono text-white/30 mr-3">{String.fromCharCode(65 + optIdx)}</span>
                 {opt}
                 {revealed && isCorrectOpt && <Check className="inline w-4 h-4 ml-2 text-green-400" />}
               </button>
@@ -467,7 +473,7 @@ function QuizSection({ questions, accent, onComplete }: {
         {!revealed ? (
           <button onClick={handleConfirm} disabled={selected === null}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-bold transition-all ${
-              selected !== null ? "text-white hover:brightness-110" : "bg-white/[0.03] text-white/15 cursor-not-allowed"
+              selected !== null ? "text-white hover:brightness-110" : "bg-white/[0.03] text-white/30 cursor-not-allowed"
             }`}
             style={selected !== null ? { backgroundColor: accent, boxShadow: `0 4px 20px ${accent}30` } : undefined}>
             Confirmar
@@ -582,7 +588,7 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
         >
           <div className={`relative w-full min-h-[240px] transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? "[transform:rotateY(180deg)]" : ""}`}>
             {/* Front — the question */}
-            <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl border border-white/[0.08] bg-[#0a0d18] overflow-hidden">
+            <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl border border-white/[0.08] bg-[#111114] overflow-hidden">
               {/* Accent glow */}
               <div className="absolute inset-0" style={{
                 background: `radial-gradient(ellipse 50% 50% at 50% 30%, ${accent}08, transparent)`
@@ -603,7 +609,7 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
             </div>
 
             {/* Back — the answer */}
-            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl border bg-[#0a0d18] overflow-hidden"
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl border bg-[#111114] overflow-hidden"
               style={{ borderColor: accent + "30" }}>
               {/* Accent glow */}
               <div className="absolute inset-0" style={{
@@ -643,7 +649,7 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
         </div>
       ) : (
         <div className="text-center">
-          <p className="text-[11px] text-white/15">Pense na resposta antes de virar o card</p>
+          <p className="text-[11px] text-white/30">Pense na resposta antes de virar o card</p>
         </div>
       )}
     </div>
@@ -651,146 +657,195 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
 }
 
 /* ────────────────────────────────────────────
-   Marque no Gráfico — interactive chart marking
+   Identifique no Gráfico — interactive chart challenges
    ──────────────────────────────────────────── */
 
-interface ChartMark {
-  label: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+interface ChartChallenge {
+  question: string;
+  options: { label: string; price: number; correct: boolean }[];
+  explanation: string;
 }
 
-function MarkOnChartSection({ marks, accent }: { marks: ChartMark[]; accent: string }) {
-  const [found, setFound] = useState<Set<number>>(new Set());
-  const [showHint, setShowHint] = useState(false);
-  const [lastClick, setLastClick] = useState<{ x: number; y: number; hit: boolean } | null>(null);
-  const allFound = found.size === marks.length;
+interface ChartMarkData {
+  challenges: ChartChallenge[];
+  candles: { time: number; o: number; h: number; l: number; c: number }[];
+}
 
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (allFound) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+function MarkOnChartSection({ marks, accent }: { marks: ChartMarkData; accent: string }) {
+  const [current, setCurrent] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [results, setResults] = useState<boolean[]>([]);
+  const [finished, setFinished] = useState(false);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
+  const seriesRef = useRef<ReturnType<ReturnType<typeof import("lightweight-charts").createChart>["addSeries"]> | null>(null);
+  const addedLinesRef = useRef<Set<string>>(new Set());
 
-    let hit = false;
-    marks.forEach((m, i) => {
-      if (!found.has(i) && x >= m.x && x <= m.x + m.w && y >= m.y && y <= m.y + m.h) {
-        setFound((prev) => new Set(prev).add(i));
-        hit = true;
-      }
-    });
-    setLastClick({ x, y, hit });
-    setTimeout(() => setLastClick(null), 800);
+  const q = marks.challenges[current];
+
+  // Initialize chart
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+    let disposed = false;
+
+    const init = async () => {
+      const { createChart, CandlestickSeries, ColorType } = await import("lightweight-charts");
+      if (disposed || !chartContainerRef.current) return;
+
+      const chart = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: 380,
+        layout: {
+          background: { type: ColorType.Solid, color: "#0a0a0c" },
+          textColor: "#787b86", fontSize: 10,
+          fontFamily: "'JetBrains Mono', monospace",
+        },
+        grid: { vertLines: { color: "#141417" }, horzLines: { color: "#141417" } },
+        crosshair: {
+          vertLine: { color: "#555", width: 1, style: 3, labelBackgroundColor: "#333" },
+          horzLine: { color: "#555", width: 1, style: 3, labelBackgroundColor: "#333" },
+        },
+        rightPriceScale: { borderColor: "#1a1a1f", scaleMargins: { top: 0.08, bottom: 0.08 } },
+        timeScale: { borderColor: "#1a1a1f", timeVisible: false, barSpacing: 18, fixLeftEdge: true, fixRightEdge: true },
+      });
+
+      const series = chart.addSeries(CandlestickSeries, {
+        upColor: "#26a69a", downColor: "#ef5350",
+        borderUpColor: "#26a69a", borderDownColor: "#ef5350",
+        wickUpColor: "#26a69a", wickDownColor: "#ef5350",
+      });
+
+      type UTCTimestamp = import("lightweight-charts").UTCTimestamp;
+      series.setData(marks.candles.map(c => ({ time: c.time as UTCTimestamp, open: c.o, high: c.h, low: c.l, close: c.c })));
+      chart.timeScale().fitContent();
+
+      chartRef.current = chart;
+      seriesRef.current = series;
+
+      const ro = new ResizeObserver(() => {
+        if (chartContainerRef.current && !disposed) chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      });
+      ro.observe(chartContainerRef.current);
+      return () => ro.disconnect();
+    };
+
+    init();
+    return () => { disposed = true; chartRef.current?.remove(); chartRef.current = null; seriesRef.current = null; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleConfirm = () => {
+    if (selected === null || !q) return;
+    const isCorrect = q.options[selected].correct;
+    setRevealed(true);
+    setResults(prev => [...prev, isCorrect]);
+
+    // Mark the correct zone on the chart
+    const correctOpt = q.options.find(o => o.correct)!;
+    const key = `mark-${current}`;
+    if (seriesRef.current && !addedLinesRef.current.has(key)) {
+      seriesRef.current.createPriceLine({
+        price: correctOpt.price,
+        color: isCorrect ? "#22C55E" : "#EF4444",
+        lineWidth: 1, lineStyle: 0, axisLabelVisible: true,
+        title: correctOpt.label,
+      });
+      addedLinesRef.current.add(key);
+    }
   };
 
-  const handleReset = () => {
-    setFound(new Set());
-    setShowHint(false);
-    setLastClick(null);
+  const handleNext = () => {
+    if (current < marks.challenges.length - 1) {
+      setCurrent(prev => prev + 1);
+      setSelected(null);
+      setRevealed(false);
+    } else {
+      setFinished(true);
+    }
   };
+
+  if (finished) {
+    const correct = results.filter(Boolean).length;
+    return (
+      <div className="flex flex-col items-center py-10">
+        <CheckCircle className="w-10 h-10 text-green-400/80 mb-4" />
+        <h4 className="text-[18px] font-bold text-white mb-2">Exercício completo</h4>
+        <p className="text-[14px] text-white/50 mb-1">{correct}/{results.length} marcações corretas</p>
+        <p className="text-[12px] text-white/30 mb-6">As zonas corretas estão marcadas no gráfico acima</p>
+        <button onClick={() => { setCurrent(0); setSelected(null); setRevealed(false); setResults([]); setFinished(false); addedLinesRef.current.clear(); }}
+          className="flex items-center gap-2 text-[13px] text-white/30 hover:text-white/60 transition-colors">
+          <RotateCcw className="w-3.5 h-3.5" /> Refazer
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {/* Instructions */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-[12px] text-white/35">
-          Clique nas zonas corretas no gráfico. Encontre {marks.length} elementos.
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-white/25 font-mono">{found.size}/{marks.length}</span>
-          {!allFound && (
-            <button onClick={() => setShowHint(!showHint)} className="text-[11px] text-white/20 hover:text-white/40 transition-colors underline">
-              {showHint ? "Esconder dica" : "Dica"}
+      {/* Chart */}
+      <div className="rounded-xl overflow-hidden border border-white/[0.08] mb-5">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-[#1a1a1f]" style={{ background: "#111114" }}>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] text-white/80 font-bold font-mono">NQ1!</span>
+            <div className="h-3 w-px bg-white/[0.08]" />
+            <span className="text-[11px] text-white/30">Identifique no gráfico</span>
+          </div>
+          <span className="text-[10px] text-white/25 font-mono">{current + 1}/{marks.challenges.length}</span>
+        </div>
+        <div ref={chartContainerRef} className="w-full" />
+      </div>
+
+      {/* Question */}
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5">
+        <p className="text-[14px] text-white/80 font-medium mb-4">{q.question}</p>
+
+        <div className="space-y-2 mb-4">
+          {q.options.map((opt, i) => {
+            let cls = "border-white/[0.05] text-white/50 hover:border-white/[0.12] hover:bg-white/[0.02]";
+            if (revealed && opt.correct) cls = "border-green-500/40 bg-green-500/[0.06] text-green-400";
+            else if (revealed && selected === i && !opt.correct) cls = "border-red-500/40 bg-red-500/[0.06] text-red-400";
+            else if (!revealed && selected === i) cls = "border-white/[0.20] bg-white/[0.05] text-white";
+
+            return (
+              <button key={i} onClick={() => !revealed && setSelected(i)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left ${cls}`}>
+                <span className="text-[12px] font-mono text-white/30 w-5">{String.fromCharCode(65 + i)}</span>
+                <span className="text-[13px] font-medium">{opt.label}</span>
+                <span className="ml-auto text-[11px] font-mono text-white/20">{opt.price.toLocaleString()}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Explanation */}
+        {revealed && (
+          <div className={`px-4 py-3 rounded-xl mb-4 ${results[results.length - 1] ? "bg-green-500/[0.05] border border-green-500/10" : "bg-red-500/[0.05] border border-red-500/10"}`}>
+            <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${results[results.length - 1] ? "text-green-400/80" : "text-red-400/80"}`}>
+              {results[results.length - 1] ? "Correto!" : "Não exatamente"}
+            </p>
+            <p className="text-[12px] text-white/50 leading-relaxed">{q.explanation}</p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end">
+          {!revealed ? (
+            <button onClick={handleConfirm} disabled={selected === null}
+              className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all ${
+                selected !== null ? "bg-brand-500 text-white hover:brightness-110" : "bg-white/[0.03] text-white/20 cursor-not-allowed"
+              }`}>
+              Confirmar
+            </button>
+          ) : (
+            <button onClick={handleNext}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.10] text-[13px] font-bold text-white/80 hover:bg-white/[0.08] transition-all">
+              {current < marks.challenges.length - 1 ? "Próxima" : "Finalizar"}
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
-
-      {/* Chart area */}
-      <div
-        className="relative aspect-video rounded-2xl overflow-hidden border border-white/[0.08] cursor-crosshair select-none"
-        onClick={handleClick}
-        style={{ background: "#060810" }}
-      >
-        {/* Chart background — simulated candlestick chart */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 450" fill="none" preserveAspectRatio="xMidYMid slice">
-          {/* Grid */}
-          {[75, 150, 225, 300, 375].map((y) => (
-            <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-          ))}
-          {/* Candles */}
-          {[
-            {x:40,o:320,c:280,h:260,l:340,b:true},{x:70,o:285,c:300,h:270,l:320,b:false},{x:100,o:295,c:260,h:240,l:310,b:true},
-            {x:130,o:265,c:280,h:250,l:300,b:false},{x:160,o:275,c:240,h:220,l:295,b:true},{x:190,o:245,c:220,h:200,l:260,b:true},
-            {x:220,o:225,c:250,h:210,l:270,b:false},{x:250,o:245,c:210,h:190,l:260,b:true},{x:280,o:215,c:230,h:200,l:250,b:false},
-            {x:310,o:225,c:195,h:180,l:245,b:true},{x:340,o:200,c:180,h:165,l:215,b:true},{x:370,o:185,c:200,h:170,l:220,b:false},
-            {x:400,o:195,c:170,h:155,l:210,b:true},{x:430,o:175,c:190,h:160,l:205,b:false},{x:460,o:185,c:160,h:145,l:200,b:true},
-            {x:490,o:165,c:145,h:130,l:180,b:true},{x:520,o:150,c:165,h:135,l:180,b:false},{x:550,o:160,c:140,h:125,l:175,b:true},
-            {x:580,o:145,c:130,h:115,l:160,b:true},{x:610,o:135,c:150,h:120,l:165,b:false},{x:640,o:145,c:125,h:110,l:160,b:true},
-            {x:670,o:130,c:115,h:100,l:145,b:true},{x:700,o:120,c:135,h:105,l:150,b:false},{x:730,o:130,c:110,h:95,l:145,b:true},
-          ].map((c, i) => (
-            <g key={i}>
-              <line x1={c.x} y1={c.h} x2={c.x} y2={c.l} stroke={c.b ? "#10B98140" : "#EF444435"} strokeWidth="2" />
-              <rect x={c.x - 10} y={Math.min(c.o, c.c)} width="20" height={Math.abs(c.c - c.o) || 3}
-                fill={c.b ? "#10B98120" : "transparent"} stroke={c.b ? "#10B98135" : "#EF444430"} strokeWidth="1.5" rx="2" />
-            </g>
-          ))}
-        </svg>
-
-        {/* Hint zones — dashed outlines when hint is active */}
-        {showHint && marks.map((m, i) => !found.has(i) && (
-          <div key={i} className="absolute border-2 border-dashed rounded-lg animate-pulse"
-            style={{
-              left: `${m.x}%`, top: `${m.y}%`, width: `${m.w}%`, height: `${m.h}%`,
-              borderColor: accent + "30",
-            }} />
-        ))}
-
-        {/* Found zones — solid highlight */}
-        {marks.map((m, i) => found.has(i) && (
-          <div key={i} className="absolute rounded-lg flex items-center justify-center"
-            style={{
-              left: `${m.x}%`, top: `${m.y}%`, width: `${m.w}%`, height: `${m.h}%`,
-              backgroundColor: accent + "15", border: `2px solid ${accent}50`,
-            }}>
-            <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded" style={{ color: accent + "DD", backgroundColor: accent + "15" }}>
-              {m.label}
-            </span>
-          </div>
-        ))}
-
-        {/* Click feedback */}
-        {lastClick && (
-          <div className="absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            style={{ left: `${lastClick.x}%`, top: `${lastClick.y}%` }}>
-            <div className={`w-6 h-6 rounded-full border-2 animate-ping ${lastClick.hit ? "border-green-400" : "border-red-400/50"}`} />
-          </div>
-        )}
-
-        {/* Crosshair cursor hint */}
-        {!allFound && (
-          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm">
-            <Crosshair className="w-3 h-3 text-white/40" />
-            <span className="text-[10px] text-white/40">Clique para marcar</span>
-          </div>
-        )}
-      </div>
-
-      {/* Completion */}
-      {allFound && (
-        <div className="flex items-center justify-between mt-4 px-4 py-3 rounded-xl bg-green-500/[0.06] border border-green-500/15">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-400" />
-            <span className="text-[13px] text-green-400/80 font-medium">Todos os {marks.length} elementos encontrados!</span>
-          </div>
-          <button onClick={handleReset} className="text-[11px] text-white/30 hover:text-white/50 transition-colors flex items-center gap-1">
-            <RotateCcw className="w-3 h-3" />
-            Refazer
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -853,7 +908,7 @@ function Section({ title, icon: Icon, defaultOpen, accent, children }: {
   const [open, setOpen] = useState(defaultOpen ?? false);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#080c18] overflow-hidden">
+    <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden hover:border-white/[0.10] transition-all duration-300">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-white/[0.01] transition-colors"
@@ -920,22 +975,109 @@ const FLASHCARDS: Record<string, Flashcard[]> = {
   ],
 };
 
-const CHART_MARKS: Record<string, ChartMark[]> = {
-  "order-blocks": [
-    { label: "OB Bullish", x: 12, y: 55, w: 12, h: 15 },
-    { label: "OB Bearish", x: 45, y: 25, w: 12, h: 12 },
-    { label: "OB Bullish", x: 72, y: 40, w: 10, h: 14 },
-  ],
-  "fvg-breaker": [
-    { label: "FVG", x: 22, y: 35, w: 10, h: 18 },
-    { label: "FVG", x: 55, y: 22, w: 10, h: 15 },
-    { label: "Breaker", x: 38, y: 50, w: 14, h: 12 },
-  ],
-  liquidez: [
-    { label: "BSL", x: 60, y: 8, w: 18, h: 10 },
-    { label: "SSL", x: 5, y: 72, w: 20, h: 10 },
-    { label: "Sweep", x: 80, y: 15, w: 12, h: 12 },
-  ],
+const BT = 1744617000;
+const markCandles = [
+  { time: BT, o: 18200, h: 18218, l: 18185, c: 18210 },
+  { time: BT + 300, o: 18210, h: 18225, l: 18195, c: 18198 }, // OB candle
+  { time: BT + 600, o: 18198, h: 18248, l: 18195, c: 18242 }, // impulse (FVG)
+  { time: BT + 900, o: 18242, h: 18275, l: 18235, c: 18270 },
+  { time: BT + 1200, o: 18270, h: 18298, l: 18262, c: 18290 },
+  { time: BT + 1500, o: 18290, h: 18315, l: 18282, c: 18308 }, // BSL high
+  { time: BT + 1800, o: 18308, h: 18322, l: 18295, c: 18300 },
+  { time: BT + 2100, o: 18300, h: 18305, l: 18268, c: 18275 },
+  { time: BT + 2400, o: 18275, h: 18280, l: 18240, c: 18248 },
+  { time: BT + 2700, o: 18248, h: 18258, l: 18218, c: 18225 },
+  { time: BT + 3000, o: 18225, h: 18230, l: 18188, c: 18195 },
+  { time: BT + 3300, o: 18195, h: 18200, l: 18165, c: 18172 },
+  { time: BT + 3600, o: 18172, h: 18178, l: 18142, c: 18148 },
+  { time: BT + 3900, o: 18148, h: 18155, l: 18120, c: 18128 }, // SSL sweep low
+  { time: BT + 4200, o: 18128, h: 18195, l: 18122, c: 18188 }, // reversal
+  { time: BT + 4500, o: 18188, h: 18242, l: 18182, c: 18238 },
+  { time: BT + 4800, o: 18238, h: 18285, l: 18232, c: 18278 },
+  { time: BT + 5100, o: 18278, h: 18325, l: 18272, c: 18318 },
+  { time: BT + 5400, o: 18318, h: 18362, l: 18312, c: 18355 },
+  { time: BT + 5700, o: 18355, h: 18395, l: 18348, c: 18388 },
+];
+
+const CHART_MARKS: Record<string, ChartMarkData> = {
+  "order-blocks": {
+    candles: markCandles,
+    challenges: [
+      {
+        question: "Olhe os primeiros candles. Qual é o último candle bearish antes do impulso de alta? Essa é a zona do OB bullish.",
+        options: [
+          { label: "OB em 18.195–18.225", price: 18210, correct: true },
+          { label: "OB em 18.270–18.298", price: 18284, correct: false },
+          { label: "OB em 18.308–18.322", price: 18315, correct: false },
+        ],
+        explanation: "O candle 2 (18.210→18.198) é o último candle bearish antes do impulso que levou o preço de 18.198 até 18.308. Essa zona (18.195–18.225) é o OB bullish — quando o preço retornar, espere reação aqui.",
+      },
+      {
+        question: "O preço subiu até 18.322 e depois caiu forte. Onde está o OB bearish que causou a queda?",
+        options: [
+          { label: "OB em 18.140–18.170", price: 18155, correct: false },
+          { label: "OB em 18.295–18.322", price: 18308, correct: true },
+          { label: "OB em 18.240–18.275", price: 18258, correct: false },
+        ],
+        explanation: "O topo em 18.322 marca o último candle bullish antes da reversão. A zona 18.295–18.322 é o OB bearish — se o preço voltar ali, é zona de venda. O preço caiu 200 pontos a partir dessa zona.",
+      },
+      {
+        question: "Depois da queda até 18.120, o preço reverteu com força. Onde seria a entry ideal baseado no OB da reversão?",
+        options: [
+          { label: "Entry no OB em 18.148–18.178", price: 18163, correct: true },
+          { label: "Entry em 18.238–18.278", price: 18258, correct: false },
+          { label: "Entry em 18.120 (o fundo)", price: 18120, correct: false },
+        ],
+        explanation: "O candle em 18.148 é o último bearish antes do engulfing de reversão (18.128→18.188). Esse é o OB do sweep. Entry ali dá o melhor R:R. Comprar no fundo (18.120) sem confirmação é jogar moeda.",
+      },
+    ],
+  },
+  "fvg-breaker": {
+    candles: markCandles,
+    challenges: [
+      {
+        question: "Entre os candles 2 e 4, o preço subiu ~70 pontos rapidamente. Onde está o FVG (gap não preenchido)?",
+        options: [
+          { label: "FVG entre 18.218 e 18.242", price: 18230, correct: true },
+          { label: "FVG entre 18.270 e 18.298", price: 18284, correct: false },
+          { label: "FVG entre 18.308 e 18.322", price: 18315, correct: false },
+        ],
+        explanation: "O FVG fica entre o high do candle 1 (18.218) e o low do candle 3 (18.242). Esse espaço não teve troca justa de preço — é um 'buraco' que o mercado tende a preencher antes de continuar.",
+      },
+      {
+        question: "O OB bullish em 18.195–18.225 falhou — o preço passou direto caindo até 18.120. O que esse OB se tornou?",
+        options: [
+          { label: "Continua sendo OB bullish", price: 18210, correct: false },
+          { label: "Virou Breaker Block — agora é resistência", price: 18210, correct: true },
+          { label: "Não significa nada", price: 18210, correct: false },
+        ],
+        explanation: "Quando um OB falha (preço passa sem reagir), ele se torna um Breaker Block. O OB bullish quebrado agora funciona como resistência. Se o preço voltar ali, espere rejeição pra baixo — a estrutura mudou.",
+      },
+    ],
+  },
+  liquidez: {
+    candles: markCandles,
+    challenges: [
+      {
+        question: "Observe o topo do movimento em 18.308–18.322. Acima desses highs tem stops de quem vendeu. Onde está a Buy Side Liquidity?",
+        options: [
+          { label: "BSL acima de 18.322", price: 18322, correct: true },
+          { label: "BSL em 18.200", price: 18200, correct: false },
+          { label: "BSL abaixo de 18.120", price: 18120, correct: false },
+        ],
+        explanation: "Buy Side Liquidity (BSL) fica ACIMA de highs — são stops de quem está short. Os institucionais sabem que tem liquidez ali e podem varrer esses stops antes de reverter. O high de 18.322 é um ímã de liquidez.",
+      },
+      {
+        question: "O preço fez vários lows entre 18.148 e 18.172 antes de cair até 18.120. O que aconteceu?",
+        options: [
+          { label: "Rompeu o suporte — é queda", price: 18148, correct: false },
+          { label: "Sweep da SSL — varreu os stops e reverteu", price: 18128, correct: true },
+          { label: "Movimento aleatório", price: 18150, correct: false },
+        ],
+        explanation: "Os lows em 18.148–18.172 acumularam stops de compra (SSL). O preço rompeu brevemente até 18.120 (sweep) e imediatamente reverteu com um engulfing. Os institucionais pegaram a liquidez que precisavam. Clássico sweep → reversão.",
+      },
+    ],
+  },
 };
 
 /* ────────────────────────────────────────────
@@ -998,7 +1140,7 @@ export default function LessonPage() {
             Módulo {mod.number}
           </span>
           <span className="text-[12px] text-white/30 font-medium">{mod.subtitle}</span>
-          <span className="text-[12px] text-white/20">·</span>
+          <span className="text-[12px] text-white/30">·</span>
           <span className="text-[12px] text-white/30 font-mono">Aula {String(index + 1).padStart(2, "0")}</span>
         </div>
         <h1 className="text-[28px] md:text-[34px] font-bold text-white tracking-tight mb-2">
@@ -1026,7 +1168,7 @@ export default function LessonPage() {
       </div>
 
       {/* Video Player */}
-      <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/[0.08] bg-[#060810]">
+      <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0a0a0c]">
         {lesson.videoUrl ? (
           <iframe src={lesson.videoUrl} className="absolute inset-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -1045,7 +1187,7 @@ export default function LessonPage() {
               </div>
               <div className="text-center">
                 <p className="text-[14px] text-white/30 font-medium">Vídeo em breve</p>
-                <p className="text-[11px] text-white/15 mt-1">A gravação será disponibilizada aqui</p>
+                <p className="text-[11px] text-white/30 mt-1">A gravação será disponibilizada aqui</p>
               </div>
             </div>
           </div>
@@ -1054,7 +1196,7 @@ export default function LessonPage() {
 
       {/* PDF Download */}
       {lesson.hasPdf && (
-        <div className="flex items-center justify-between px-6 py-4 rounded-xl border border-white/[0.06] bg-[#080c18]">
+        <div className="flex items-center justify-between px-6 py-4 rounded-xl border border-white/[0.06] bg-[#0e0e10]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: accent + "12" }}>
               <FileText className="w-5 h-5" style={{ color: accent + "AA" }} />
@@ -1079,9 +1221,9 @@ export default function LessonPage() {
         </Section>
       )}
 
-      {/* Marque no Gráfico */}
+      {/* Identifique no Gráfico */}
       {chartMarks && (
-        <Section title="Marque no Gráfico" icon={Crosshair} accent={accent}>
+        <Section title="Identifique no Gráfico" icon={Crosshair} accent={accent}>
           <MarkOnChartSection marks={chartMarks} accent={accent} />
         </Section>
       )}
@@ -1107,7 +1249,7 @@ export default function LessonPage() {
             className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-left group">
             <ArrowLeft className="w-4 h-4 text-white/25 group-hover:text-white/50 transition-colors" />
             <div>
-              <p className="text-[10px] text-white/20 uppercase tracking-wider">Anterior</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider">Anterior</p>
               <p className="text-[13px] text-white/60 font-medium">{prev.lesson.title}</p>
             </div>
           </button>
@@ -1116,7 +1258,7 @@ export default function LessonPage() {
           <button onClick={() => router.push(`/elite/aulas/${next.lesson.id}`)}
             className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-right group">
             <div>
-              <p className="text-[10px] text-white/20 uppercase tracking-wider">Próxima</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider">Próxima</p>
               <p className="text-[13px] text-white/60 font-medium">{next.lesson.title}</p>
             </div>
             <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white/50 transition-colors" />

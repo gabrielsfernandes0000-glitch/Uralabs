@@ -14,9 +14,9 @@
   --color-brand-900: #7c2d12;
   --color-brand-950: #431407;
 
-  --color-dark-800: #151925;
-  --color-dark-900: #0b0e16;
-  --color-dark-950: #04050F;
+  --color-dark-800: #1a1a1f;
+  --color-dark-900: #111114;
+  --color-dark-950: #09090b;
 
   /* ── Fonts ── */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -39,8 +39,8 @@
 
 /* ── Base Styles ── */
 body {
-  background-color: #04050F;
-  color: #f8fafc;
+  background-color: #09090b;
+  color: #f0f0f2;
 }
 
 .gradient-text {
@@ -50,15 +50,15 @@ body {
 }
 
 .glass-card {
-  background: rgba(11, 14, 22, 0.6);
+  background: rgba(14, 14, 16, 0.6);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #04050F; }
-::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 5px; border: 2px solid #04050F; }
+::-webkit-scrollbar-track { background: #09090b; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 5px; border: 2px solid #09090b; }
 ::-webkit-scrollbar-thumb:hover { background: #FF5500; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -88,3 +88,32 @@ body {
   background-color: #FF5500;
   color: white;
 }
+
+/* ── Entrance Animations (CSS-only, no JS wrapper) ── */
+@keyframes animate-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes animate-in-scale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes animate-in-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Apply via class: animate-in + variant */
+.animate-in-up { animation: animate-in-up 0.5s ease-out both; }
+.animate-in-scale { animation: animate-in-scale 0.5s ease-out both; }
+.animate-in-fade { animation: animate-in-fade 0.5s ease-out both; }
+
+/* Stagger delays — apply on children */
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.2s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.3s; }
+.delay-7 { animation-delay: 0.35s; }
+.delay-8 { animation-delay: 0.4s; }

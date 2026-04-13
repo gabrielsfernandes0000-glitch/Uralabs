@@ -39,7 +39,7 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
       </Link>
 
       {/* 3D Badge viewer */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#080b14]">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none" style={{ backgroundColor: badge.accent, opacity: 0.06 }} />
 
         <div className="relative z-10 flex flex-col items-center py-10">
@@ -49,15 +49,15 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
             name={badge.name}
             size={380}
           />
-          <p className="text-[10px] text-white/15 mt-4">Mova o mouse para inclinar · Clique para virar</p>
+          <p className="text-[10px] text-white/30 mt-4">Mova o mouse para inclinar · Clique para virar</p>
         </div>
       </div>
 
       {/* Badge info */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#080b14] p-7">
+      <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300 p-7">
         <h1 className="text-[22px] font-bold text-white tracking-tight">{badge.name}</h1>
         <div className="flex items-center gap-3 mt-2">
-          <span className="text-[10px] text-white/20 font-medium uppercase tracking-wider">{badge.category}</span>
+          <span className="text-[10px] text-white/30 font-medium uppercase tracking-wider">{badge.category}</span>
           <div className="w-1 h-1 rounded-full bg-white/10" />
           <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: badge.accent, opacity: 0.6 }}>{badge.rarity}</span>
         </div>
@@ -66,8 +66,8 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
 
         <div className="flex items-center gap-6 mt-6 pt-6 border-t border-white/[0.04]">
           <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-white/15" />
-            <span className="text-[11px] text-white/20">Desbloqueada em —</span>
+            <Calendar className="w-3.5 h-3.5 text-white/25" />
+            <span className="text-[11px] text-white/30">Desbloqueada em —</span>
           </div>
           {badge.hasPlaque && (
             <div className="flex items-center gap-2">
@@ -75,6 +75,29 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
               <span className="text-[11px] text-yellow-500/40">Inclui plaquinha física</span>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* How to unlock / Badge stats */}
+      <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300 p-7">
+        <h3 className="text-[14px] font-semibold text-white/60 mb-4">Sobre esta badge</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1">Categoria</p>
+            <p className="text-[14px] text-white/70 font-bold">{badge.category}</p>
+          </div>
+          <div className="rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1">Raridade</p>
+            <p className="text-[14px] font-bold" style={{ color: badge.accent }}>{badge.rarity}</p>
+          </div>
+          <div className="rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1">Membros com esta badge</p>
+            <p className="text-[14px] text-white/70 font-bold">—</p>
+          </div>
+          <div className="rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1">Emitidas</p>
+            <p className="text-[14px] text-white/70 font-bold">{badge.rarity === "Exclusiva" || badge.rarity === "Lendária" ? "Edição limitada" : "Ilimitadas"}</p>
+          </div>
         </div>
       </div>
     </div>
