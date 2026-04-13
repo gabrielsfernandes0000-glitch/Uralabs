@@ -2,24 +2,21 @@
 
 const DISCORD_API = "https://discord.com/api/v10";
 
-// These will come from env vars
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
-const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET!;
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
-const GUILD_ID = process.env.DISCORD_GUILD_ID!;
-const ROLE_ELITE = process.env.DISCORD_ROLE_ELITE!;
-const ROLE_VIP = process.env.DISCORD_ROLE_VIP!;
+function env(key: string): string {
+  return (process.env[key] ?? "").trim();
+}
 
-const REDIRECT_URI =
-  process.env.VERCEL_URL
+function getRedirectUri(): string {
+  return env("VERCEL_URL")
     ? "https://www.uralabs.com.br/api/auth/callback"
     : "http://localhost:3001/api/auth/callback";
+}
 
 /** Build the Discord OAuth2 authorize URL */
 export function getDiscordAuthUrl(state: string) {
   const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
+    client_id: env("DISCORD_CLIENT_ID"),
+    redirect_uri: getRedirectUri(),
     response_type: "code",
     scope: "identify guilds.members.read",
     state,
@@ -29,24 +26,29 @@ export function getDiscordAuthUrl(state: string) {
 
 /** Exchange an auth code for tokens */
 export async function exchangeCode(code: string) {
+  const clientId = env("DISCORD_CLIENT_ID");
+  const clientSecret = env("DISCORD_CLIENT_SECRET");
+  const redirectUri = getRedirectUri();
+
   const res = await fetch(`${DISCORD_API}/oauth2/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
+      client_id: clientId,
+      client_secret: clientSecret,
       grant_type: "authorization_code",
       code,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: redirectUri,
     }),
   });
+
   if (!res.ok) {
     const body = await res.text();
-    console.error("ERR1:" + res.status + "|" + body.slice(0, 100));
-    console.error("ERR2:redirect=" + REDIRECT_URI);
-    console.error("ERR3:id=" + CLIENT_ID + "|secret=" + CLIENT_SECRET?.slice(0, 8));
+    console.error("EXCHANGE_FAIL:" + res.status + "|" + body.slice(0, 80));
+    console.error("REDIRECT:" + redirectUri + "|ID:" + clientId + "|SECRET_LEN:" + clientSecret.length);
     throw new Error(`exchange:${res.status}`);
   }
+
   return res.json() as Promise<{
     access_token: string;
     token_type: string;
@@ -73,14 +75,14 @@ export async function getDiscordUser(accessToken: string) {
 
 /** Fetch the user's guild member data (roles, nick, etc.) using the Bot token */
 export async function getGuildMember(userId: string) {
-  const res = await fetch(`${DISCORD_API}/guilds/${GUILD_ID}/members/${userId}`, {
+  const res = await fetch(`${DISCORD_API}/guilds/${env("DISCORD_GUILD_ID")}/members/${userId}`, {
     headers: {
-      Authorization: `Bot ${BOT_TOKEN}`,
+      Authorization: `Bot ${env("DISCORD_BOT_TOKEN")}`,
       "User-Agent": "URALabsElite/1.0",
     },
   });
   if (!res.ok) {
-    if (res.status === 404) return null; // not in guild
+    if (res.status === 404) return null;
     throw new Error(`Failed to get guild member: ${res.status}`);
   }
   return res.json() as Promise<{
@@ -93,18 +95,17 @@ export async function getGuildMember(userId: string) {
 
 /** Check if a user has Elite role */
 export function hasEliteRole(roles: string[]): boolean {
-  return roles.includes(ROLE_ELITE);
+  return roles.includes(env("DISCORD_ROLE_ELITE"));
 }
 
 /** Check if a user has VIP role */
 export function hasVipRole(roles: string[]): boolean {
-  return roles.includes(ROLE_VIP);
+  return roles.includes(env("DISCORD_ROLE_VIP"));
 }
 
 /** Get avatar URL */
 export function avatarUrl(userId: string, avatarHash: string | null, size = 128) {
   if (!avatarHash) {
-    // Default avatar index based on user ID (simple modulo without BigInt)
     const idx = Number(userId.slice(-1)) % 6;
     return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
   }
