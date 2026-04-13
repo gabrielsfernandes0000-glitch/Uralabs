@@ -12,12 +12,12 @@ import { useProgress } from "@/hooks/useProgress";
    Tab Navigation
    ──────────────────────────────────────────── */
 
-type Tab = "prep" | "diario" | "simulador";
+type Tab = "prep" | "diario" | "treino";
 
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; accent: string }[] = [
   { id: "prep", label: "Prep Sheet", icon: FileText, accent: "#FF5500" },
   { id: "diario", label: "Diário de Trade", icon: TrendingUp, accent: "#FF5500" },
-  { id: "simulador", label: "Simulador", icon: Zap, accent: "#FF5500" },
+  { id: "treino", label: "Treino", icon: Target, accent: "#FF5500" },
 ];
 
 /* ────────────────────────────────────────────
@@ -363,7 +363,141 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
 }
 
 /* ────────────────────────────────────────────
-   Simulador de Trade (Replay Mode)
+   Treino — Cenários vinculados ao currículo
+   ──────────────────────────────────────────── */
+
+interface Treino {
+  id: string;
+  title: string;
+  desc: string;
+  requiredLesson: string; // lesson id from curriculum
+  requiredLessonTitle: string;
+  module: string;
+  moduleColor: string;
+  difficulty: "iniciante" | "intermediário" | "avançado";
+  type: "identificar" | "decisão" | "execução";
+}
+
+const TREINOS: Treino[] = [
+  { id: "t-candles", title: "Leitura de Candle", desc: "Identifique o que cada candle está dizendo sobre compradores vs vendedores.", requiredLesson: "leitura-candle", requiredLessonTitle: "Leitura de Candle", module: "Base", moduleColor: "#FF5500", difficulty: "iniciante", type: "identificar" },
+  { id: "t-risco", title: "Calcule o Risco", desc: "Posicione stop e alvo corretamente. Qual o tamanho do lote?", requiredLesson: "risco", requiredLessonTitle: "Gerenciamento de Risco", module: "Base", moduleColor: "#FF5500", difficulty: "iniciante", type: "decisão" },
+  { id: "t-obs", title: "Marque os Order Blocks", desc: "Encontre as zonas onde os institucionais se posicionaram.", requiredLesson: "order-blocks", requiredLessonTitle: "Order Blocks", module: "Leitura SMC", moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar" },
+  { id: "t-fvg", title: "Identifique FVGs", desc: "Marque os Fair Value Gaps e diga quais serão preenchidos.", requiredLesson: "fvg-breaker", requiredLessonTitle: "FVG & Breaker Blocks", module: "Leitura SMC", moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar" },
+  { id: "t-premium", title: "Premium ou Discount?", desc: "Defina as zonas de desconto e premium usando Fibonacci 50%.", requiredLesson: "premium-discount", requiredLessonTitle: "Premium & Discount", module: "Leitura SMC", moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar" },
+  { id: "t-liquidez", title: "Onde Está a Liquidez?", desc: "Mapeie os pools de liquidez que os big players vão buscar.", requiredLesson: "liquidez", requiredLessonTitle: "Liquidez", module: "Leitura SMC", moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar" },
+  { id: "t-sessoes", title: "Qual Sessão Operar?", desc: "Identifique a sessão e o comportamento esperado do mercado.", requiredLesson: "sessoes", requiredLessonTitle: "Sessões de Mercado", module: "Estratégia", moduleColor: "#A855F7", difficulty: "avançado", type: "decisão" },
+  { id: "t-amd", title: "Leitura AMD Completa", desc: "Identifique Acumulação, Manipulação e Distribuição em tempo real.", requiredLesson: "amd", requiredLessonTitle: "AMD", module: "Estratégia", moduleColor: "#A855F7", difficulty: "avançado", type: "decisão" },
+  { id: "t-bias", title: "Monte o Viés do Dia", desc: "Com base na estrutura, defina se o dia é bullish ou bearish.", requiredLesson: "daily-bias", requiredLessonTitle: "Daily Bias & Judas Swing", module: "Estratégia", moduleColor: "#A855F7", difficulty: "avançado", type: "decisão" },
+  { id: "t-entrada", title: "Execute o Trade", desc: "Cenário completo: identifique a zona, defina entrada, stop e alvo.", requiredLesson: "entrada-saida", requiredLessonTitle: "Entrada & Saída", module: "Execução", moduleColor: "#10B981", difficulty: "avançado", type: "execução" },
+];
+
+const DIFFICULTY_COLORS = {
+  "iniciante": { bg: "bg-green-500/10", text: "text-green-400", border: "border-green-500/20" },
+  "intermediário": { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/20" },
+  "avançado": { bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/20" },
+};
+
+function TreinoTab() {
+  const { completedLessons } = useProgress();
+
+  const isUnlocked = (lessonId: string) => completedLessons.includes(lessonId);
+
+  // Group by module
+  const grouped = TREINOS.reduce<Record<string, Treino[]>>((acc, t) => {
+    (acc[t.module] ??= []).push(t);
+    return acc;
+  }, {});
+
+  const totalUnlocked = TREINOS.filter(t => isUnlocked(t.requiredLesson)).length;
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-7">
+        <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.04] blur-[100px] pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[22px] font-bold text-white tracking-tight">Treino</h2>
+            <span className="text-[12px] text-white/30 font-mono">{totalUnlocked}/{TREINOS.length} desbloqueados</span>
+          </div>
+          <p className="text-[13px] text-white/40 max-w-lg">
+            Cada treino é desbloqueado ao completar a aula correspondente. Pratique o que aprendeu com cenários reais.
+          </p>
+        </div>
+      </div>
+
+      {/* Treinos por módulo */}
+      {Object.entries(grouped).map(([moduleName, treinos]) => {
+        const moduleColor = treinos[0].moduleColor;
+        return (
+          <div key={moduleName} className="space-y-3">
+            {/* Module header */}
+            <div className="flex items-center gap-3 px-1">
+              <div className="w-1.5 h-5 rounded-full" style={{ backgroundColor: moduleColor + "60" }} />
+              <h3 className="text-[14px] font-semibold text-white/70">{moduleName}</h3>
+            </div>
+
+            {/* Treino cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {treinos.map((treino) => {
+                const unlocked = isUnlocked(treino.requiredLesson);
+                const diff = DIFFICULTY_COLORS[treino.difficulty];
+
+                return (
+                  <div
+                    key={treino.id}
+                    className={`relative overflow-hidden rounded-xl border p-5 transition-all duration-300 ${
+                      unlocked
+                        ? "border-white/[0.08] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.15] cursor-pointer hover:-translate-y-0.5"
+                        : "border-white/[0.04] bg-[#0c0c0e] opacity-50 cursor-default"
+                    }`}
+                  >
+                    {/* Top accent line */}
+                    {unlocked && (
+                      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${moduleColor}40, transparent)` }} />
+                    )}
+
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2.5">
+                        {unlocked ? (
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: moduleColor + "15" }}>
+                            <Target className="w-4 h-4" style={{ color: moduleColor }} />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center">
+                            <svg className="w-4 h-4 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                        )}
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${diff.bg} ${diff.text} border ${diff.border}`}>
+                          {treino.difficulty}
+                        </span>
+                      </div>
+                      {unlocked && (
+                        <ChevronRight className="w-4 h-4 text-white/15 mt-1" />
+                      )}
+                    </div>
+
+                    <h4 className={`text-[15px] font-bold mb-1 ${unlocked ? "text-white/90" : "text-white/25"}`}>
+                      {treino.title}
+                    </h4>
+                    <p className={`text-[12px] leading-relaxed ${unlocked ? "text-white/40" : "text-white/15"}`}>
+                      {unlocked ? treino.desc : `Complete "${treino.requiredLessonTitle}" para desbloquear.`}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
+   Simulador de Trade (Replay Mode) — usado dentro de treinos
    ──────────────────────────────────────────── */
 
 function TradeSimulator() {
@@ -858,7 +992,7 @@ export default function PraticaPage() {
       {/* Tab content */}
       {activeTab === "prep" && <PrepSheet onSave={savePrep} />}
       {activeTab === "diario" && <TradeJournal onSave={saveTrade} />}
-      {activeTab === "simulador" && <TradeSimulator />}
+      {activeTab === "treino" && <TreinoTab />}
     </div>
   );
 }

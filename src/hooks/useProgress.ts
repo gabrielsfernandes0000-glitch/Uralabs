@@ -43,6 +43,7 @@ export function useProgress() {
   return {
     progress,
     stats,
+    completedLessons: progress?.completedLessons ?? [],
     completeLesson: doCompleteLesson,
     saveQuizScore: doSaveQuizScore,
     saveChecklist: doSaveChecklist,
