@@ -16,26 +16,26 @@ type Badge = {
 
 const BADGES = {
   og: [
-    { id: "elite-member", name: "Elite Member", desc: "Entrou na mentoria Elite", image: "/badges/badge-elite-member.png", unlocked: false, hasPlaque: true, rarity: "legendary" as Rarity },
-    { id: "og-10", name: "OG 1.0", desc: "Fundador turma 1.0", image: "/badges/badge-og-10.png", unlocked: false, hasPlaque: true, rarity: "legendary" as Rarity },
-    { id: "og-20", name: "OG 2.0", desc: "Membro turma 2.0", image: "/badges/badge-og-20.png", unlocked: false, hasPlaque: true, rarity: "legendary" as Rarity },
-    { id: "og-30", name: "OG 3.0", desc: "Membro turma 3.0", image: "/badges/badge-og-30.png", unlocked: false, hasPlaque: true, rarity: "legendary" as Rarity },
+    { id: "elite-member", name: "Elite Member", desc: "Entrou na mentoria Elite", image: "/badges/badge-elite-member.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
+    { id: "og-10", name: "OG 1.0", desc: "Fundador turma 1.0", image: "/badges/badge-og-10.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
+    { id: "og-20", name: "OG 2.0", desc: "Membro turma 2.0", image: "/badges/badge-og-20.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
+    { id: "og-30", name: "OG 3.0", desc: "Membro turma 3.0", image: "/badges/badge-og-30.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
   ],
   trading: [
-    { id: "first-payout", name: "First Payout", desc: "Primeiro saque de mesa funded", image: "/badges/badge-first-payout.png", unlocked: false, hasPlaque: true, rarity: "rare" as Rarity },
-    { id: "mesa-approved", name: "Mesa Aprovada", desc: "Aprovado em prop firm", image: "/badges/badge-mesa-approved.png", unlocked: false, rarity: "rare" as Rarity },
-    { id: "verde-7", name: "7 No Verde", desc: "7 dias consecutivos no verde", image: "/badges/badge-verde-7.png", unlocked: false, rarity: "uncommon" as Rarity },
+    { id: "first-payout", name: "First Payout", desc: "Primeiro saque de mesa funded", image: "/badges/badge-first-payout.png", unlocked: true, hasPlaque: true, rarity: "rare" as Rarity },
+    { id: "mesa-approved", name: "Mesa Aprovada", desc: "Aprovado em prop firm", image: "/badges/badge-mesa-approved.png", unlocked: true, rarity: "rare" as Rarity },
+    { id: "verde-7", name: "7 No Verde", desc: "7 dias consecutivos no verde", image: "/badges/badge-verde-7.png", unlocked: true, rarity: "uncommon" as Rarity },
   ],
   academic: [
-    { id: "first-lesson", name: "Primeira Aula", desc: "Completou a primeira aula", image: "/badges/badge-primeira-aula.png", unlocked: false, rarity: "common" as Rarity },
-    { id: "module-complete", name: "Módulo Completo", desc: "Completou um módulo inteiro", image: "/badges/badge-modulo-completo.png", unlocked: false, rarity: "uncommon" as Rarity },
-    { id: "quiz-master", name: "Quiz Master", desc: "Gabaritou um quiz", image: "/badges/badge-quiz-master.png", unlocked: false, rarity: "uncommon" as Rarity },
-    { id: "all-lessons", name: "Estudante Dedicado", desc: "Todas as aulas completas", image: "/badges/badge-estudante-dedicado.png", unlocked: false, rarity: "rare" as Rarity },
+    { id: "first-lesson", name: "Primeira Aula", desc: "Completou a primeira aula", image: "/badges/badge-primeira-aula.png", unlocked: true, rarity: "common" as Rarity },
+    { id: "module-complete", name: "Módulo Completo", desc: "Completou um módulo inteiro", image: "/badges/badge-modulo-completo.png", unlocked: true, rarity: "uncommon" as Rarity },
+    { id: "quiz-master", name: "Quiz Master", desc: "Gabaritou um quiz", image: "/badges/badge-quiz-master.png", unlocked: true, rarity: "uncommon" as Rarity },
+    { id: "all-lessons", name: "Estudante Dedicado", desc: "Todas as aulas completas", image: "/badges/badge-estudante-dedicado.png", unlocked: true, rarity: "rare" as Rarity },
   ],
   community: [
-    { id: "presenca-ferro", name: "Presença de Ferro", desc: "90%+ presença nas calls", image: "/badges/badge-presenca-ferro.png", unlocked: false, rarity: "uncommon" as Rarity },
-    { id: "professor", name: "Professor", desc: "Ajudou 5+ membros", image: "/badges/badge-professor.png", unlocked: false, rarity: "rare" as Rarity },
-    { id: "check-in-30", name: "Check-in Master", desc: "30 check-ins consecutivos", image: "/badges/badge-checkin-master.png", unlocked: false, rarity: "rare" as Rarity },
+    { id: "presenca-ferro", name: "Presença de Ferro", desc: "90%+ presença nas calls", image: "/badges/badge-presenca-ferro.png", unlocked: true, rarity: "uncommon" as Rarity },
+    { id: "professor", name: "Professor", desc: "Ajudou 5+ membros", image: "/badges/badge-professor.png", unlocked: true, rarity: "rare" as Rarity },
+    { id: "check-in-30", name: "Check-in Master", desc: "30 check-ins consecutivos", image: "/badges/badge-checkin-master.png", unlocked: true, rarity: "rare" as Rarity },
   ],
 };
 
