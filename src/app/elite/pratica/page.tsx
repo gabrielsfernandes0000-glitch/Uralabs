@@ -471,55 +471,49 @@ function TreinoTab() {
               {treinos.map((treino) => {
                 const unlocked = isUnlocked(treino.requiredLesson);
 
-                const Wrapper = unlocked ? Link : "div";
-                const wrapperProps = unlocked ? { href: `/elite/treino/${treino.id}` } : {};
-
-                return (
-                  <Wrapper
+                return unlocked ? (
+                  <Link
                     key={treino.id}
-                    {...wrapperProps as Record<string, string>}
-                    className={`relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 block ${
-                      unlocked
-                        ? "border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] cursor-pointer hover:-translate-y-0.5"
-                        : "border-white/[0.04] bg-[#0c0c0e] opacity-40 cursor-default"
-                    }`}
+                    href={`/elite/treino/${treino.id}`}
+                    className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5 transition-all duration-300 block hover:border-white/[0.12] cursor-pointer hover:-translate-y-0.5"
                   >
-                    {/* Top accent line */}
-                    {unlocked && (
-                      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${moduleColor}40, transparent)` }} />
-                    )}
-
+                    <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${moduleColor}40, transparent)` }} />
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
-                        {unlocked ? (
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: moduleColor + "12" }}>
-                            <Target className="w-4 h-4" style={{ color: moduleColor }} />
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white/[0.08]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                          </div>
-                        )}
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: moduleColor + "12" }}>
+                          <Target className="w-4 h-4" style={{ color: moduleColor }} />
+                        </div>
                         <div>
-                          <h4 className={`text-[15px] font-bold leading-tight ${unlocked ? "text-white/90" : "text-white/25"}`}>
-                            {treino.title}
-                          </h4>
-                          <span className={`text-[11px] ${unlocked ? "text-white/30" : "text-white/15"}`}>
-                            {treino.difficulty.charAt(0).toUpperCase() + treino.difficulty.slice(1)}
-                          </span>
+                          <h4 className="text-[15px] font-bold leading-tight text-white/90">{treino.title}</h4>
+                          <span className="text-[11px] text-white/30">{treino.difficulty.charAt(0).toUpperCase() + treino.difficulty.slice(1)}</span>
                         </div>
                       </div>
-                      {unlocked && (
-                        <ChevronRight className="w-4 h-4 text-white/15 mt-1" />
-                      )}
+                      <ChevronRight className="w-4 h-4 text-white/15 mt-1" />
                     </div>
-
-                    <p className={`text-[12px] leading-relaxed ml-11 ${unlocked ? "text-white/40" : "text-white/15"}`}>
-                      {unlocked ? treino.desc : `Complete "${treino.requiredLessonTitle}" para desbloquear.`}
+                    <p className="text-[12px] leading-relaxed ml-11 text-white/40">{treino.desc}</p>
+                  </Link>
+                ) : (
+                  <div
+                    key={treino.id}
+                    className="relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 block border-white/[0.04] bg-[#0c0c0e] opacity-40 cursor-default"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white/[0.08]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="text-[15px] font-bold leading-tight text-white/25">{treino.title}</h4>
+                          <span className="text-[11px] text-white/15">{treino.difficulty.charAt(0).toUpperCase() + treino.difficulty.slice(1)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-[12px] leading-relaxed ml-11 text-white/15">
+                      Complete &quot;{treino.requiredLessonTitle}&quot; para desbloquear.
                     </p>
-                  </Wrapper>
+                  </div>
                 );
               })}
             </div>
