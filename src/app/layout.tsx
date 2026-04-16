@@ -9,7 +9,9 @@ const inter = Inter({
 });
 
 const SITE_URL = "https://www.uralabs.com.br";
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+// GA4 measurement ID — público por natureza (roda no browser do visitante), então
+// vive no código mesmo. Se um dia trocar, env NEXT_PUBLIC_GA_ID sobrescreve.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-DNVKN632RK";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
