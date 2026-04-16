@@ -3,6 +3,7 @@
 import { Radio, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "./Button";
 import { Reveal } from "./Reveal";
+import { trackEvent } from "@/lib/analytics";
 
 type Props = {
   onlineCount?: number;
@@ -63,6 +64,7 @@ export function Hero({ onlineCount, memberCount }: Props) {
                 href="https://discord.gg/SrxZSGN6"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent("click_discord_free", { location: "hero" })}
                 className="group gap-2 h-14 px-10 text-lg bg-gradient-to-r from-brand-600 via-yellow-600 to-brand-600 border-none shadow-[0_10px_40px_-10px_rgba(234,179,8,0.4)] hover:shadow-[0_20px_60px_-10px_rgba(234,179,8,0.5)] cursor-pointer"
               >
                 Entrar na Comunidade Grátis

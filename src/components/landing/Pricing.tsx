@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, X, ShieldCheck, Crown, Zap, ArrowRight, MonitorPlay, GraduationCap, Users, Gift, QrCode, Bitcoin, ChevronDown, Play, Clock, BookOpen, Lock, Target } from "lucide-react";
 import { Button } from "./Button";
 import { Reveal } from "./Reveal";
+import { trackEvent } from "@/lib/analytics";
 
 /* ── Tier comparison data ── */
 const FEATURES = [
@@ -111,7 +112,14 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="bg-white text-dark-950 hover:bg-gray-200 border-none font-bold">
+              <Button
+                fullWidth
+                href="https://discord.gg/SrxZSGN6"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackEvent("click_discord_free", { location: "pricing_free" })}
+                className="bg-white text-dark-950 hover:bg-gray-200 border-none font-bold"
+              >
                 Entrar no Discord
               </Button>
             </div>
@@ -139,7 +147,15 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" variant="outline" className="border-brand-500/30 hover:bg-brand-500 hover:text-white hover:border-brand-500">
+              <Button
+                fullWidth
+                href="https://discord.gg/SrxZSGN6"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackEvent("click_vip", { location: "pricing_vip" })}
+                variant="outline"
+                className="border-brand-500/30 hover:bg-brand-500 hover:text-white hover:border-brand-500"
+              >
                 Assinar VIP
               </Button>
             </div>
@@ -190,7 +206,14 @@ export function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="h-12 bg-gradient-to-r from-brand-600 to-yellow-600 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] border-none text-base group">
+              <Button
+                fullWidth
+                href="https://discord.gg/SrxZSGN6"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackEvent("click_elite", { location: "pricing_elite" })}
+                className="h-12 bg-gradient-to-r from-brand-600 to-yellow-600 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] border-none text-base group"
+              >
                 Quero ser Elite <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
               <p className="text-[10px] text-gray-600 text-center mt-2">Abra um ticket no Discord</p>

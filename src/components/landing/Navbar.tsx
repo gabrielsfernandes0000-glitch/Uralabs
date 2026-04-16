@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Flame } from "lucide-react";
 import { Button } from "./Button";
+import { AnalyticsBoot } from "./AnalyticsBoot";
+import { trackEvent } from "@/lib/analytics";
 
 const NAV_LINKS = [
   { name: "Resultados", href: "#results" },
@@ -31,11 +33,13 @@ export function Navbar() {
   };
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-dark-950/90 backdrop-blur-md border-b border-white/5 py-4" : "bg-transparent py-6"
-      }`}
-    >
+    <>
+      <AnalyticsBoot />
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? "bg-dark-950/90 backdrop-blur-md border-b border-white/5 py-4" : "bg-transparent py-6"
+        }`}
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
@@ -62,6 +66,7 @@ export function Navbar() {
               href="https://discord.gg/SrxZSGN6"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackEvent("click_discord_free", { location: "navbar" })}
               variant="primary"
               className="!px-4 !py-2 text-sm bg-gradient-to-r from-brand-600 to-red-600 border-none relative overflow-hidden group"
             >
@@ -90,7 +95,17 @@ export function Navbar() {
                 {link.name}
               </a>
             ))}
-            <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2">
+            <Button
+              fullWidth
+              href="https://discord.gg/SrxZSGN6"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                setMenuOpen(false);
+                trackEvent("click_discord_free", { location: "navbar_mobile" });
+              }}
+              className="flex items-center justify-center gap-2"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
@@ -100,6 +115,7 @@ export function Navbar() {
           </div>
         </div>
       )}
-    </nav>
+      </nav>
+    </>
   );
 }

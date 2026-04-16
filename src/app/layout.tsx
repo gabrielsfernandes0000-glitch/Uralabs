@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { MetaPixel } from "@/components/landing/MetaPixel";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-dark-950 text-white antialiased">
         {children}
+        <MetaPixel />
         {GA_ID && (
           <>
             <Script
