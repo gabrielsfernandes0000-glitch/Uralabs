@@ -13,8 +13,7 @@ const FEATURES = [
   { name: "Calls diários (entrada/stop/alvo)", free: false, vip: true, elite: true },
   { name: "Chat VIP exclusivo", free: false, vip: true, elite: true },
   { name: "Análises exclusivas", free: false, vip: true, elite: true },
-  { name: "Operações ao vivo (viewer)", free: false, vip: true, elite: true },
-  { name: "Opera JUNTO com o mentor", free: false, vip: false, elite: true },
+  { name: "Calls ao vivo operando junto", free: false, vip: false, elite: true },
   { name: "Plataforma de aulas (14 aulas)", free: false, vip: false, elite: true },
   { name: "Treinos interativos", free: false, vip: false, elite: true },
   { name: "Mentoria ao vivo por turma", free: false, vip: false, elite: true },
@@ -69,7 +68,7 @@ function ElitePlatformPreview() {
           </div>
         ))}
         <div className="text-center pt-2">
-          <span className="text-[9px] text-white/20">+ 8 aulas · 9 treinos · badges</span>
+          <span className="text-[9px] text-white/20">+ mais 8 aulas · 9 treinos · badges</span>
         </div>
       </div>
     </div>
