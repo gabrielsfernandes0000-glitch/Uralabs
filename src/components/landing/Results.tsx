@@ -40,22 +40,101 @@ interface Testimonial {
   highlight?: string;
 }
 
+// Testimonials REAIS da comunidade — coletados do canal #feedbacks no Discord
+// em abril de 2026. Não invente quotes nem nomes — se precisar mais, puxe
+// do canal novamente.
 const ROW_1: Testimonial[] = [
-  { name: "Lucas M.", role: "Elite há 4 meses", text: "Já tentei 3 mentorias diferentes. URA Labs foi a única que me ensinou a LER o gráfico de verdade.", avatar: "L", avatarBg: "bg-blue-600", highlight: "+85% em 45 dias" },
-  { name: "Ana R.", role: "VIP há 6 meses", text: "Ver o URA operando em tempo real me deu a confiança que eu precisava pra parar de ter medo de entrar.", avatar: "A", avatarBg: "bg-purple-600" },
-  { name: "Pedro K.", role: "Elite Turma 3.0", text: "O CRT é absurdo. Nunca vi ninguém ensinar isso no Brasil. Aprovei na FTMO na segunda tentativa.", avatar: "P", avatarBg: "bg-green-600", highlight: "Aprovado FTMO" },
-  { name: "Marcos D.", role: "VIP há 3 meses", text: "Eles mostram os loss também, não só os gains. Isso me passou uma confiança absurda.", avatar: "M", avatarBg: "bg-red-600" },
-  { name: "Julia S.", role: "Elite há 5 meses", text: "Entrei sem saber nada. Hoje entendo Order Blocks, FVG e opero NASDAQ. Melhor investimento que já fiz.", avatar: "J", avatarBg: "bg-pink-600", highlight: "Do zero ao NASDAQ" },
-  { name: "Rafael T.", role: "VIP há 8 meses", text: "Os calls do URA me mantiveram vivo enquanto eu aprendia. Hoje tô no verde 3 meses seguidos.", avatar: "R", avatarBg: "bg-teal-600" },
+  {
+    name: "Cadu",
+    role: "Elite há 8 dias",
+    text: "3 dias depois de entrar peguei minha primeira conta em mesa proprietária. Hoje passei pra conta funded.",
+    avatar: "C",
+    avatarBg: "bg-blue-600",
+    highlight: "Funded em 8 dias",
+  },
+  {
+    name: "Dolan",
+    role: "Elite há 6 meses",
+    text: "Se estivesse sozinho, levaria uns 3 anos pra aprender o que aprendi em 6 meses. O valor que paguei pra Elite, eu pagaria 3x.",
+    avatar: "D",
+    avatarBg: "bg-purple-600",
+    highlight: "Pagaria 3x",
+  },
+  {
+    name: "R.S.",
+    role: "Elite há 1 mês",
+    text: "Entrei sem saber praticamente nada sobre trade. Já estou com uma conta financiada. Em menos de 2 meses terei o retorno do Elite só com os trades.",
+    avatar: "R",
+    avatarBg: "bg-green-600",
+    highlight: "ROI em 2 meses",
+  },
+  {
+    name: "Vitu",
+    role: "Elite 1.0",
+    text: "Não sabia nem o que era bid e ask direito. Hoje mando calls. Ganhei sorteio de mesa de 25k, profits de cripto absurdos, e o conhecimento da galera da Elite.",
+    avatar: "V",
+    avatarBg: "bg-amber-600",
+  },
+  {
+    name: "Xing xing",
+    role: "VIP há menos de 1 mês",
+    text: "Vim pro VIP com menos de um mês. Em tão pouco tempo, resultados que me surpreenderam — comprado um kit rodas novo graças a uma única operação.",
+    avatar: "X",
+    avatarBg: "bg-red-600",
+    highlight: "Rodas novas em 1 trade",
+  },
+  {
+    name: "VNS",
+    role: "Elite",
+    text: "Entrei sem saber de futuros, via post de milhões sendo liquidado. URA deu atenção pras dúvidas. Peguei 1 mês no VIP pra aprender na prática e entrei na Elite sem medo.",
+    avatar: "V",
+    avatarBg: "bg-teal-600",
+  },
 ];
 
 const ROW_2: Testimonial[] = [
-  { name: "Carla N.", role: "Elite Turma 3.0", text: "O URA simplifica o que parece impossível. Já consigo identificar setups sozinha.", avatar: "C", avatarBg: "bg-indigo-600" },
-  { name: "Diego F.", role: "VIP há 4 meses", text: "Ambiente sem ego, todo mundo se ajuda. Diferente de qualquer grupo de trade que já participei.", avatar: "D", avatarBg: "bg-amber-600" },
-  { name: "Thiago B.", role: "Elite há 6 meses", text: "O retorno nos primeiros 2 meses já pagou a mentoria 3x. E o conhecimento fica pra vida.", avatar: "T", avatarBg: "bg-cyan-600", highlight: "ROI 3x em 2 meses" },
-  { name: "Fernanda L.", role: "VIP há 2 meses", text: "Em 2 semanas já estava no verde. Agora tô estudando SMC pra não depender de ninguém.", avatar: "F", avatarBg: "bg-rose-600" },
-  { name: "Gabriel O.", role: "Elite Turma 2.0", text: "Tô na URA Labs desde a turma 2.0. A evolução do conteúdo e da comunidade é impressionante.", avatar: "G", avatarBg: "bg-emerald-600", highlight: "Membro desde Turma 2.0" },
-  { name: "Isabela M.", role: "VIP há 5 meses", text: "Mulher no trade é raro, mas aqui me senti acolhida desde o dia 1. Zero machismo, zero ego.", avatar: "I", avatarBg: "bg-violet-600" },
+  {
+    name: "LM",
+    role: "Elite",
+    text: "As calls têm me ajudado muito e me motivado a continuar me aprofundando. Ganhei uma nova visão sobre diferentes maneiras de lucrar com cripto. Networking muito maneiro.",
+    avatar: "L",
+    avatarBg: "bg-indigo-600",
+  },
+  {
+    name: "Casali",
+    role: "Há menos de 1 mês",
+    text: "A comunidade vem crescendo e sempre trazendo uma quantidade incrível de informações. Em menos de um mês já aprendi muita coisa. O pessoal daqui é tri parceria.",
+    avatar: "C",
+    avatarBg: "bg-rose-600",
+  },
+  {
+    name: "Thiagym",
+    role: "Elite desde fev/2026",
+    text: "Desde que entrei, minha evolução tem sido constante. Ainda me considero iniciante, mas convicto de que estou no caminho das melhores operações.",
+    avatar: "T",
+    avatarBg: "bg-cyan-600",
+  },
+  {
+    name: "giolos",
+    role: "Prestes a entrar na Elite",
+    text: "Não participo muito no servidor, mas as calls me ajudaram muito. Logo menos estarei na Elite aí com vocês.",
+    avatar: "G",
+    avatarBg: "bg-emerald-600",
+  },
+  {
+    name: "ez1o",
+    role: "Comunidade recente",
+    text: "Entrei na comunidade faz pouco tempo, mas deu pra ver que o trampo é sério. Chama forra.",
+    avatar: "E",
+    avatarBg: "bg-violet-600",
+  },
+  {
+    name: "vieira",
+    role: "VIP",
+    text: "Tô bem positivo nas calls. Bora pra cima.",
+    avatar: "V",
+    avatarBg: "bg-pink-600",
+  },
 ];
 
 function TestimonialCard({ t }: { t: Testimonial }) {
@@ -186,11 +265,79 @@ export function Results() {
         </div>
       </div>
 
+      {/* ── Histórias destacadas: do zero à conta funded ── */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
+        <Reveal width="100%">
+          <div className="bg-gradient-to-br from-brand-500/[0.06] via-dark-900 to-dark-900 border border-brand-500/20 rounded-2xl p-6 md:p-8 relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
+            <div className="text-center mb-6">
+              <span className="inline-flex items-center gap-2 text-[10px] font-bold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                <Star className="w-3 h-3 fill-brand-400" />
+                Do zero à conta funded
+              </span>
+              <h3 className="text-xl md:text-2xl font-bold mt-3 text-white">
+                Membros reais passando em mesas proprietárias
+              </h3>
+              <p className="text-gray-400 text-sm mt-1 max-w-xl mx-auto">
+                Depois de entrar no Elite, esses membros conseguiram contas financiadas em poucas semanas.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-dark-950/60 border border-white/5 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">C</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white text-xs font-bold truncate">Cadu</p>
+                    <p className="text-gray-500 text-[10px]">Elite há 8 dias</p>
+                  </div>
+                  <span className="text-[9px] font-bold text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded shrink-0">Funded</span>
+                </div>
+                <p className="text-gray-300 text-xs leading-relaxed">
+                  &quot;3 dias depois de entrar peguei minha primeira conta em mesa proprietária. Hoje passei pra conta funded.&quot;
+                </p>
+              </div>
+              <div className="bg-dark-950/60 border border-white/5 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-xs">R</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white text-xs font-bold truncate">R.S.</p>
+                    <p className="text-gray-500 text-[10px]">Elite há 1 mês</p>
+                  </div>
+                  <span className="text-[9px] font-bold text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded shrink-0">Funded</span>
+                </div>
+                <p className="text-gray-300 text-xs leading-relaxed">
+                  &quot;Entrei sem saber praticamente nada. Já estou com uma conta financiada. Em menos de 2 meses terei o retorno do Elite.&quot;
+                </p>
+              </div>
+              <div className="bg-dark-950/60 border border-white/5 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-xs">V</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white text-xs font-bold truncate">Vitu</p>
+                    <p className="text-gray-500 text-[10px]">Elite 1.0</p>
+                  </div>
+                  <span className="text-[9px] font-bold text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded shrink-0">Mesa 25k</span>
+                </div>
+                <p className="text-gray-300 text-xs leading-relaxed">
+                  &quot;Não sabia nem o que era bid e ask. Ganhei sorteio de mesa de 25k, profits de cripto absurdos, e hoje mando calls.&quot;
+                </p>
+              </div>
+            </div>
+            <p className="text-center text-[10px] text-gray-600 mt-5">
+              Histórias reais coletadas do canal #feedbacks · resultados individuais variam conforme dedicação e disciplina
+            </p>
+          </div>
+        </Reveal>
+      </div>
+
       {/* ── Testimonials marquee — full width ── */}
       <div className="mt-8">
         <div className="text-center mb-8">
           <Reveal width="100%">
             <h3 className="text-2xl md:text-3xl font-bold">A Voz da Comunidade</h3>
+            <p className="text-gray-400 text-sm mt-2 max-w-xl mx-auto">
+              Feedbacks reais coletados direto do Discord. Membros reais, nomes reais.
+            </p>
           </Reveal>
         </div>
         <div className="space-y-2">

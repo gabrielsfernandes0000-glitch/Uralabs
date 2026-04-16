@@ -26,15 +26,24 @@ export function StickyBar({ memberCount, onlineCount }: Props) {
       <div className="bg-dark-950/95 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-brand-500" />
-              <span className="text-sm font-bold text-white">{memberCount.toLocaleString("pt-BR")} traders no Discord</span>
-            </div>
-            <div className="h-4 w-px bg-white/10" />
-            <div className="flex items-center gap-1.5">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-green-500 font-medium">{onlineCount} online agora</span>
-            </div>
+            {memberCount > 0 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-brand-500" />
+                  <span className="text-sm font-bold text-white">{memberCount.toLocaleString("pt-BR")} traders no Discord</span>
+                </div>
+                <div className="h-4 w-px bg-white/10" />
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs text-green-500 font-medium">{onlineCount} online agora</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-brand-500" />
+                <span className="text-sm font-bold text-white">Comunidade ao vivo no Discord</span>
+              </div>
+            )}
           </div>
           <a
             href="https://discord.gg/SrxZSGN6"

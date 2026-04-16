@@ -1,6 +1,6 @@
 "use client";
 
-import { Radio, Crown, ArrowRight, TrendingUp, Users, Target } from "lucide-react";
+import { Radio, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "./Button";
 import { Reveal } from "./Reveal";
 
@@ -10,17 +10,9 @@ type Props = {
 };
 
 export function Hero({ onlineCount, memberCount }: Props) {
-  const online = onlineCount ?? 300;
-  const members = memberCount ?? 1377;
-
-  const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const el = document.getElementById("pricing");
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.pageYOffset - 100;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
+  const online = onlineCount ?? 0;
+  const members = memberCount ?? 0;
+  const showStats = members > 0;
 
   return (
     <section className="relative min-h-screen flex flex-col pt-20 overflow-hidden">
@@ -43,7 +35,9 @@ export function Hero({ onlineCount, memberCount }: Props) {
               <div className="h-3 w-[1px] bg-white/10" />
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <Radio className="w-3.5 h-3.5 text-brand-500" />
-                <span className="font-mono">{online} Conectados</span>
+                <span className="font-mono">
+                  {showStats ? `${online.toLocaleString("pt-BR")} conectados` : "Discord ao vivo"}
+                </span>
               </div>
             </div>
           </Reveal>
@@ -64,25 +58,27 @@ export function Hero({ onlineCount, memberCount }: Props) {
           </Reveal>
 
           <Reveal delay={0.3}>
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-12 justify-center">
+            <div className="flex flex-col items-center gap-4 mb-8">
               <Button
                 href="https://discord.gg/SrxZSGN6"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group gap-2 h-14 px-8 text-lg bg-gradient-to-r from-brand-600 via-yellow-600 to-brand-600 border-none w-full sm:w-auto shadow-[0_10px_40px_-10px_rgba(234,179,8,0.4)] hover:shadow-[0_20px_60px_-10px_rgba(234,179,8,0.5)] cursor-pointer"
+                className="group gap-2 h-14 px-10 text-lg bg-gradient-to-r from-brand-600 via-yellow-600 to-brand-600 border-none shadow-[0_10px_40px_-10px_rgba(234,179,8,0.4)] hover:shadow-[0_20px_60px_-10px_rgba(234,179,8,0.5)] cursor-pointer"
               >
                 Entrar na Comunidade Grátis
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button
-                href="#pricing"
-                onClick={scrollTo}
-                variant="outline"
-                className="h-14 px-8 text-lg w-full sm:w-auto bg-white/[0.03] backdrop-blur-md border-white/10 hover:bg-white/10 hover:border-white/20 transition-all gap-2"
-              >
-                Ver Planos
-                <Crown className="w-5 h-5 text-white/50 fill-white/50" />
-              </Button>
+              <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                <ShieldCheck className="w-3.5 h-3.5 text-brand-500/70" />
+                <span>Planos pagos com garantia incondicional de 7 dias</span>
+                <span className="text-gray-600">·</span>
+                <a
+                  href="#pricing"
+                  className="text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  Ver preços
+                </a>
+              </div>
             </div>
           </Reveal>
 
@@ -91,8 +87,8 @@ export function Hero({ onlineCount, memberCount }: Props) {
             <div className="flex items-center gap-6 md:gap-10 mb-12">
               <div className="text-center">
                 <p className="text-2xl md:text-3xl font-bold text-brand-500">+1.775%</p>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Em Março/2026</p>
-                <p className="text-[9px] text-gray-600 mt-0.5">R$1K → R$18.7K</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Calls em Março/2026</p>
+                <p className="text-[9px] text-gray-600 mt-0.5">20 operações · referência</p>
               </div>
               <div className="h-10 w-px bg-white/10" />
               <div className="text-center">
@@ -100,12 +96,16 @@ export function Hero({ onlineCount, memberCount }: Props) {
                 <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">De acerto</p>
                 <p className="text-[9px] text-gray-600 mt-0.5">14 wins, 6 loss</p>
               </div>
-              <div className="h-10 w-px bg-white/10" />
-              <div className="text-center">
-                <p className="text-2xl md:text-3xl font-bold text-white">{members.toLocaleString("pt-BR")}</p>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">No Discord</p>
-                <p className="text-[9px] text-gray-600 mt-0.5">entrada gratuita</p>
-              </div>
+              {showStats && (
+                <>
+                  <div className="h-10 w-px bg-white/10" />
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-bold text-white">{members.toLocaleString("pt-BR")}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">No Discord</p>
+                    <p className="text-[9px] text-gray-600 mt-0.5">entrada gratuita</p>
+                  </div>
+                </>
+              )}
             </div>
           </Reveal>
 

@@ -42,6 +42,10 @@ export type LPGuildData = {
   channels: LPChannel[];
   onlineMembers: LPMember[];
   messages: LPMessage[];
+  /** ISO timestamp da última atualização (snapshot). UI mostra "atualizado há Xmin". */
+  snapshotAt: string;
+  /** true se o fetch real falhou e estamos usando dados fallback. */
+  fallback: boolean;
 };
 
 export type LPChannel = {
@@ -195,9 +199,12 @@ export async function getLPGuildData(): Promise<LPGuildData> {
     );
 
     // ── Build online members (sidebar) ──
+    // Sem randomização: seleção estável por user ID (primeiros N ordenados).
+    // Status também determinístico por hash do user ID — mesmo membro sempre
+    // com o mesmo indicador entre renders. Se quisermos presença real, precisa
+    // de conexão Gateway, que não rola em edge function.
     const onlineMembers: LPMember[] = [];
 
-    // URA — exact ID match
     const ura = allMembers.find((m) => m.user.id === URA_USER_ID);
     if (ura) {
       onlineMembers.push({
@@ -208,30 +215,29 @@ export async function getLPGuildData(): Promise<LPGuildData> {
       });
     }
 
-    // Elite members (up to 3, exclude URA)
-    const shuffledElite = shuffle(
-      eliteMembers.filter((m) => m.user.id !== URA_USER_ID),
-    ).slice(0, 3);
-    for (const m of shuffledElite) {
+    const topElite = eliteMembers
+      .filter((m) => m.user.id !== URA_USER_ID)
+      .sort((a, b) => a.user.id.localeCompare(b.user.id))
+      .slice(0, 3);
+    for (const m of topElite) {
       onlineMembers.push({
         name: m.nick || m.user.global_name || m.user.username,
         role: "Elite",
-        status: pickStatus(),
+        status: deterministicStatus(m.user.id),
         avatarUrl: avatarUrl(m.user.id, m.user.avatar),
       });
     }
 
-    // VIP members (up to 5, exclude Elite overlap)
     const eliteIds = new Set(eliteMembers.map((m) => m.user.id));
-    const vipOnly = vipMembers.filter(
-      (m) => !eliteIds.has(m.user.id) && m.user.id !== URA_USER_ID,
-    );
-    const shuffledVip = shuffle(vipOnly).slice(0, 8);
-    for (const m of shuffledVip) {
+    const topVip = vipMembers
+      .filter((m) => !eliteIds.has(m.user.id) && m.user.id !== URA_USER_ID)
+      .sort((a, b) => a.user.id.localeCompare(b.user.id))
+      .slice(0, 8);
+    for (const m of topVip) {
       onlineMembers.push({
         name: m.nick || m.user.global_name || m.user.username,
         role: "VIP",
-        status: pickStatus(),
+        status: deterministicStatus(m.user.id),
         avatarUrl: avatarUrl(m.user.id, m.user.avatar),
       });
     }
@@ -244,6 +250,8 @@ export async function getLPGuildData(): Promise<LPGuildData> {
       channels,
       onlineMembers,
       messages,
+      snapshotAt: new Date().toISOString(),
+      fallback: false,
     };
   } catch (err) {
     console.error("[getLPGuildData] failed:", err);
@@ -365,28 +373,34 @@ function avatarUrl(userId: string, hash: string | null): string | null {
   return `https://cdn.discordapp.com/avatars/${userId}/${hash}.png?size=64`;
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+/**
+ * Status determinístico pelo user ID — mesmo membro sempre vê o mesmo
+ * indicador entre renders. Se um dia tivermos Gateway + presence real,
+ * trocamos por dados verdadeiros. Por ora: 70% online / 20% idle / 10% dnd,
+ * mas consistente por membro.
+ */
+function deterministicStatus(userId: string): "online" | "idle" | "dnd" {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = (hash * 31 + userId.charCodeAt(i)) >>> 0;
   }
-  return a;
-}
-
-function pickStatus(): "online" | "idle" | "dnd" {
-  const r = Math.random();
-  if (r < 0.7) return "online";
-  if (r < 0.9) return "idle";
+  const r = hash % 100;
+  if (r < 70) return "online";
+  if (r < 90) return "idle";
   return "dnd";
 }
 
+/**
+ * Fallback conservador quando a Discord API falha. Zera valores numéricos pra
+ * não mostrar dados antigos como se fossem ao vivo — a UI usa a flag `fallback`
+ * pra mostrar um aviso "Dados indisponíveis no momento" em vez de números falsos.
+ */
 function getFallbackData(): LPGuildData {
   return {
-    memberCount: 1377,
-    onlineCount: 335,
-    vipCount: 88,
-    eliteCount: 44,
+    memberCount: 0,
+    onlineCount: 0,
+    vipCount: 0,
+    eliteCount: 0,
     channels: [
       { name: "regras", type: "text", category: "COMECE AQUI", unread: false },
       { name: "anúncios", type: "text", category: "COMECE AQUI", unread: true },
@@ -399,5 +413,7 @@ function getFallbackData(): LPGuildData {
     ],
     onlineMembers: [],
     messages: [],
+    snapshotAt: new Date().toISOString(),
+    fallback: true,
   };
 }

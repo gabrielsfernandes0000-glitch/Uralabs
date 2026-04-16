@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Flame, Video, MessageCircle, AtSign } from "lucide-react";
 
 export function Footer() {
@@ -28,8 +29,8 @@ export function Footer() {
           <div>
             <h4 className="text-white font-bold mb-4">Legal</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><span className="opacity-70 cursor-not-allowed">Termos de Uso</span></li>
-              <li><span className="opacity-70 cursor-not-allowed">Privacidade</span></li>
+              <li><Link href="/termos" className="hover:text-brand-500 transition-colors">Termos de Uso</Link></li>
+              <li><Link href="/privacidade" className="hover:text-brand-500 transition-colors">Privacidade</Link></li>
               <li><a href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500 transition-colors">Contato</a></li>
             </ul>
           </div>

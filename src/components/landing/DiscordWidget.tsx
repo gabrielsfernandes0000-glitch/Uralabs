@@ -88,10 +88,21 @@ export function DiscordWidget({ data }: Props) {
           <Reveal width="100%">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#5865F2]/10 border border-[#5865F2]/20 mb-4">
               <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-bold text-[#5865F2] tracking-wide uppercase">Comunidade Ativa Agora</span>
+              <span className="text-xs font-bold text-[#5865F2] tracking-wide uppercase">
+                {data.fallback ? "Conecte direto no Discord" : "Comunidade ao vivo"}
+              </span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-4">Espia Antes de Entrar</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Isso é o que rola lá dentro — todos os dias. {data.memberCount.toLocaleString("pt-BR")} traders compartilhando resultados, tirando dúvidas e evoluindo juntos. A entrada é gratuita.</p>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              {data.fallback
+                ? "Snapshot do nosso Discord indisponível no momento. Entra direto lá pra ver o que rola ao vivo."
+                : `Isso é o que rola lá dentro — todos os dias. ${data.memberCount.toLocaleString("pt-BR")} traders compartilhando resultados, tirando dúvidas e evoluindo juntos. A entrada é gratuita.`}
+            </p>
+            {!data.fallback && data.snapshotAt && (
+              <p className="text-[10px] text-gray-600 mt-3 uppercase tracking-wider">
+                Snapshot atualizado a cada 5 min · dados reais da nossa guild
+              </p>
+            )}
           </Reveal>
         </div>
 
@@ -102,8 +113,8 @@ export function DiscordWidget({ data }: Props) {
             {/* Discord mockup */}
             <div className="relative bg-[#313338] rounded-xl border border-white/10 overflow-hidden shadow-2xl flex h-[520px]">
 
-              {/* Sidebar - channels */}
-              <div className="hidden md:flex flex-col w-60 bg-[#2b2d31] border-r border-white/5 shrink-0">
+              {/* Sidebar - channels (só em desktop — tablet fica com chat + members) */}
+              <div className="hidden lg:flex flex-col w-60 bg-[#2b2d31] border-r border-white/5 shrink-0">
                 <div className="h-12 px-4 flex items-center justify-between border-b border-black/30 bg-[#2b2d31] shrink-0">
                   <span className="font-bold text-white text-sm truncate">URA LABS</span>
                   <ChevronDown className="w-4 h-4 text-gray-400" />
