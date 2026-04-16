@@ -36,10 +36,7 @@ export function FloatingCTA() {
         >
           <span className="flex items-center gap-3">
             <div className="p-1.5 bg-white/20 rounded-full backdrop-blur-sm"><Crown className="w-5 h-5 text-white fill-white" /></div>
-            <div className="flex flex-col items-start leading-none">
-              <span className="text-sm font-medium text-yellow-100/80">Oportunidade</span>
-              <span className="text-lg">Ver Planos &amp; Preços</span>
-            </div>
+            <span className="text-lg font-bold">Ver Planos</span>
           </span>
           <ArrowRight className="w-6 h-6 animate-pulse" />
         </Button>

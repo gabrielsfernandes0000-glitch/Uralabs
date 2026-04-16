@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { hostname: "i.postimg.cc" },
       { hostname: "cdn.discordapp.com" },
+      { hostname: "media.discordapp.net" },
     ],
   },
 };

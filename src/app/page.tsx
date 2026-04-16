@@ -2,47 +2,58 @@ import {
   Navbar,
   Hero,
   Results,
-  TraderEvolution,
-  Methodology,
-  CourseModules,
-  Services,
-  About,
-  TargetAudience,
+  DiscordWidget,
+  AboutMethod,
   Pricing,
   FAQ,
   Footer,
   FloatingCTA,
+  SocialProofToasts,
+  StickyBar,
 } from "@/components/landing";
+import { getLPGuildData } from "@/lib/discord-lp";
 
-export default function Home() {
+export const revalidate = 300;
+
+export default async function Home() {
+  const discordData = await getLPGuildData();
+
   return (
     <div className="min-h-screen bg-dark-950 text-white overflow-x-hidden relative">
-      {/* Global background layers */}
       <div className="bg-noise" />
       <div className="fixed inset-0 bg-grid-pattern pointer-events-none z-0" />
       <div className="fixed inset-0 max-w-7xl mx-auto pointer-events-none z-0 hidden md:block border-l border-r border-white/[0.03]">
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/[0.02] -translate-x-1/2" />
       </div>
       <div className="fixed top-1/4 left-0 w-[300px] h-[600px] bg-brand-500/5 blur-[120px] -translate-x-1/2 pointer-events-none z-0" />
-      <div className="fixed bottom-1/4 right-0 w-[300px] h-[600px] bg-blue-500/5 blur-[120px] translate-x-1/2 pointer-events-none z-0" />
+      <div className="fixed bottom-1/4 right-0 w-[300px] h-[600px] bg-brand-500/3 blur-[120px] translate-x-1/2 pointer-events-none z-0" />
 
       <Navbar />
+      <StickyBar memberCount={discordData.memberCount} onlineCount={discordData.onlineCount} />
 
       <main className="relative z-10">
-        <Hero />
+        {/* 1. Hook — dor + CTA Discord (grátis) */}
+        <Hero onlineCount={discordData.onlineCount} memberCount={discordData.memberCount} />
+
+        {/* 2. Community — mostra o Discord primeiro (conversão principal pra tráfego frio) */}
+        <DiscordWidget data={discordData} />
+
+        {/* 3. Proof — números + trades + testimonials (esquenta pra venda) */}
         <Results />
-        <TraderEvolution />
-        <Methodology />
-        <CourseModules />
-        <Services />
-        <About />
-        <TargetAudience />
+
+        {/* 4. Authority — URA + método + jornada */}
+        <AboutMethod />
+
+        {/* 6. Convert — pricing + comparison + garantia */}
         <Pricing />
+
+        {/* 7. Resolve — FAQ */}
         <FAQ />
       </main>
 
       <Footer />
       <FloatingCTA />
+      <SocialProofToasts messages={discordData.messages} />
     </div>
   );
 }

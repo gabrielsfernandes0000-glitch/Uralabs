@@ -1,144 +1,243 @@
 "use client";
 
-import { Check, ShieldCheck, Crown, Zap, ArrowRight, Trophy, MonitorPlay, GraduationCap, Users, Gift, QrCode, Bitcoin } from "lucide-react";
+import { useState } from "react";
+import { Check, X, ShieldCheck, Crown, Zap, ArrowRight, MonitorPlay, GraduationCap, Users, Gift, QrCode, Bitcoin, ChevronDown, Play, Clock, BookOpen, Lock, Target } from "lucide-react";
 import { Button } from "./Button";
 import { Reveal } from "./Reveal";
 
+/* ── Tier comparison data ── */
+const FEATURES = [
+  { name: "Comunidade Discord", free: true, vip: true, elite: true },
+  { name: "Canal #educação-free", free: true, vip: true, elite: true },
+  { name: "Resultados públicos", free: true, vip: true, elite: true },
+  { name: "Calls diários (entrada/stop/alvo)", free: false, vip: true, elite: true },
+  { name: "Chat VIP exclusivo", free: false, vip: true, elite: true },
+  { name: "Análises exclusivas", free: false, vip: true, elite: true },
+  { name: "Operações ao vivo (viewer)", free: false, vip: true, elite: true },
+  { name: "Opera JUNTO com o mentor", free: false, vip: false, elite: true },
+  { name: "Plataforma de aulas (14 aulas)", free: false, vip: false, elite: true },
+  { name: "Treinos interativos", free: false, vip: false, elite: true },
+  { name: "Mentoria ao vivo por turma", free: false, vip: false, elite: true },
+  { name: "Revisão de operações", free: false, vip: false, elite: true },
+  { name: "Badges + ranking", free: false, vip: false, elite: true },
+  { name: "WhatsApp exclusivo", free: false, vip: false, elite: true },
+  { name: "Sorteio de mesas + gift cards", free: false, vip: false, elite: true },
+];
+
+function FeatureCheck({ v }: { v: boolean }) {
+  return v
+    ? <Check className="w-4 h-4 text-green-500" />
+    : <X className="w-4 h-4 text-gray-700" />;
+}
+
+/* ── Mini Elite Preview (embedded) ── */
+function ElitePlatformPreview() {
+  const lessons = [
+    { num: "01", title: "Introdução ao Trade", dur: "20min", done: true, accent: "#FF5500" },
+    { num: "02", title: "Leitura de Candle", dur: "18min", done: true, accent: "#FF5500" },
+    { num: "03", title: "Order Blocks", dur: "25min", done: false, accent: "#3B82F6" },
+    { num: "04", title: "FVG & Breaker", dur: "20min", done: false, accent: "#3B82F6" },
+    { num: "05", title: "Premium & Discount", dur: "18min", done: false, accent: "#3B82F6" },
+    { num: "06", title: "AMD", dur: "25min", done: false, accent: "#A855F7" },
+  ];
+
+  return (
+    <div className="mt-6 rounded-xl border border-white/[0.08] bg-[#0a0a0c] overflow-hidden">
+      <div className="h-7 bg-[#1a1a1e] border-b border-white/5 flex items-center px-3 gap-1.5">
+        <div className="w-2 h-2 rounded-full bg-white/10" />
+        <div className="w-2 h-2 rounded-full bg-white/10" />
+        <div className="w-2 h-2 rounded-full bg-white/10" />
+        <div className="flex-1 flex justify-center">
+          <span className="text-[8px] text-white/25 font-mono">uralabs.com.br/elite/aulas</span>
+        </div>
+      </div>
+      <div className="p-4 space-y-2">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-1 h-4 rounded-full bg-brand-500/60" />
+          <span className="text-[11px] font-bold text-white/60">5 módulos · 14 aulas · treinos</span>
+        </div>
+        {lessons.map((l, i) => (
+          <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+            <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${
+              l.done ? "bg-green-500/15" : "bg-white/[0.04]"
+            }`}>
+              {l.done ? <Check className="w-3 h-3 text-green-400" /> : <Play className="w-3 h-3" style={{ color: l.accent + "70" }} />}
+            </div>
+            <span className="text-[10px] font-mono shrink-0" style={{ color: l.accent + "60" }}>{l.num}</span>
+            <span className="text-[11px] text-white/70 font-medium flex-1 truncate">{l.title}</span>
+            <span className="text-[9px] text-white/25">{l.dur}</span>
+          </div>
+        ))}
+        <div className="text-center pt-2">
+          <span className="text-[9px] text-white/20">+ 8 aulas · 9 treinos · badges</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Pricing() {
-  const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const el = document.getElementById("pricing");
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.pageYOffset - 100;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
+  const [showPlatform, setShowPlatform] = useState(false);
 
   return (
     <section id="pricing" className="py-24 bg-dark-900 relative overflow-hidden">
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute top-1/4 left-0 -translate-x-1/3 hidden 2xl:block pointer-events-none select-none">
-        <span className="text-[150px] font-black text-transparent opacity-10 rotate-90 block" style={{ WebkitTextStroke: "2px #FF5500" }}>ELITE</span>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <Reveal width="100%">
-            <span className="text-brand-500 font-bold tracking-widest uppercase text-sm">Próxima Turma &amp; Assinaturas</span>
-            <h2 className="text-3xl md:text-5xl font-bold mt-2 mb-4">Escolha seu Nível de Jogo</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-lg">De sinais assertivos à formação completa de um trader profissional.</p>
+            <span className="text-brand-500 font-bold tracking-widest uppercase text-sm">Planos &amp; Preços</span>
+            <h2 className="text-3xl md:text-5xl font-bold mt-2 mb-4">Quanto Custa</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Três caminhos. Escolha onde faz sentido pra você agora — pode subir quando quiser.</p>
           </Reveal>
         </div>
 
-        {/* Elite card */}
+        {/* ── 3 Tiers side by side ── */}
         <Reveal width="100%">
-          <div className="relative w-full max-w-5xl mx-auto mb-20">
-            <div className="absolute -inset-[2px] bg-gradient-to-r from-brand-600 via-yellow-500 to-brand-600 rounded-3xl opacity-75 blur-sm animate-pulse-slow" />
-            <div className="relative bg-dark-950 rounded-[22px] overflow-hidden border border-white/10 shadow-2xl flex flex-col md:flex-row">
-              <div className="p-8 md:p-12 md:w-2/3 flex flex-col">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-gradient-to-br from-brand-500 to-yellow-600 rounded-lg shadow-lg"><Crown className="w-6 h-6 text-white" /></div>
-                  <span className="text-yellow-500 font-bold tracking-widest uppercase text-sm">Turma 4.0 Abrindo</span>
-                </div>
-                <h3 className="text-4xl md:text-5xl font-extrabold text-white mb-2">Mentoria ELITE 4.0</h3>
-                <p className="text-gray-400 text-lg mb-8">A formação definitiva. Não operamos sorte, operamos institucional.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 mb-8">
-                  {[
-                    { icon: <MonitorPlay className="w-5 h-5 text-brand-500 mt-1 shrink-0" />, title: "3 Meses de Sala Ao Vivo", sub: "Diariamente com o Mentor" },
-                    { icon: <Zap className="w-5 h-5 text-brand-500 mt-1 shrink-0" />, title: "6 Meses de Sinais VIP", sub: "Acesso total ao Discord VIP" },
-                    { icon: <GraduationCap className="w-5 h-5 text-brand-500 mt-1 shrink-0" />, title: "Imersão Teórica (30 Dias)", sub: "Do Zero ao Avançado" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
-                      {item.icon}
-                      <div><span className="text-white font-bold block">{item.title}</span><span className="text-gray-400 text-xs">{item.sub}</span></div>
-                    </div>
-                  ))}
-                  <div className="flex items-start gap-3 p-2"><Check className="w-5 h-5 text-gray-500 mt-1 shrink-0" /><span className="text-gray-300 text-sm mt-1">Aulas Avançadas: <strong className="text-white">PO3, AMD, Liquidez</strong></span></div>
-                  <div className="flex items-start gap-3 p-2"><Users className="w-5 h-5 text-gray-500 mt-1 shrink-0" /><span className="text-gray-300 text-sm mt-1">Suporte Diário e Networking</span></div>
-                  <div className="flex items-start gap-3 p-2"><Gift className="w-5 h-5 text-yellow-500 mt-1 shrink-0" /><span className="text-yellow-500 text-sm font-bold mt-1">Sorteio de Mesas e Gift Cards</span></div>
-                </div>
-                <div className="mt-auto pt-6 border-t border-white/5 flex flex-col md:flex-row gap-4 items-center text-sm text-gray-500">
-                  <div className="flex items-center gap-2"><Trophy className="w-4 h-4 text-brand-500" /><span>+800k BRL financiados ao vivo</span></div>
-                  <div className="hidden md:block w-1 h-1 bg-gray-700 rounded-full" />
-                  <div>Conteúdo validado na prática</div>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
 
-              {/* Price side */}
-              <div className="bg-dark-900/50 p-8 md:p-12 md:w-1/3 flex flex-col justify-center border-t md:border-t-0 md:border-l border-white/5 relative">
-                <div className="absolute inset-0 bg-brand-500/5 mix-blend-overlay pointer-events-none" />
-                <div className="text-center relative z-10">
-                  <div className="flex flex-col items-center justify-center mb-2">
-                    <span className="text-gray-500 text-base line-through font-medium">De R$ 3.500,00</span>
-                    <span className="bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide mt-1">Economize R$ 1.000</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 mb-4">
-                    <span className="text-sm text-gray-400 mt-1">R$</span>
-                    <span className="text-5xl md:text-6xl font-extrabold text-white tracking-tight">2.500</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-3 mb-6">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10"><QrCode className="w-4 h-4 text-brand-500" /><span className="text-xs font-bold text-gray-300">PIX</span></div>
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10"><Bitcoin className="w-4 h-4 text-brand-500" /><span className="text-xs font-bold text-gray-300">CRYPTO</span></div>
-                  </div>
-                  <div className="text-xs text-gray-500 mb-6 pb-6 border-b border-white/5">Ou parcelado em até 12x de R$ 249,90<br />(Valor total a prazo: R$ 2.998,80)</div>
-                  <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="h-14 bg-gradient-to-r from-brand-600 to-yellow-600 shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.5)] border-none text-lg group">
-                    Quero ser ELITE <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <p className="text-[10px] text-gray-500 mt-3">Abra um ticket no Discord para solicitar o link.</p>
+            {/* FREE */}
+            <div className="rounded-2xl border border-white/5 bg-dark-950 p-6 flex flex-col">
+              <div className="mb-4">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Comunidade</span>
+                <h3 className="text-2xl font-bold text-white mt-1">Grátis</h3>
+                <p className="text-gray-500 text-sm mt-1">Entra, conhece, decide depois.</p>
+              </div>
+              <div className="text-3xl font-bold text-white mb-6">R$ 0</div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {["Chat geral e dúvidas", "1 conceito educacional por semana", "Ver resultados dos membros", "Notícias do mercado"].map((f, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                    <span className="text-gray-300 text-sm">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="bg-white text-dark-950 hover:bg-gray-200 border-none font-bold">
+                Entrar no Discord
+              </Button>
+            </div>
+
+            {/* VIP */}
+            <div className="rounded-2xl border border-white/10 bg-dark-950 p-6 flex flex-col relative">
+              <div className="mb-4">
+                <span className="text-xs font-bold text-brand-500 uppercase tracking-wider">Sinais VIP</span>
+                <h3 className="text-2xl font-bold text-white mt-1">VIP</h3>
+                <p className="text-gray-500 text-sm mt-1">Copie os trades e lucre junto.</p>
+              </div>
+              <div className="mb-6">
+                <span className="text-3xl font-bold text-white">R$ 120</span>
+                <span className="text-gray-500 text-sm">/mês</span>
+                <div className="flex gap-3 mt-2 text-[10px] text-gray-500">
+                  <span>R$ 480/sem</span>
+                  <span>R$ 840/ano <span className="text-green-400 font-bold">(-42%)</span></span>
                 </div>
               </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {["Tudo do Grátis", "Calls diários com entrada, stop e alvo", "Chat VIP exclusivo", "Análises exclusivas", "Operações ao vivo (viewer)"].map((f, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Zap className={`w-4 h-4 mt-0.5 shrink-0 ${i === 0 ? "text-gray-500" : "text-brand-500"}`} />
+                    <span className="text-gray-300 text-sm">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" variant="outline" className="border-brand-500/30 hover:bg-brand-500 hover:text-white hover:border-brand-500">
+                Assinar VIP
+              </Button>
+            </div>
+
+            {/* ELITE */}
+            <div className="rounded-2xl border-2 border-brand-500/40 bg-gradient-to-b from-brand-500/[0.04] to-dark-950 p-6 flex flex-col relative shadow-[0_0_40px_rgba(255,85,0,0.08)]">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-brand-500 text-white text-[10px] font-bold px-4 py-1 rounded-full uppercase tracking-wider shadow-lg">Mais Completo</span>
+              </div>
+              <div className="mb-4 mt-2">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-brand-500" />
+                  <span className="text-xs font-bold text-brand-500 uppercase tracking-wider">Mentoria Elite 4.0</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mt-1">Elite</h3>
+                <p className="text-gray-500 text-sm mt-1">Aprenda a operar sozinho. Pra sempre.</p>
+              </div>
+              <div className="mb-1">
+                <span className="text-gray-500 text-sm line-through">R$ 3.500</span>
+              </div>
+              <div className="mb-2">
+                <span className="text-3xl font-bold text-white">R$ 2.500</span>
+                <span className="text-gray-500 text-sm">/6 meses</span>
+              </div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10">
+                  <QrCode className="w-3 h-3 text-brand-500" /><span className="text-[10px] text-gray-300 font-bold">PIX</span>
+                </div>
+                <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10">
+                  <Bitcoin className="w-3 h-3 text-brand-500" /><span className="text-[10px] text-gray-300 font-bold">CRYPTO</span>
+                </div>
+                <span className="text-[10px] text-gray-500">ou 12x R$249</span>
+              </div>
+              <ul className="space-y-3 mb-6 flex-1">
+                {[
+                  "Tudo do VIP (6 meses inclusos)",
+                  "Opera JUNTO com o mentor (não só viewer)",
+                  "14 aulas gravadas + treinos interativos",
+                  "Mentoria ao vivo semanal por turma",
+                  "Revisão das suas operações",
+                  "Badges, ranking e conquistas",
+                  "WhatsApp exclusivo da turma",
+                  "Sorteio de mesas + gift cards",
+                ].map((f, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check className={`w-4 h-4 mt-0.5 shrink-0 ${i === 0 ? "text-gray-500" : "text-brand-500"}`} />
+                    <span className="text-gray-300 text-sm">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="h-12 bg-gradient-to-r from-brand-600 to-yellow-600 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] border-none text-base group">
+                Quero ser Elite <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <p className="text-[10px] text-gray-600 text-center mt-2">Abra um ticket no Discord</p>
+
+              {/* Platform preview toggle */}
+              <button
+                onClick={() => setShowPlatform(!showPlatform)}
+                className="mt-4 flex items-center justify-center gap-2 text-[11px] text-brand-500/60 hover:text-brand-500 transition-colors cursor-pointer"
+              >
+                {showPlatform ? "Esconder" : "Ver a plataforma por dentro"}
+                <ChevronDown className={`w-3 h-3 transition-transform ${showPlatform ? "rotate-180" : ""}`} />
+              </button>
+              {showPlatform && <ElitePlatformPreview />}
             </div>
           </div>
         </Reveal>
 
-        {/* VIP plans */}
-        <div className="max-w-6xl mx-auto mt-24">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="h-px bg-white/10 flex-1" />
-            <h3 className="text-2xl font-bold text-gray-300 uppercase tracking-widest text-center">Ou acesse apenas os <span className="text-white">Sinais VIP</span></h3>
-            <div className="h-px bg-white/10 flex-1" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { label: "Mensal", price: "R$ 120", period: "/mês", badge: "bg-white/5 text-white", savings: null, highlight: false },
-              { label: "Semestral", price: "R$ 480", period: "/6 meses", badge: "bg-brand-500/10 text-brand-500", savings: "Economize R$ 240", highlight: false },
-              { label: "Anual", price: "R$ 840", period: "/ano", badge: "bg-brand-500 text-white", savings: "Economize R$ 600", highlight: true },
-            ].map((plan, i) => (
-              <Reveal key={i} delay={(i + 1) * 0.1} width="100%">
-                <div className={`${plan.highlight ? "bg-gradient-to-b from-dark-800 to-dark-950 border-brand-500/30 hover:border-brand-500 shadow-[0_0_20px_rgba(249,115,22,0.1)]" : "bg-dark-950 border-white/5 hover:border-white/20"} rounded-2xl p-6 border transition-all group h-full flex flex-col relative overflow-hidden`}>
-                  {plan.highlight && <div className="absolute top-0 right-0 bg-brand-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg shadow-lg">MELHOR VALOR</div>}
-                  <div className="mb-4 flex items-center gap-2">
-                    <span className={`${plan.badge} text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide`}>{plan.label}</span>
-                    {plan.savings && <span className="text-[10px] text-green-400 font-bold border border-green-500/30 px-2 py-0.5 rounded uppercase">{plan.savings}</span>}
-                  </div>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-gray-500 text-sm"> {plan.period}</span>
-                  </div>
-                  <ul className="space-y-4 mb-8 flex-1">
-                    {["Calls Semanais Crypto", "Análises Exclusivas", "Operações AO VIVO (Viewer)"].map((feat, j) => (
-                      <li key={j} className="flex items-start gap-3">
-                        <Zap className={`w-5 h-5 ${plan.highlight ? "text-brand-500" : "text-gray-400 group-hover:text-brand-500"} transition-colors`} />
-                        <span className="text-gray-300 text-sm">{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button variant={plan.highlight ? "primary" : "outline"} fullWidth href="https://discord.gg/SrxZSGN6" target="_blank" className={plan.highlight ? "bg-brand-600 hover:bg-brand-500" : "border-gray-700 hover:bg-white hover:text-black hover:border-white"}>
-                    Assinar {plan.label}
-                  </Button>
+        {/* ── Feature comparison table ── */}
+        <Reveal delay={0.2} width="100%">
+          <div className="max-w-4xl mx-auto mb-16">
+            <h4 className="text-center text-lg font-bold text-white mb-6">Comparação detalhada</h4>
+            <div className="bg-dark-950 border border-white/5 rounded-xl overflow-hidden">
+              <div className="grid grid-cols-[1fr_70px_70px_70px] gap-0 border-b border-white/5 px-5 py-3">
+                <div />
+                <div className="text-center text-[10px] font-bold text-gray-500 uppercase">Grátis</div>
+                <div className="text-center text-[10px] font-bold text-gray-400 uppercase">VIP</div>
+                <div className="text-center text-[10px] font-bold text-brand-500 uppercase">Elite</div>
+              </div>
+              {FEATURES.map((row, i) => (
+                <div key={i} className={`grid grid-cols-[1fr_70px_70px_70px] gap-0 px-5 py-2.5 ${i !== FEATURES.length - 1 ? "border-b border-white/[0.03]" : ""}`}>
+                  <span className="text-xs text-gray-400">{row.name}</span>
+                  <div className="flex justify-center"><FeatureCheck v={row.free} /></div>
+                  <div className="flex justify-center"><FeatureCheck v={row.vip} /></div>
+                  <div className="flex justify-center"><FeatureCheck v={row.elite} /></div>
                 </div>
-              </Reveal>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Guarantee */}
-        <Reveal delay={0.4} width="100%">
-          <div className="mt-20 max-w-3xl mx-auto text-center bg-dark-900/80 border border-white/5 p-8 rounded-2xl backdrop-blur-sm">
+        <Reveal delay={0.3} width="100%">
+          <div className="max-w-3xl mx-auto text-center bg-dark-950 border border-white/5 p-8 rounded-2xl">
             <div className="inline-flex p-3 bg-brand-500/10 rounded-full mb-4 border border-brand-500/20"><ShieldCheck className="w-8 h-8 text-brand-500" /></div>
             <h3 className="text-2xl font-bold text-white mb-2">Garantia Incondicional de 7 Dias</h3>
-            <p className="text-gray-400">O risco é todo nosso. Entre, consuma o conteúdo, assista às lives. Se achar que não valeu o investimento, devolvemos 100% do valor.</p>
+            <p className="text-gray-400">O risco é todo nosso. Se achar que não valeu, devolvemos 100% do valor.</p>
           </div>
         </Reveal>
       </div>

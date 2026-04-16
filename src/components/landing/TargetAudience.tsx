@@ -5,7 +5,7 @@ export function TargetAudience() {
   return (
     <section className="py-32 bg-dark-950 border-t border-white/5 relative overflow-hidden">
       <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-red-500/5 rounded-full blur-[120px] -translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-      <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-brand-500/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-20">
@@ -41,12 +41,12 @@ export function TargetAudience() {
 
           {/* Join */}
           <Reveal width="100%" delay={0.2}>
-            <div className="relative h-full p-8 md:p-10 rounded-3xl bg-blue-500/5 backdrop-blur-md border border-blue-500/10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.2)] group transition-all duration-500 hover:bg-blue-500/10 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(59,130,246,0.15)]">
-              <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[80px] group-hover:bg-blue-500/30 transition-all duration-700 pointer-events-none" />
-              <div className="absolute top-8 right-8 opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500"><Briefcase className="w-20 h-20 text-blue-500 -rotate-12" /></div>
+            <div className="relative h-full p-8 md:p-10 rounded-3xl bg-brand-500/[0.03] backdrop-blur-md border border-brand-500/10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.2)] group transition-all duration-500 hover:bg-brand-500/[0.06] hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(255,85,0,0.1)]">
+              <div className="absolute -top-20 -right-20 w-80 h-80 bg-brand-500/10 rounded-full blur-[80px] group-hover:bg-brand-500/20 transition-all duration-700 pointer-events-none" />
+              <div className="absolute top-8 right-8 opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500"><Briefcase className="w-20 h-20 text-brand-500 -rotate-12" /></div>
               <div className="relative z-10">
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]"><CheckCircle2 className="w-6 h-6" /></div>
+                  <div className="p-3 bg-brand-500/10 rounded-2xl border border-brand-500/20 text-brand-500 shadow-[0_0_15px_rgba(255,85,0,0.15)]"><CheckCircle2 className="w-6 h-6" /></div>
                   <h3 className="text-xl font-bold text-white">O URA LABS é para quem:</h3>
                 </div>
                 <ul className="space-y-6">
@@ -57,13 +57,13 @@ export function TargetAudience() {
                     <>Quer dominar <strong className="text-white">SMC, ICT e NASDAQ</strong> para não depender de ninguém.</>,
                   ].map((text, i) => (
                     <li key={i} className="flex items-start gap-4 group/item">
-                      <div className="mt-1 p-1 rounded-full bg-blue-500/20 text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white transition-all shadow-[0_0_10px_rgba(59,130,246,0.2)]"><CheckCircle2 className="w-4 h-4" /></div>
+                      <div className="mt-1 p-1 rounded-full bg-brand-500/20 text-brand-500 group-hover/item:bg-brand-500 group-hover/item:text-white transition-all"><CheckCircle2 className="w-4 h-4" /></div>
                       <p className="text-gray-300 text-sm leading-relaxed font-medium group-hover/item:text-white transition-colors">{text}</p>
                     </li>
                   ))}
                 </ul>
-                <div className="mt-10 pt-6 border-t border-blue-500/10">
-                  <p className="text-xs text-blue-400/80 italic text-center">&quot;Se você se identificou com este card, você já está na frente de 90% do mercado.&quot;</p>
+                <div className="mt-10 pt-6 border-t border-brand-500/10">
+                  <p className="text-xs text-gray-500 italic text-center">&quot;Se você se identificou com este card, você já está na frente de 90% do mercado.&quot;</p>
                 </div>
               </div>
             </div>

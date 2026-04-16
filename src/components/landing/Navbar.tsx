@@ -6,10 +6,8 @@ import { Button } from "./Button";
 
 const NAV_LINKS = [
   { name: "Resultados", href: "#results" },
-  { name: "Evolução", href: "#evolution" },
-  { name: "Metodologia", href: "#methodology" },
-  { name: "Academy", href: "#course-modules" },
-  { name: "Planos VIP", href: "#pricing" },
+  { name: "Sobre", href: "#about" },
+  { name: "Planos", href: "#pricing" },
 ];
 
 export function Navbar() {

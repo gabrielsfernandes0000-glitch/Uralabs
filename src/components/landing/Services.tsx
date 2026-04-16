@@ -44,18 +44,18 @@ export function Services() {
           <div className="lg:pl-12 relative group">
             <Reveal delay={0.3} width="100%">
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                <div className="p-4 bg-blue-500/10 rounded-2xl mb-6 inline-flex border border-blue-500/20"><GraduationCap className="w-10 h-10 text-blue-500" /></div>
+                <div className="p-4 bg-white/5 rounded-2xl mb-6 inline-flex border border-white/10"><GraduationCap className="w-10 h-10 text-white" /></div>
                 <h3 className="text-2xl font-bold text-white mb-2">Pilar 02: Formação</h3>
-                <p className="text-blue-400 font-bold text-sm tracking-wide uppercase mb-6">&quot;Dominar para não depender&quot;</p>
+                <p className="text-gray-400 font-bold text-sm tracking-wide uppercase mb-6">&quot;Dominar para não depender&quot;</p>
                 <p className="text-gray-400 leading-relaxed mb-8 max-w-md">Sinais colocam dinheiro no bolso, mas só o conhecimento te dá liberdade. Formação completa do básico ao avançado em SMC e CRT.</p>
                 <ul className="space-y-4 w-full max-w-md">
-                  <li className="flex items-center gap-3 p-4 rounded-xl bg-dark-950 border border-white/5 hover:border-blue-500/30 transition-all">
-                    <BookOpen className="w-6 h-6 text-blue-500 shrink-0" />
-                    <div className="text-left"><span className="block text-white font-bold">URA Academy (Plataforma)</span><span className="text-xs text-gray-500">Cursos on-demand gravados</span></div>
+                  <li className="flex items-center gap-3 p-4 rounded-xl bg-dark-950 border border-white/5 hover:border-white/20 transition-all">
+                    <BookOpen className="w-6 h-6 text-white shrink-0" />
+                    <div className="text-left"><span className="block text-white font-bold">URA Academy (Plataforma)</span><span className="text-xs text-gray-500">Aulas gravadas + ao vivo na plataforma</span></div>
                   </li>
-                  <li className="flex items-center gap-3 p-4 rounded-xl bg-dark-950 border border-white/5 hover:border-blue-500/30 transition-all">
-                    <Video className="w-6 h-6 text-blue-500 shrink-0" />
-                    <div className="text-left"><span className="block text-white font-bold">Aulas de Mentoria</span><span className="text-xs text-gray-500">Tira-dúvidas e estudos semanais</span></div>
+                  <li className="flex items-center gap-3 p-4 rounded-xl bg-dark-950 border border-white/5 hover:border-white/20 transition-all">
+                    <Video className="w-6 h-6 text-white shrink-0" />
+                    <div className="text-left"><span className="block text-white font-bold">Mentoria por Turma</span><span className="text-xs text-gray-500">Tira-dúvidas e estudos semanais ao vivo</span></div>
                   </li>
                 </ul>
               </div>

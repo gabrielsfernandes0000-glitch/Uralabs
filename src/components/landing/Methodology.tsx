@@ -20,16 +20,16 @@ export function Methodology() {
           <div className="space-y-8 relative">
             <div className="absolute left-9 top-10 bottom-10 w-px bg-gradient-to-b from-brand-500/0 via-brand-500/20 to-brand-500/0 hidden md:block" />
             {[
-              { icon: <BrainCircuit className="w-6 h-6" />, color: "orange", title: "SMC & ICT Mastery", desc: <>Utilizamos a base do <strong>Inner Circle Trader (ICT)</strong> aliada ao <strong>Smart Money Concepts</strong>. Você vai aprender a ler order blocks, FVG (Fair Value Gaps) e liquidez institucional.</> },
-              { icon: <CandlestickChart className="w-6 h-6" />, color: "red", title: "Candle Range Theory (CRT)", desc: "Uma das metodologias mais raras e assertivas. O CRT permite identificar a verdadeira intenção dentro da formação de um único candle, validando entradas sniper." },
-              { icon: <LineChart className="w-6 h-6" />, color: "brand", title: "Foco: Crypto & NASDAQ", desc: "Não somos generalistas. Somos especialistas nos mercados mais voláteis e lucrativos do mundo. Aplicamos nossos setups onde a liquidez é abundante." },
+              { icon: <BrainCircuit className="w-6 h-6" />, title: "SMC & ICT Mastery", desc: <>Utilizamos a base do <strong>Inner Circle Trader (ICT)</strong> aliada ao <strong>Smart Money Concepts</strong>. Você vai aprender a ler order blocks, FVG (Fair Value Gaps) e liquidez institucional.</> },
+              { icon: <CandlestickChart className="w-6 h-6" />, title: "Candle Range Theory (CRT)", desc: "Uma das metodologias mais raras e assertivas. O CRT permite identificar a verdadeira intenção dentro da formação de um único candle, validando entradas sniper." },
+              { icon: <LineChart className="w-6 h-6" />, title: "Foco: Crypto & NASDAQ", desc: "Não somos generalistas. Somos especialistas nos mercados mais voláteis e lucrativos do mundo. Aplicamos nossos setups onde a liquidez é abundante." },
             ].map((item, i) => (
               <Reveal key={i} delay={(i + 1) * 0.1}>
                 <div className="group p-6 rounded-2xl bg-dark-950 border border-white/5 hover:border-brand-500/30 hover:shadow-[0_0_30px_rgba(249,115,22,0.1)] transition-all duration-300 relative z-10">
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-lg bg-${item.color}-500/10 text-${item.color}-400 mt-1 group-hover:bg-${item.color}-500/20 transition-colors`}>{item.icon}</div>
+                    <div className="p-3 rounded-lg bg-brand-500/10 text-brand-500 mt-1 group-hover:bg-brand-500/20 transition-colors">{item.icon}</div>
                     <div>
-                      <h3 className={`text-xl font-bold text-white mb-2 group-hover:text-${item.color}-400 transition-colors`}>{item.title}</h3>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-brand-400 transition-colors">{item.title}</h3>
                       <p className="text-gray-400 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
@@ -41,7 +41,7 @@ export function Methodology() {
           {/* Trade card visual */}
           <div className="relative h-full min-h-[400px] flex items-center justify-center">
             <Reveal delay={0.4} width="100%">
-              <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/20 to-purple-500/10 rounded-3xl blur-3xl opacity-20" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/20 to-brand-500/5 rounded-3xl blur-3xl opacity-20" />
               <div className="relative w-full max-w-sm bg-dark-950 rounded-xl border border-white/10 shadow-2xl overflow-hidden transform transition-transform hover:scale-[1.02] duration-500 mx-auto">
                 <div className="bg-dark-900 p-4 border-b border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export function Methodology() {
                 <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-brand-500" /><span className="text-xs text-gray-300 font-medium">Order Block M15</span></div>
               </div>
               <div className="absolute -left-10 bottom-32 bg-dark-900 border border-white/10 p-3 rounded-lg shadow-xl hidden xl:block">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-xs text-gray-300 font-medium">Liquidez Capturada</span></div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-brand-500" /><span className="text-xs text-gray-300 font-medium">Liquidez Capturada</span></div>
               </div>
             </Reveal>
           </div>
