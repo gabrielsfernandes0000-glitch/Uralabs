@@ -61,6 +61,12 @@ export function normalizeAuraSlug(s: string | null | undefined): AuraSlug | null
   return (Object.keys(AURA_ACCENT) as AuraSlug[]).includes(bare as AuraSlug) ? (bare as AuraSlug) : null;
 }
 
+/** Mesma semântica do AnimMode em CosmeticBanner:
+ *  - "always": loop ambient + hover boost (modal, perfil — poucas instâncias)
+ *  - "hover":  estático até hover (DEFAULT pra listas)
+ *  - "off":    nenhuma animação */
+export type AnimMode = "always" | "hover" | "off";
+
 interface WrapperProps {
   src: string | null | undefined;
   name: string;
@@ -68,14 +74,19 @@ interface WrapperProps {
   frameSlug?: string | null;
   auraSlug?: string | null;
   className?: string;
+  animated?: AnimMode;
+  /** @deprecated use `animated` */
   interactive?: boolean;
 }
 
 export function AvatarWithCosmetics({
-  src, name, size = 48, frameSlug, auraSlug, className, interactive = true,
+  src, name, size = 48, frameSlug, auraSlug, className, animated, interactive,
 }: WrapperProps) {
   const frame = normalizeFrameSlug(frameSlug);
   const aura = normalizeAuraSlug(auraSlug);
+
+  // Compat: interactive={false} (legado "sempre anima") → always; sem nada = hover
+  const anim: AnimMode = animated ?? (interactive === false ? "always" : "hover");
 
   // Padding reserva espaço pros overlays (halo, chifres, asas, partículas).
   // Frames que projetam acima/abaixo do avatar precisam de ~30% extra;
@@ -85,7 +96,8 @@ export function AvatarWithCosmetics({
 
   return (
     <div
-      className={`relative inline-block ${interactive ? "av-cos-interactive" : ""} ${className ?? ""}`}
+      className={`relative inline-block av-cos-wrap ${className ?? ""}`}
+      data-anim={anim}
       style={{ width: total, height: total }}
     >
       {/* Aura (trás) */}
@@ -136,7 +148,7 @@ function FrameTouroChifres({ size, accent }: { size: number; accent: string }) {
       {/* Chifre direito */}
       <path d="M 65 18 Q 75 6 78 2 Q 70 14 62 22" fill={accent} stroke="#8B4513" strokeWidth="0.8" opacity="0.95"
         style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
-      <style>{`.frame-touro { animation: touroSway 4s ease-in-out infinite; transform-origin: center bottom; } @keyframes touroSway { 0%, 100% { transform: rotate(-1deg) } 50% { transform: rotate(1deg) } } .av-cos-interactive:hover .frame-touro { animation-duration: 1.5s; }`}</style>
+      <style>{`.frame-touro { animation: touroSway 4s ease-in-out infinite; transform-origin: center bottom; } @keyframes touroSway { 0%, 100% { transform: rotate(-1deg) } 50% { transform: rotate(1deg) } } .av-cos-wrap[data-anim="always"]:hover .frame-touro, .av-cos-wrap[data-anim="hover"]:hover .frame-touro { animation-duration: 1.5s; }`}</style>
     </svg>
   );
 }
@@ -155,7 +167,7 @@ function FrameUrsoGarras({ size, accent }: { size: number; accent: string }) {
           <path d="M 0 0 L 5 8 M 0 0 L 0 10 M 0 0 L -5 8" stroke={accent} strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.6" />
         </g>
       ))}
-      <style>{`.garra { animation: garraFlex 3s ease-in-out calc(var(--i) * 0.2s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes garraFlex { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.15) } } .av-cos-interactive:hover .garra { animation-duration: 1s; }`}</style>
+      <style>{`.garra { animation: garraFlex 3s ease-in-out calc(var(--i) * 0.2s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes garraFlex { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.15) } } .av-cos-wrap[data-anim="always"]:hover .garra, .av-cos-wrap[data-anim="hover"]:hover .garra { animation-duration: 1s; }`}</style>
     </svg>
   );
 }
@@ -169,7 +181,7 @@ function FrameCartolaWall({ size, accent }: { size: number; accent: string }) {
         <rect x="-14" y="4" width="28" height="2" fill={accent} opacity="0.9" />
         <circle cx="-11" cy="-2" r="1.2" fill={accent} opacity="0.6" />
       </g>
-      <style>{`.frame-cartola { animation: cartolaTilt 5s ease-in-out infinite; transform-origin: 50% 15%; } @keyframes cartolaTilt { 0%, 100% { transform: rotate(-2deg) } 50% { transform: rotate(2deg) } } .av-cos-interactive:hover .frame-cartola { animation-duration: 1.5s; }`}</style>
+      <style>{`.frame-cartola { animation: cartolaTilt 5s ease-in-out infinite; transform-origin: 50% 15%; } @keyframes cartolaTilt { 0%, 100% { transform: rotate(-2deg) } 50% { transform: rotate(2deg) } } .av-cos-wrap[data-anim="always"]:hover .frame-cartola, .av-cos-wrap[data-anim="hover"]:hover .frame-cartola { animation-duration: 1.5s; }`}</style>
     </svg>
   );
 }
@@ -180,7 +192,7 @@ function FrameHaloHodler({ size, accent }: { size: number; accent: string }) {
       <ellipse cx="50" cy="10" rx="24" ry="5" fill="none" stroke={accent} strokeWidth="2.5" opacity="0.9"
         style={{ filter: `drop-shadow(0 0 8px ${accent})` }} />
       <ellipse cx="50" cy="10" rx="20" ry="3.5" fill="none" stroke="#ffffff" strokeWidth="0.8" opacity="0.8" />
-      <style>{`.frame-halo { animation: haloFloat 3s ease-in-out infinite; transform-origin: 50% 10%; } @keyframes haloFloat { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-2px) } } .av-cos-interactive:hover .frame-halo { animation: haloSpin 2s linear infinite; }  @keyframes haloSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+      <style>{`.frame-halo { animation: haloFloat 3s ease-in-out infinite; transform-origin: 50% 10%; } @keyframes haloFloat { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-2px) } } .av-cos-wrap[data-anim="always"]:hover .frame-halo, .av-cos-wrap[data-anim="hover"]:hover .frame-halo { animation: haloSpin 2s linear infinite; }  @keyframes haloSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
     </svg>
   );
 }
@@ -207,7 +219,7 @@ function FrameLaurelMesa({ size, accent }: { size: number; accent: string }) {
         <circle r="7" fill={accent} style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
         <text textAnchor="middle" y="3.5" fontSize="10" fontWeight="bold" fontFamily="serif" fill="#ffffff">$</text>
       </g>
-      <style>{`.frame-laurel { animation: laurelGlow 3s ease-in-out infinite; } @keyframes laurelGlow { 0%, 100% { filter: brightness(1) } 50% { filter: brightness(1.3) } } .av-cos-interactive:hover .frame-laurel { animation-duration: 1.2s; }`}</style>
+      <style>{`.frame-laurel { animation: laurelGlow 3s ease-in-out infinite; } @keyframes laurelGlow { 0%, 100% { filter: brightness(1) } 50% { filter: brightness(1.3) } } .av-cos-wrap[data-anim="always"]:hover .frame-laurel, .av-cos-wrap[data-anim="hover"]:hover .frame-laurel { animation-duration: 1.2s; }`}</style>
     </svg>
   );
 }
@@ -226,7 +238,7 @@ function FrameCoroaDiamante({ size, accent }: { size: number; accent: string }) 
             fill="#ffffff" style={{ ["--i" as string]: i, filter: `drop-shadow(0 0 3px ${accent})` }} />
         ))}
       </g>
-      <style>{`.coroa-diamond { animation: coroaTwinkle 2s ease-in-out calc(var(--i) * 0.3s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes coroaTwinkle { 0%, 100% { opacity: 0.7; transform: scale(1) } 50% { opacity: 1; transform: scale(1.3) } } .av-cos-interactive:hover .coroa-diamond { animation-duration: 0.7s; }`}</style>
+      <style>{`.coroa-diamond { animation: coroaTwinkle 2s ease-in-out calc(var(--i) * 0.3s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes coroaTwinkle { 0%, 100% { opacity: 0.7; transform: scale(1) } 50% { opacity: 1; transform: scale(1.3) } } .av-cos-wrap[data-anim="always"]:hover .coroa-diamond, .av-cos-wrap[data-anim="hover"]:hover .coroa-diamond { animation-duration: 0.7s; }`}</style>
     </svg>
   );
 }
@@ -246,7 +258,7 @@ function FrameAsasTouro({ size, accent }: { size: number; accent: string }) {
           fill={accent} stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.4" opacity="0.9"
           style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
       </g>
-      <style>{`.asa { animation: asaFlap 3s ease-in-out infinite; transform-box: fill-box; } .asa-l { transform-origin: right center; } .asa-r { transform-origin: left center; } @keyframes asaFlap { 0%, 100% { transform: scaleY(1) } 50% { transform: scaleY(0.7) } } .av-cos-interactive:hover .asa { animation-duration: 0.8s; }`}</style>
+      <style>{`.asa { animation: asaFlap 3s ease-in-out infinite; transform-box: fill-box; } .asa-l { transform-origin: right center; } .asa-r { transform-origin: left center; } @keyframes asaFlap { 0%, 100% { transform: scaleY(1) } 50% { transform: scaleY(0.7) } } .av-cos-wrap[data-anim="always"]:hover .asa, .av-cos-wrap[data-anim="hover"]:hover .asa { animation-duration: 0.8s; }`}</style>
     </svg>
   );
 }
@@ -261,7 +273,7 @@ function FramePixRing({ size, accent }: { size: number; accent: string }) {
             style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
         </g>
       ))}
-      <style>{`.frame-pix { animation: pixRotate 10s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-interactive:hover .frame-pix { animation-duration: 3s; } .pix-block { animation: pixBlink 1.5s ease-in-out var(--delay) infinite; } @keyframes pixRotate { from { transform: rotate(0) } to { transform: rotate(360deg) } } @keyframes pixBlink { 0%, 100% { opacity: 0.4 } 50% { opacity: 1 } }`}</style>
+      <style>{`.frame-pix { animation: pixRotate 10s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .frame-pix, .av-cos-wrap[data-anim="hover"]:hover .frame-pix { animation-duration: 3s; } .pix-block { animation: pixBlink 1.5s ease-in-out var(--delay) infinite; } @keyframes pixRotate { from { transform: rotate(0) } to { transform: rotate(360deg) } } @keyframes pixBlink { 0%, 100% { opacity: 0.4 } 50% { opacity: 1 } }`}</style>
     </svg>
   );
 }
@@ -300,7 +312,7 @@ function AuraFogoBtc({ size, accent }: { size: number; accent: string }) {
             style={{ ["--delay" as string]: `${p.delay}s`, filter: `drop-shadow(0 0 3px ${accent})` }} />
         ))}
       </svg>
-      <style>{`.aura-fogo-pulse { animation: fogoPulse 2s ease-in-out infinite; } .fogo-particle { animation: fogoRise 2s ease-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-interactive:hover .aura-fogo-pulse { animation-duration: 0.8s; } @keyframes fogoPulse { 0%, 100% { opacity: 0.6; transform: scale(1) } 50% { opacity: 1; transform: scale(1.1) } } @keyframes fogoRise { 0% { opacity: 0; transform: scale(1) translateY(0) } 20% { opacity: 1 } 100% { opacity: 0; transform: scale(0.3) translateY(-12px) } }`}</style>
+      <style>{`.aura-fogo-pulse { animation: fogoPulse 2s ease-in-out infinite; } .fogo-particle { animation: fogoRise 2s ease-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .aura-fogo-pulse, .av-cos-wrap[data-anim="hover"]:hover .aura-fogo-pulse { animation-duration: 0.8s; } @keyframes fogoPulse { 0%, 100% { opacity: 0.6; transform: scale(1) } 50% { opacity: 1; transform: scale(1.1) } } @keyframes fogoRise { 0% { opacity: 0; transform: scale(1) translateY(0) } 20% { opacity: 1 } 100% { opacity: 0; transform: scale(0.3) translateY(-12px) } }`}</style>
     </div>
   );
 }
@@ -312,7 +324,7 @@ function AuraVerdeLucro({ size, accent }: { size: number; accent: string }) {
         position: "absolute", inset: 0, borderRadius: "50%",
         background: `radial-gradient(circle, ${accent}50 30%, ${accent}15 55%, transparent 70%)`,
       }} />
-      <style>{`.aura-verde-shimmer { animation: verdeShimmer 3s ease-in-out infinite; } .av-cos-interactive:hover .aura-verde-shimmer { animation-duration: 1s; } @keyframes verdeShimmer { 0%, 100% { opacity: 0.7; filter: brightness(1) } 50% { opacity: 1; filter: brightness(1.4) } }`}</style>
+      <style>{`.aura-verde-shimmer { animation: verdeShimmer 3s ease-in-out infinite; } .av-cos-wrap[data-anim="always"]:hover .aura-verde-shimmer, .av-cos-wrap[data-anim="hover"]:hover .aura-verde-shimmer { animation-duration: 1s; } @keyframes verdeShimmer { 0%, 100% { opacity: 0.7; filter: brightness(1) } 50% { opacity: 1; filter: brightness(1.4) } }`}</style>
     </div>
   );
 }
@@ -324,7 +336,7 @@ function AuraVermelhoRekt({ size, accent }: { size: number; accent: string }) {
         position: "absolute", inset: 0, borderRadius: "50%",
         background: `radial-gradient(circle, ${accent}50 25%, transparent 60%)`,
       }} />
-      <style>{`.aura-rekt { animation: rektGlitch 1.5s steps(4) infinite; } .av-cos-interactive:hover .aura-rekt { animation-duration: 0.4s; } @keyframes rektGlitch { 0% { transform: translate(0, 0) } 25% { transform: translate(-1px, 1px) } 50% { transform: translate(1px, -1px) } 75% { transform: translate(-1px, -1px) } 100% { transform: translate(0, 0) } }`}</style>
+      <style>{`.aura-rekt { animation: rektGlitch 1.5s steps(4) infinite; } .av-cos-wrap[data-anim="always"]:hover .aura-rekt, .av-cos-wrap[data-anim="hover"]:hover .aura-rekt { animation-duration: 0.4s; } @keyframes rektGlitch { 0% { transform: translate(0, 0) } 25% { transform: translate(-1px, 1px) } 50% { transform: translate(1px, -1px) } 75% { transform: translate(-1px, -1px) } 100% { transform: translate(0, 0) } }`}</style>
     </div>
   );
 }
@@ -347,7 +359,7 @@ function AuraMatrixRain({ size, accent }: { size: number; accent: string }) {
           </text>
         ))}
       </svg>
-      <style>{`.matrix-col { animation: matrixDrop var(--dur) linear var(--delay) infinite; } .av-cos-interactive:hover .matrix-col { animation-duration: calc(var(--dur) * 0.5); } @keyframes matrixDrop { 0% { transform: translateY(-20px); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(110px); opacity: 0 } }`}</style>
+      <style>{`.matrix-col { animation: matrixDrop var(--dur) linear var(--delay) infinite; } .av-cos-wrap[data-anim="always"]:hover .matrix-col, .av-cos-wrap[data-anim="hover"]:hover .matrix-col { animation-duration: calc(var(--dur) * 0.5); } @keyframes matrixDrop { 0% { transform: translateY(-20px); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(110px); opacity: 0 } }`}</style>
     </div>
   );
 }
@@ -358,7 +370,7 @@ function AuraNeonRing({ size, accent }: { size: number; accent: string }) {
       <circle cx="50" cy="50" r="46" fill="none" stroke={accent} strokeWidth="3" opacity="0.4" className="neon-ring-outer" />
       <circle cx="50" cy="50" r="42" fill="none" stroke={accent} strokeWidth="1.5" opacity="0.8" className="neon-ring-inner"
         style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
-      <style>{`.neon-ring-outer { animation: neonPulseOuter 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; } .neon-ring-inner { animation: neonPulseInner 2s ease-in-out infinite; } .av-cos-interactive:hover .neon-ring-outer, .av-cos-interactive:hover .neon-ring-inner { animation-duration: 0.6s; } @keyframes neonPulseOuter { 0%, 100% { opacity: 0.3; transform: scale(1) } 50% { opacity: 0.7; transform: scale(1.05) } } @keyframes neonPulseInner { 0%, 100% { opacity: 0.8; filter: brightness(1) drop-shadow(0 0 4px currentColor) } 50% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 10px currentColor) } }`}</style>
+      <style>{`.neon-ring-outer { animation: neonPulseOuter 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; } .neon-ring-inner { animation: neonPulseInner 2s ease-in-out infinite; } .av-cos-wrap[data-anim="always"]:hover .neon-ring-outer, .av-cos-wrap[data-anim="hover"]:hover .neon-ring-outer, .av-cos-wrap[data-anim="always"]:hover .neon-ring-inner, .av-cos-wrap[data-anim="hover"]:hover .neon-ring-inner { animation-duration: 0.6s; } @keyframes neonPulseOuter { 0%, 100% { opacity: 0.3; transform: scale(1) } 50% { opacity: 0.7; transform: scale(1.05) } } @keyframes neonPulseInner { 0%, 100% { opacity: 0.8; filter: brightness(1) drop-shadow(0 0 4px currentColor) } 50% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 10px currentColor) } }`}</style>
     </svg>
   );
 }
@@ -376,7 +388,7 @@ function AuraDouradaPayout({ size, accent }: { size: number; accent: string }) {
           <line key={i} x1="50" y1="50" x2="50" y2="8" stroke={accent} strokeWidth="1.5" opacity="0.6" transform={`rotate(${r.angle}, 50, 50)`} style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
         ))}
       </g>
-      <style>{`.dourada-bg { animation: douradaBg 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; } .dourada-rays { animation: douradaRays 12s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-interactive:hover .dourada-rays { animation-duration: 3s; } @keyframes douradaBg { 0%, 100% { opacity: 0.6 } 50% { opacity: 1 } } @keyframes douradaRays { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+      <style>{`.dourada-bg { animation: douradaBg 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; } .dourada-rays { animation: douradaRays 12s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .dourada-rays, .av-cos-wrap[data-anim="hover"]:hover .dourada-rays { animation-duration: 3s; } @keyframes douradaBg { 0%, 100% { opacity: 0.6 } 50% { opacity: 1 } } @keyframes douradaRays { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
     </svg>
   );
 }
@@ -392,7 +404,7 @@ function AuraRelampago({ size, accent }: { size: number; accent: string }) {
         </g>
       ))}
       <circle cx="50" cy="50" r="42" fill="none" stroke={accent} strokeWidth="0.5" opacity="0.3" />
-      <style>{`.bolt { animation: boltFlash 2.5s ease-in-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-interactive:hover .bolt { animation-duration: 0.9s; } @keyframes boltFlash { 0%, 40%, 100% { opacity: 0 } 45%, 55% { opacity: 1 } }`}</style>
+      <style>{`.bolt { animation: boltFlash 2.5s ease-in-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .bolt, .av-cos-wrap[data-anim="hover"]:hover .bolt { animation-duration: 0.9s; } @keyframes boltFlash { 0%, 40%, 100% { opacity: 0 } 45%, 55% { opacity: 1 } }`}</style>
     </svg>
   );
 }
@@ -415,7 +427,7 @@ function AuraCosmos({ size, accent }: { size: number; accent: string }) {
           />
         ))}
       </svg>
-      <style>{`.cosmos-orbit { animation: cosmosSpin 20s linear infinite; transform-origin: center; transform-box: fill-box; } .cosmos-star { animation: cosmosTwinkle 2.5s ease-in-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-interactive:hover .cosmos-orbit { animation-duration: 5s; } @keyframes cosmosSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } } @keyframes cosmosTwinkle { 0%, 100% { opacity: 0.4; transform: scale(0.5) } 50% { opacity: 1; transform: scale(1.2) } }`}</style>
+      <style>{`.cosmos-orbit { animation: cosmosSpin 20s linear infinite; transform-origin: center; transform-box: fill-box; } .cosmos-star { animation: cosmosTwinkle 2.5s ease-in-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .cosmos-orbit, .av-cos-wrap[data-anim="hover"]:hover .cosmos-orbit { animation-duration: 5s; } @keyframes cosmosSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } } @keyframes cosmosTwinkle { 0%, 100% { opacity: 0.4; transform: scale(0.5) } 50% { opacity: 1; transform: scale(1.2) } }`}</style>
     </div>
   );
 }

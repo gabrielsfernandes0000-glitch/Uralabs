@@ -166,7 +166,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           {/* Banner cosmético animado (CosmeticBanner component) */}
           {hasBanner && (
             <>
-              <CosmeticBanner slug={bannerSlug} variant="full" />
+              <CosmeticBanner slug={bannerSlug} variant="full" animated="always" />
               {/* Overlay gradient pra garantir legibilidade do texto */}
               <div className="absolute inset-0 pointer-events-none" style={{
                 background: "linear-gradient(to bottom, rgba(20,20,23,0.15) 0%, rgba(20,20,23,0.55) 60%, rgba(20,20,23,0.85) 100%)",
@@ -191,6 +191,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
                 size={80}
                 frameSlug={profile?.cosmetics?.avatar_frame?.prize_slug ?? null}
                 auraSlug={profile?.cosmetics?.avatar_effect?.prize_slug ?? null}
+                animated="always"
               />
             </div>
             <div className="flex-1 min-w-0">

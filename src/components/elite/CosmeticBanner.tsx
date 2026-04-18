@@ -29,10 +29,18 @@ export type BannerSlug =
 
 export type BannerVariant = "full" | "sidebar" | "card" | "strip";
 
+/** Controle de performance das animações:
+ * - "always": mount + loop ambient + hover boost. Usar em perfil/modal (1 instância).
+ * - "hover":  mount one-shot, estático depois, animação só no hover. DEFAULT pra listas.
+ * - "off":    só renderiza shape inicial, nenhuma animação. Pra thumbnails estáticos.
+ */
+export type AnimMode = "always" | "hover" | "off";
+
 export interface CosmeticBannerProps {
   slug: BannerSlug | string | null | undefined;
   variant?: BannerVariant;
-  /** Desliga o hover boost (ex: em listagens densas pra não poluir) */
+  animated?: AnimMode;
+  /** @deprecated use `animated` — kept pra não quebrar callers */
   interactive?: boolean;
   className?: string;
 }
@@ -58,10 +66,14 @@ export function bannerAccent(slug: BannerSlug | string | null | undefined): stri
   return isBannerSlug(slug) ? BANNER_ACCENT[slug] : "#FF5500";
 }
 
-export function CosmeticBanner({ slug, variant = "full", interactive = true, className }: CosmeticBannerProps) {
+export function CosmeticBanner({ slug, variant = "full", animated, interactive, className }: CosmeticBannerProps) {
   if (!isBannerSlug(slug)) return null;
 
-  const commonProps = { variant, interactive, accent: BANNER_ACCENT[slug] };
+  // Backward compat: se veio interactive={false} (legado "ambient ON"), mapeia pra "always".
+  // Se nada passado, default é "hover" (perf-safe).
+  const anim: AnimMode = animated ?? (interactive === false ? "always" : "hover");
+
+  const commonProps = { variant, animated: anim, accent: BANNER_ACCENT[slug] };
 
   switch (slug) {
     case "bull-run":         return <BullRun       {...commonProps} className={className} />;
@@ -77,23 +89,24 @@ export function CosmeticBanner({ slug, variant = "full", interactive = true, cla
 
 interface BannerChildProps {
   variant: BannerVariant;
-  interactive: boolean;
+  animated: AnimMode;
   accent: string;
   className?: string;
 }
 
-/** Wrapper comum: aspect ratio + overflow + CSS vars expostas + hover state */
+/** Wrapper comum: aplica `data-anim` pras regras CSS dentro de cada variant.
+ *  Ver AnimMode pra semântica de cada valor. */
 function Frame({
-  children, variant, interactive, accent, style, className, animName,
+  children, variant, animated, accent, style, className, animName,
 }: BannerChildProps & {
   children: React.ReactNode;
   style?: React.CSSProperties;
   animName: string;
 }) {
-  const groupClass = interactive ? `banner-frame banner-${animName}` : `banner-frame banner-${animName} no-hover`;
   return (
     <div
-      className={`${groupClass} ${className ?? ""}`}
+      className={`banner-frame banner-${animName} ${className ?? ""}`}
+      data-anim={animated}
       style={{
         position: "absolute",
         inset: 0,
@@ -113,7 +126,7 @@ function Frame({
 /* ──────────────────────────────────────────────────────────
    1. BULL RUN — velas verdes escalando + glow pulsante
    ────────────────────────────────────────────────────── */
-function BullRun({ variant, interactive, accent, className }: BannerChildProps) {
+function BullRun({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="up" className={className} />;
   const candles = [
     { x: 60,  openY: 120, closeY: 105, h: 95 },
@@ -124,7 +137,7 @@ function BullRun({ variant, interactive, accent, className }: BannerChildProps) 
     { x: 310, openY: 55,  closeY: 22,  h: 14 },
   ];
   return (
-    <Frame animName="bull-run" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="bull-run" variant={variant} animated={animated} accent={accent} className={className}>
       {/* Gradient base */}
       <div className="banner-base" style={{
         position: "absolute", inset: 0,
@@ -157,7 +170,7 @@ function BullRun({ variant, interactive, accent, className }: BannerChildProps) 
       <style>{`
         .banner-bull-run .bull-candle { animation: bullAppear 0.5s ease-out calc(var(--i) * 0.15s) backwards; transform-origin: center bottom; }
         .banner-bull-run:hover .bull-candle { animation: bullPulse 0.8s ease-in-out calc(var(--i) * 0.1s) infinite; }
-        .banner-bull-run.no-hover .bull-candle { animation: bullAppear 0.5s ease-out calc(var(--i) * 0.15s) backwards, bullPulse 3s ease-in-out calc(var(--i) * 0.15s) infinite 0.5s; }
+        .banner-bull-run[data-anim="always"] .bull-candle { animation: bullAppear 0.5s ease-out calc(var(--i) * 0.15s) backwards, bullPulse 3s ease-in-out calc(var(--i) * 0.15s) infinite 0.5s; }
         @keyframes bullAppear { from { transform: translateY(12px) scaleY(0.3); opacity: 0 } to { transform: translateY(0) scaleY(1); opacity: 1 } }
         @keyframes bullPulse { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
       `}</style>
@@ -168,7 +181,7 @@ function BullRun({ variant, interactive, accent, className }: BannerChildProps) 
 /* ──────────────────────────────────────────────────────────
    2. BEAR CAVE — velas vermelhas caindo + fog drift
    ────────────────────────────────────────────────────── */
-function BearCave({ variant, interactive, accent, className }: BannerChildProps) {
+function BearCave({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="down" className={className} />;
   const candles = [
     { x: 60,  openY: 55,  closeY: 85,  h: 100 },
@@ -179,7 +192,7 @@ function BearCave({ variant, interactive, accent, className }: BannerChildProps)
     { x: 310, openY: 125, closeY: 155, h: 170 },
   ];
   return (
-    <Frame animName="bear-cave" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="bear-cave" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `linear-gradient(180deg, transparent 0%, ${accent}30 100%), radial-gradient(ellipse 80% 60% at 50% 100%, ${accent}35, transparent 60%)`,
@@ -223,7 +236,7 @@ function BearCave({ variant, interactive, accent, className }: BannerChildProps)
 /* ──────────────────────────────────────────────────────────
    3. DIAMOND HANDS — diamante + 8 sparkles com twinkle
    ────────────────────────────────────────────────────── */
-function DiamondHands({ variant, interactive, accent, className }: BannerChildProps) {
+function DiamondHands({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="sparkle" className={className} />;
   const sparkles = Array.from({ length: 10 }, (_, i) => ({
     x: 40 + (i * 36) % 320 + (i % 3) * 10,
@@ -232,7 +245,7 @@ function DiamondHands({ variant, interactive, accent, className }: BannerChildPr
     delay: (i * 0.35) % 2.5,
   }));
   return (
-    <Frame animName="diamond-hands" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="diamond-hands" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `linear-gradient(135deg, ${accent}22 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 50% 50%, ${accent}28, transparent 70%)`,
@@ -277,10 +290,10 @@ function DiamondHands({ variant, interactive, accent, className }: BannerChildPr
 /* ──────────────────────────────────────────────────────────
    4. SMC WIZARD — OBs e FVG iluminando em sequência
    ────────────────────────────────────────────────────── */
-function SmcWizard({ variant, interactive, accent, className }: BannerChildProps) {
+function SmcWizard({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="zones" className={className} />;
   return (
-    <Frame animName="smc-wizard" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="smc-wizard" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `linear-gradient(180deg, ${accent}18 0%, transparent 60%), radial-gradient(ellipse 80% 50% at 50% 50%, ${accent}22, transparent 70%)`,
@@ -316,7 +329,7 @@ function SmcWizard({ variant, interactive, accent, className }: BannerChildProps
       </svg>
       <style>{`
         .banner-smc-wizard .smc-ob { animation: smcFade 0.6s ease-out calc(var(--i) * 0.2s) backwards; }
-        .banner-smc-wizard.no-hover .smc-ob { animation: smcFade 0.6s ease-out calc(var(--i) * 0.2s) backwards, smcGlow 5s ease-in-out calc(var(--i) * 0.5s) infinite 0.8s; }
+        .banner-smc-wizard[data-anim="always"] .smc-ob { animation: smcFade 0.6s ease-out calc(var(--i) * 0.2s) backwards, smcGlow 5s ease-in-out calc(var(--i) * 0.5s) infinite 0.8s; }
         .banner-smc-wizard:hover .smc-ob { animation: smcGlow 1.2s ease-in-out calc(var(--i) * 0.15s) infinite; }
         @keyframes smcFade { from { opacity: 0; transform: scale(0.7) } to { opacity: 1; transform: scale(1) } }
         @keyframes smcGlow { 0%, 100% { opacity: 0.8 } 50% { opacity: 1; filter: brightness(1.4) } }
@@ -328,10 +341,10 @@ function SmcWizard({ variant, interactive, accent, className }: BannerChildProps
 /* ──────────────────────────────────────────────────────────
    5. LIQUIDITY HUNTER — sweep varrendo stops
    ────────────────────────────────────────────────────── */
-function LiquidityHunter({ variant, interactive, accent, className }: BannerChildProps) {
+function LiquidityHunter({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="sweep" className={className} />;
   return (
-    <Frame animName="liquidity-hunter" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="liquidity-hunter" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `linear-gradient(180deg, transparent 0%, ${accent}20 100%)`,
@@ -372,7 +385,7 @@ function LiquidityHunter({ variant, interactive, accent, className }: BannerChil
 /* ──────────────────────────────────────────────────────────
    6. BTC FIRE — Bitcoin logo + particulas de fogo subindo
    ────────────────────────────────────────────────────── */
-function BtcFire({ variant, interactive, accent, className }: BannerChildProps) {
+function BtcFire({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="fire" className={className} />;
   const particles = Array.from({ length: 20 }, (_, i) => ({
     x: 150 + (i * 13) % 100,
@@ -381,7 +394,7 @@ function BtcFire({ variant, interactive, accent, className }: BannerChildProps) 
     duration: 2 + (i % 3) * 0.5,
   }));
   return (
-    <Frame animName="btc-fire" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="btc-fire" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `radial-gradient(ellipse 50% 80% at 50% 100%, ${accent}45, transparent 60%), linear-gradient(180deg, transparent 0%, ${accent}18 100%)`,
@@ -427,10 +440,10 @@ function BtcFire({ variant, interactive, accent, className }: BannerChildProps) 
 /* ──────────────────────────────────────────────────────────
    7. JUDAS SWING — fake out + reversão violenta
    ────────────────────────────────────────────────────── */
-function JudasSwing({ variant, interactive, accent, className }: BannerChildProps) {
+function JudasSwing({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="zigzag" className={className} />;
   return (
-    <Frame animName="judas-swing" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="judas-swing" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `linear-gradient(135deg, ${accent}22 0%, transparent 60%)`,
@@ -476,7 +489,7 @@ function JudasSwing({ variant, interactive, accent, className }: BannerChildProp
 /* ──────────────────────────────────────────────────────────
    8. DEGEN NIGHTS — grid cyberpunk neon + pulse circuits
    ────────────────────────────────────────────────────── */
-function DegenNights({ variant, interactive, accent, className }: BannerChildProps) {
+function DegenNights({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="neon" className={className} />;
   const nodes = [
     { x: 50,  y: 60  }, { x: 130, y: 40  }, { x: 210, y: 70  }, { x: 280, y: 50  }, { x: 350, y: 90  },
@@ -484,7 +497,7 @@ function DegenNights({ variant, interactive, accent, className }: BannerChildPro
   ];
   const edges: Array<[number, number]> = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [2, 6], [6, 9], [9, 1], [4, 8], [7, 8], [5, 6], [6, 7]];
   return (
-    <Frame animName="degen-nights" variant={variant} interactive={interactive} accent={accent} className={className}>
+    <Frame animName="degen-nights" variant={variant} animated={animated} accent={accent} className={className}>
       <div style={{
         position: "absolute", inset: 0,
         background: `radial-gradient(ellipse 60% 80% at 20% 30%, ${accent}30, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 70%, ${accent}25, transparent 60%), #0a0a0c`,

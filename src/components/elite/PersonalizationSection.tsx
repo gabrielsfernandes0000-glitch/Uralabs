@@ -172,7 +172,7 @@ function CosmeticCard({
         background: bannerOK ? "transparent" : "#141417",
       }}>
         {bannerOK && (
-          <CosmeticBanner slug={cosmetic.prize_slug} variant="card" interactive={true} />
+          <CosmeticBanner slug={cosmetic.prize_slug} variant="card" animated="always" />
         )}
         {(frameSlug || auraSlug) && (
           <div className="relative">
@@ -182,7 +182,7 @@ function CosmeticCard({
               size={54}
               frameSlug={frameSlug ? `frame-${frameSlug}` : null}
               auraSlug={auraSlug ? `effect-${auraSlug}` : null}
-              interactive={true}
+              animated="always"
             />
           </div>
         )}

@@ -72,7 +72,7 @@ export function EliteSidebar({
             className="absolute top-0 left-0 right-0 h-[220px] pointer-events-none opacity-50"
             style={{ maskImage: "linear-gradient(to bottom, black 30%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)" }}
           >
-            <CosmeticBanner slug={bannerSlug} variant="sidebar" interactive={false} />
+            <CosmeticBanner slug={bannerSlug} variant="sidebar" animated="always" />
           </div>
         )}
 
@@ -172,27 +172,35 @@ export function EliteSidebar({
             </Link>
           )}
 
-          {/* User */}
+          {/* User — avatar + nome clicáveis → /elite/perfil (personalização) */}
           <div className="p-4">
-            <div className="flex items-center gap-3 px-3.5 py-3.5 rounded-xl bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.05] hover:border-white/[0.08] transition-all">
-              <div className="relative">
-                {frameSlug || effectSlug ? (
-                  <AvatarWithCosmetics
-                    src={avatar} name={displayName} size={36}
-                    frameSlug={frameSlug} auraSlug={effectSlug}
-                  />
-                ) : (
-                  <Avatar src={avatar} name={displayName} size={36} className="rounded-lg" />
-                )}
-                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0a0a0c] z-10" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-white/80 truncate">{displayName}</p>
-                <p className={`text-[9px] font-bold tracking-[0.15em] uppercase ${session.isElite ? "text-brand-500/60" : "text-blue-500/60"}`}>
-                  {session.isElite ? "Elite 4.0" : "VIP"}
-                </p>
-              </div>
-              <a href="/api/auth/logout" className="p-2 rounded-lg text-white/15 hover:text-red-400 hover:bg-red-500/[0.06] transition-all" title="Sair">
+            <div className="flex items-center gap-2 px-2 py-2.5 rounded-xl bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.05] hover:border-white/[0.08] transition-all">
+              <Link
+                href="/elite/perfil"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 flex-1 min-w-0 px-1.5 rounded-lg hover:bg-white/[0.02] transition-colors"
+                title="Editar perfil e cosméticos"
+              >
+                <div className="relative">
+                  {frameSlug || effectSlug ? (
+                    <AvatarWithCosmetics
+                      src={avatar} name={displayName} size={36}
+                      frameSlug={frameSlug} auraSlug={effectSlug}
+                      animated="always"
+                    />
+                  ) : (
+                    <Avatar src={avatar} name={displayName} size={36} className="rounded-lg" />
+                  )}
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0a0a0c] z-10" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-white/80 truncate">{displayName}</p>
+                  <p className={`text-[9px] font-bold tracking-[0.15em] uppercase ${session.isElite ? "text-brand-500/60" : "text-blue-500/60"}`}>
+                    {session.isElite ? "Elite 4.0" : "VIP"}
+                  </p>
+                </div>
+              </Link>
+              <a href="/api/auth/logout" className="p-2 rounded-lg text-white/15 hover:text-red-400 hover:bg-red-500/[0.06] transition-all shrink-0" title="Sair">
                 <LogOut className="w-4 h-4" />
               </a>
             </div>

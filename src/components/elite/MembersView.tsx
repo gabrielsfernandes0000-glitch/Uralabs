@@ -110,7 +110,7 @@ export function MembersView() {
                 {/* Banner thumb card-variant (~55px de altura) */}
                 <div className="relative h-[55px] overflow-hidden">
                   {hasBanner ? (
-                    <CosmeticBanner slug={m.bannerSlug} variant="card" interactive={false} />
+                    <CosmeticBanner slug={m.bannerSlug} variant="card" animated="hover" />
                   ) : (
                     <div className="absolute inset-0" style={{
                       background: `linear-gradient(135deg, ${accent}20 0%, transparent 70%)`,
@@ -130,7 +130,7 @@ export function MembersView() {
                       <AvatarWithCosmetics
                         src={m.avatarUrl} name={m.globalName} size={48}
                         frameSlug={m.frameSlug} auraSlug={m.effectSlug}
-                        interactive={false}
+                        animated="hover"
                       />
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
