@@ -314,31 +314,33 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
 
   // Exchange selector view
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <div className="text-center pt-8">
-        <h1 className="text-[28px] font-bold text-white tracking-tight mb-3">Conectar Corretora</h1>
-        <p className="text-[14px] text-white/40 max-w-md mx-auto leading-relaxed">
-          Conecte sua conta para ver performance, PnL, posicoes abertas e insights — tudo em um lugar so.
-        </p>
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Compact header */}
+      <div className="flex items-start justify-between gap-6 flex-wrap">
+        <div>
+          <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight">Conectar Corretora</h1>
+          <p className="text-[13px] text-white/40 mt-1 max-w-xl">
+            Conecte sua conta para ver performance, PnL e posições abertas — tudo em um lugar só.
+          </p>
+        </div>
+
+        {/* Security badges — compact inline */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {[
+            { icon: Shield, title: "Somente leitura" },
+            { icon: Eye,    title: "Dados privados" },
+            { icon: Zap,    title: "AES-256" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06]">
+              <item.icon className="w-3 h-3 text-white/35" />
+              <span className="text-[10.5px] text-white/50 font-medium">{item.title}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Security badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {[
-          { icon: Shield, title: "Somente leitura", desc: "Sem acesso a trades ou saques" },
-          { icon: Eye, title: "Dados privados", desc: "So voce ve suas informacoes" },
-          { icon: Zap, title: "Criptografia AES-256", desc: "Keys encriptadas no servidor" },
-        ].map((item, i) => (
-          <div key={i} className="relative overflow-hidden rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
-            <item.icon className="w-4 h-4 text-white/40 mb-2.5" />
-            <p className="text-[13px] font-semibold text-white/70">{item.title}</p>
-            <p className="text-[11px] text-white/30 mt-0.5">{item.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Exchange list */}
-      <div className="space-y-3">
+      {/* Exchange grid — 2 columns on md, 3 on lg */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {EXCHANGES.map((ex) => {
           const isConnected = connectedExchanges.includes(ex.id);
           return (
@@ -354,34 +356,31 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
               <div className="absolute inset-0 rounded-2xl opacity-30 group-hover:opacity-50 transition-opacity" style={{ background: `linear-gradient(135deg, ${ex.color}40, transparent 60%)` }} />
 
               {/* Button body */}
-              <div className="relative rounded-2xl px-6 py-5 transition-colors" style={{ backgroundColor: isConnected ? "#111" : ex.bg }}>
+              <div className="relative rounded-2xl px-4 py-4 transition-colors" style={{ backgroundColor: isConnected ? "#111" : ex.bg }}>
                 {/* Subtle glow */}
                 <div className="absolute top-0 left-0 w-1/2 h-full opacity-20 pointer-events-none" style={{ background: `radial-gradient(ellipse at 20% 50%, ${ex.color}30, transparent 70%)` }} />
 
-                <div className="relative z-10 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="relative z-10 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                       {ex.logo ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={ex.logo} alt={ex.name} className="w-10 h-10 object-contain" />
+                        <img src={ex.logo} alt={ex.name} className="w-8 h-8 object-contain" />
                       ) : (
-                        <span className="text-[22px] font-black italic" style={{ color: ex.textColor }}>{ex.shortLabel}</span>
+                        <span className="text-[18px] font-black italic" style={{ color: ex.textColor }}>{ex.shortLabel}</span>
                       )}
                     </div>
-                    <div>
-                      <h3 className="text-[16px] font-bold" style={{ color: ex.textColor }}>{ex.name}</h3>
-                      <p className="text-[11px] mt-0.5" style={{ color: ex.textColor + "50" }}>{ex.desc}</p>
+                    <div className="min-w-0">
+                      <h3 className="text-[14px] font-bold truncate" style={{ color: ex.textColor }}>{ex.name}</h3>
+                      <p className="text-[10.5px] mt-0.5 truncate" style={{ color: ex.textColor + "55" }}>{ex.desc}</p>
                     </div>
                   </div>
                   {isConnected ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/15 border border-green-500/25 text-[10px] font-bold text-green-400 uppercase tracking-wider">
-                      <Check className="w-3 h-3" /> Conectada
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/15 border border-green-500/25 text-[9px] font-bold text-green-400 uppercase tracking-wider shrink-0">
+                      <Check className="w-2.5 h-2.5" /> OK
                     </span>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: ex.textColor + "80" }}>Conectar</span>
-                      <ChevronRight className="w-5 h-5 transition-all group-hover:translate-x-0.5" style={{ color: ex.textColor + "40" }} />
-                    </div>
+                    <ChevronRight className="w-4 h-4 shrink-0 transition-all group-hover:translate-x-0.5" style={{ color: ex.textColor + "50" }} />
                   )}
                 </div>
               </div>

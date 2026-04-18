@@ -54,105 +54,105 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
     );
   }
 
+  const moods = [
+    { v: 1, label: "P\u00e9ssimo",  color: "#EF4444" },
+    { v: 2, label: "Ruim",        color: "#F59E0B" },
+    { v: 3, label: "Normal",      color: "#6B7280" },
+    { v: 4, label: "Bom",         color: "#10B981" },
+    { v: 5, label: "Excelente",   color: "#FF5500" },
+  ];
+
   return (
-    <div className="space-y-5">
-      {/* Header with accent */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#151518] to-[#111114] p-6">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-        <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-white/[0.02] blur-[100px] pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
-              <FileText className="w-4 h-4 text-white/50" />
-            </div>
-            <h3 className="text-[20px] font-bold text-white tracking-tight">Plano Pré-Mercado</h3>
+    <div className="space-y-4">
+      {/* Compact header */}
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
+          <FileText className="w-4 h-4 text-white/50" />
+        </div>
+        <div>
+          <h3 className="text-[16px] font-bold text-white tracking-tight leading-tight">Plano Pré-Mercado</h3>
+          <p className="text-[11.5px] text-white/40">Preencha antes do mercado abrir</p>
+        </div>
+      </div>
+
+      {/* Mood + Bias row (grid 2 cols on md+) */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Emotional state — horizontal mini pills */}
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+          <p className="text-[12px] text-white/70 font-semibold mb-2.5">Como você está?</p>
+          <div className="grid grid-cols-5 gap-1.5">
+            {moods.map((e) => (
+              <button key={e.v} onClick={() => setEmotional(e.v)}
+                className={`flex flex-col items-center gap-1 px-1 py-2 rounded-lg border transition-all ${
+                  emotional === e.v
+                    ? "border-white/[0.14] bg-white/[0.05]"
+                    : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
+                }`}
+                style={emotional === e.v ? { borderColor: e.color + "55", backgroundColor: e.color + "10" } : undefined}>
+                <div className="w-6 h-1 rounded-full" style={{ backgroundColor: emotional === e.v ? e.color : e.color + "40" }} />
+                <span className={`text-[10px] font-medium ${emotional === e.v ? "text-white/85" : "text-white/40"}`}>{e.label}</span>
+              </button>
+            ))}
           </div>
-          <p className="text-[13px] text-white/40 ml-11">Preencha antes do mercado abrir. Monte sua análise e defina o plano.</p>
         </div>
-      </div>
 
-      {/* Emotional state */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
-        <p className="text-[14px] text-white/70 font-semibold mb-4">Como voc&ecirc; est&aacute; se sentindo agora?</p>
-        <div className="flex flex-col gap-1.5">
-          {[
-            { v: 1, label: "P\u00e9ssimo", color: "#EF4444" },
-            { v: 2, label: "Ruim", color: "#F59E0B" },
-            { v: 3, label: "Normal", color: "#6B7280" },
-            { v: 4, label: "Bom", color: "#10B981" },
-            { v: 5, label: "Excelente", color: "#FF5500" },
-          ].map((e) => (
-            <button key={e.v} onClick={() => setEmotional(e.v)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ${
-                emotional === e.v
-                  ? "border-white/[0.12] bg-white/[0.05]"
-                  : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
+        {/* Daily bias — compact buttons */}
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+          <p className="text-[12px] text-white/70 font-semibold mb-2.5">Viés do dia</p>
+          <div className="flex gap-2">
+            <button onClick={() => setBias("bullish")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border transition-all ${
+                bias === "bullish"
+                  ? "border-green-500/45 bg-green-500/[0.10] text-green-400"
+                  : "border-white/[0.05] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
               }`}>
-              <div className="w-1 h-5 rounded-full shrink-0" style={{ backgroundColor: emotional === e.v ? e.color : e.color + "40" }} />
-              <span className={`text-[13px] font-medium ${emotional === e.v ? "text-white/80" : "text-white/35"}`}>{e.label}</span>
-              <span className={`ml-auto text-[11px] font-mono ${emotional === e.v ? "text-white/40" : "text-white/15"}`}>{e.v}</span>
+              <ArrowUp className="w-4 h-4" />
+              <span className="text-[13px] font-bold">Bullish</span>
             </button>
-          ))}
+            <button onClick={() => setBias("bearish")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border transition-all ${
+                bias === "bearish"
+                  ? "border-red-500/45 bg-red-500/[0.10] text-red-400"
+                  : "border-white/[0.05] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
+              }`}>
+              <ArrowDown className="w-4 h-4" />
+              <span className="text-[13px] font-bold">Bearish</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Daily bias */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
-        <p className="text-[14px] text-white/70 font-semibold mb-4">Viés do dia</p>
-        <div className="flex gap-3 mb-4">
-          <button onClick={() => setBias("bullish")}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-200 ${
-              bias === "bullish"
-                ? "border-green-500/40 bg-green-500/[0.08] text-green-400 shadow-lg shadow-green-500/10 scale-[1.01]"
-                : "border-white/[0.04] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
-            }`}>
-            <ArrowUp className="w-5 h-5" />
-            <span className="text-[15px] font-bold">Bullish</span>
-          </button>
-          <button onClick={() => setBias("bearish")}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all duration-200 ${
-              bias === "bearish"
-                ? "border-red-500/40 bg-red-500/[0.08] text-red-400 shadow-lg shadow-red-500/10 scale-[1.01]"
-                : "border-white/[0.04] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
-            }`}>
-            <ArrowDown className="w-5 h-5" />
-            <span className="text-[15px] font-bold">Bearish</span>
-          </button>
-        </div>
+      {/* Bias reasoning — full width, compact */}
+      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+        <p className="text-[12px] text-white/70 font-semibold mb-2">Por que esse viés?</p>
         <textarea
           value={biasReason}
           onChange={(e) => setBiasReason(e.target.value)}
-          placeholder="Por que esse viés? (semanal, diário, liquidez varrida, sessão anterior...)"
-          className="w-full h-28 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
+          placeholder="Semanal, diário, liquidez varrida, sessão anterior..."
+          className="w-full h-20 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[12.5px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
         />
       </div>
 
-      {/* Key levels */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
-          <p className="text-[14px] text-white/70 font-semibold">Níveis-chave (OBs, FVGs, Liquidez)</p>
+      {/* Levels + Plan — side by side on desktop */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+          <p className="text-[12px] text-white/70 font-semibold mb-2">Níveis-chave (OBs, FVGs, Liquidez)</p>
+          <textarea
+            value={keyLevels}
+            onChange={(e) => setKeyLevels(e.target.value)}
+            placeholder="Ex: OB bullish 4h em 18.050 · BSL acima de 18.200..."
+            className="w-full h-24 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[12.5px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
+          />
         </div>
-        <textarea
-          value={keyLevels}
-          onChange={(e) => setKeyLevels(e.target.value)}
-          placeholder="Ex: OB bullish 4h em 18.050 · BSL acima de 18.200 · FVG em 18.100-18.120"
-          className="w-full h-24 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
-        />
-      </div>
-
-      {/* Plan */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
-          <p className="text-[14px] text-white/70 font-semibold">Plano de ação</p>
+        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+          <p className="text-[12px] text-white/70 font-semibold mb-2">Plano de ação</p>
+          <textarea
+            value={plan}
+            onChange={(e) => setPlan(e.target.value)}
+            placeholder="Se o preço varrer a SSL e reagir no OB, busco long com alvo em BSL..."
+            className="w-full h-24 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[12.5px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
+          />
         </div>
-        <textarea
-          value={plan}
-          onChange={(e) => setPlan(e.target.value)}
-          placeholder="Se o preço varrer a SSL e reagir no OB 4h, busco long com alvo em BSL. Se não varrer, fico de fora."
-          className="w-full h-28 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04] transition-all"
-        />
       </div>
 
       {/* Submit */}
@@ -164,8 +164,8 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           }
         }}
         disabled={!isComplete}
-        className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[15px] font-bold transition-all duration-200 ${
-          isComplete ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 hover:scale-[1.01]" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
+        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-bold transition-all ${
+          isComplete ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <Check className="w-4 h-4" />
         Salvar Prep Sheet
