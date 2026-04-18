@@ -292,37 +292,55 @@ function Thumb_Liquidity() {
 }
 
 function Thumb_Sessions() {
-  // 3 vertical bands: Asia / London / NY
-  const candles: CandleData[] = [
-    { x: 25, o: 115, h: 110, l: 128, c: 125, w: 6 },
-    { x: 50, o: 125, h: 115, l: 130, c: 120, w: 6 },
-    { x: 75, o: 120, h: 110, l: 128, c: 118, w: 6 },
-    { x: 100, o: 118, h: 112, l: 126, c: 120, w: 6 },
-    { x: 125, o: 120, h: 105, l: 125, c: 110, w: 6 },
-    // London
-    { x: 160, o: 110, h: 90,  l: 118, c: 92,  w: 7 },
-    { x: 190, o: 92,  h: 80,  l: 100, c: 85,  w: 7 },
-    { x: 220, o: 85,  h: 95,  l: 80,  c: 100, w: 7 }, // sweep up
-    { x: 250, o: 100, h: 95,  l: 125, c: 120, w: 7 }, // reverse
-    // NY
-    { x: 290, o: 120, h: 115, l: 150, c: 148, w: 8 },
-    { x: 325, o: 148, h: 142, l: 175, c: 170, w: 8 },
-    { x: 360, o: 170, h: 165, l: 195, c: 190, w: 8 },
+  // World clock — 3 stylized clocks representing the sessions
+  const clocks = [
+    { cx: 80,  label: "ASIA",    time: "03:00", color: C.blue,  handAngle: 90 },
+    { cx: 200, label: "LONDRES", time: "09:00", color: C.gold,  handAngle: 270 },
+    { cx: 320, label: "NY",      time: "14:30", color: C.brand, handAngle: 315 },
   ];
   return (
     <svg className="absolute inset-0 w-full h-full" viewBox={VB} preserveAspectRatio="xMidYMid slice">
-      {/* Session bands */}
-      <rect x="0"   y="0" width="145" height="220" fill={C.blue}   opacity="0.08" />
-      <rect x="145" y="0" width="130" height="220" fill={C.gold}   opacity="0.08" />
-      <rect x="275" y="0" width="125" height="220" fill={C.brand}  opacity="0.08" />
-      {/* Dividers */}
-      <line x1="145" y1="0" x2="145" y2="220" stroke={C.gold} strokeWidth="0.8" strokeDasharray="3 3" opacity="0.4" />
-      <line x1="275" y1="0" x2="275" y2="220" stroke={C.brand} strokeWidth="0.8" strokeDasharray="3 3" opacity="0.4" />
-      {/* Labels */}
-      <text x="72"  y="22" textAnchor="middle" fill={C.blue}  opacity="0.8" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.15em">ÁSIA</text>
-      <text x="210" y="22" textAnchor="middle" fill={C.gold}  opacity="0.8" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.15em">LONDRES</text>
-      <text x="337" y="22" textAnchor="middle" fill={C.brand} opacity="0.8" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.15em">NY</text>
-      {candles.map((c, i) => <Candle key={i} {...c} />)}
+      {/* Thin horizontal timeline connecting the clocks */}
+      <line x1="30" y1="110" x2="370" y2="110" stroke="rgba(255,255,255,0.08)" strokeWidth="1" strokeDasharray="4 4" />
+      {/* Arrow on timeline */}
+      <path d="M 362 105 L 370 110 L 362 115" stroke="rgba(255,255,255,0.25)" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+
+      {clocks.map((clk, i) => (
+        <g key={i}>
+          {/* Outer glow */}
+          <circle cx={clk.cx} cy="110" r="42" fill={clk.color} opacity="0.06" />
+          {/* Clock face */}
+          <circle cx={clk.cx} cy="110" r="32" fill="#0e0e10" stroke={clk.color} strokeWidth="1.5" opacity="0.85" />
+          {/* 12/3/6/9 tick marks */}
+          {[0, 90, 180, 270].map((deg) => {
+            const rad = (deg - 90) * (Math.PI / 180);
+            const x1 = clk.cx + Math.cos(rad) * 28;
+            const y1 = 110 + Math.sin(rad) * 28;
+            const x2 = clk.cx + Math.cos(rad) * 32;
+            const y2 = 110 + Math.sin(rad) * 32;
+            return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke={clk.color} strokeWidth="1.5" opacity="0.5" />;
+          })}
+          {/* Hour hand */}
+          <line
+            x1={clk.cx} y1="110"
+            x2={clk.cx + Math.cos((clk.handAngle - 90) * (Math.PI / 180)) * 18}
+            y2={110 + Math.sin((clk.handAngle - 90) * (Math.PI / 180)) * 18}
+            stroke={clk.color} strokeWidth="2" strokeLinecap="round"
+          />
+          {/* Minute hand */}
+          <line
+            x1={clk.cx} y1="110"
+            x2={clk.cx + Math.cos((clk.handAngle + 120 - 90) * (Math.PI / 180)) * 22}
+            y2={110 + Math.sin((clk.handAngle + 120 - 90) * (Math.PI / 180)) * 22}
+            stroke={clk.color} strokeWidth="1.5" strokeLinecap="round" opacity="0.7"
+          />
+          {/* Center pin */}
+          <circle cx={clk.cx} cy="110" r="2.5" fill={clk.color} />
+          {/* Label + time */}
+          <text x={clk.cx} y="175" textAnchor="middle" fill={clk.color} opacity="0.95" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.15em">{clk.label}</text>
+          <text x={clk.cx} y="193" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="monospace">{clk.time}</text>
+        </g>
+      ))}
     </svg>
   );
 }
@@ -364,32 +382,47 @@ function Thumb_AMD() {
 }
 
 function Thumb_Judas() {
-  // Fake down move + reversal up
+  // V-shape: pre-bias → fake dip (Judas) → explosive reversal up
   const candles: CandleData[] = [
-    { x: 40,  o: 145, h: 138, l: 155, c: 148, w: 8 },
-    { x: 75,  o: 148, h: 140, l: 158, c: 142, w: 8 },
-    { x: 110, o: 142, h: 135, l: 150, c: 138, w: 8 },
-    // Judas down
-    { x: 150, o: 138, h: 132, l: 175, c: 170, w: 9 },
-    { x: 185, o: 170, h: 165, l: 195, c: 190, w: 9 },
-    // Reversal
-    { x: 220, o: 190, h: 115, l: 195, c: 125, w: 10 },
-    { x: 255, o: 125, h: 85,  l: 132, c: 92,  w: 9 },
-    { x: 290, o: 92,  h: 58,  l: 98,  c: 65,  w: 9 },
-    { x: 325, o: 65,  h: 35,  l: 72,  c: 42,  w: 9 },
-    { x: 360, o: 42,  h: 18,  l: 48,  c: 25,  w: 9 },
+    { x: 45,  o: 125, h: 118, l: 135, c: 120, w: 8 },
+    { x: 75,  o: 120, h: 115, l: 130, c: 118, w: 8 },
+    // Sharp Judas dip
+    { x: 115, o: 118, h: 113, l: 170, c: 155, w: 10 },
+    { x: 150, o: 155, h: 150, l: 195, c: 185, w: 10 },
+    // Explosive reversal up (engulfing)
+    { x: 195, o: 185, h: 105, l: 195, c: 112, w: 14 },
+    { x: 235, o: 112, h: 75,  l: 118, c: 80,  w: 10 },
+    { x: 270, o: 80,  h: 50,  l: 86,  c: 55,  w: 10 },
+    { x: 305, o: 55,  h: 28,  l: 60,  c: 32,  w: 10 },
+    { x: 340, o: 32,  h: 12,  l: 38,  c: 18,  w: 10 },
   ];
   return (
     <svg className="absolute inset-0 w-full h-full" viewBox={VB} preserveAspectRatio="xMidYMid slice">
-      {/* Open price */}
-      <line x1="20" y1="145" x2="380" y2="145" stroke={C.gray} strokeWidth="0.8" strokeDasharray="3 5" opacity="0.5" />
-      {/* Judas zone */}
-      <rect x="135" y="0" width="65" height="220" fill={C.red} opacity="0.12" />
-      {/* Real move zone */}
-      <rect x="200" y="0" width="200" height="220" fill={C.green} opacity="0.10" />
-      {/* Labels */}
-      <text x="167" y="22" textAnchor="middle" fill={C.red}   opacity="0.85" fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.12em">JUDAS</text>
-      <text x="300" y="22" textAnchor="middle" fill={C.green} opacity="0.85" fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.12em">MOV. REAL</text>
+      {/* Open price — horizontal reference */}
+      <line x1="20" y1="120" x2="380" y2="120" stroke="rgba(255,255,255,0.25)" strokeWidth="1" strokeDasharray="3 4" />
+      <text x="26" y="114" fill="rgba(255,255,255,0.35)" fontSize="8" fontWeight="600" fontFamily="monospace" letterSpacing="0.1em">OPEN</text>
+
+      {/* Sweep low marker (bottom of Judas) */}
+      <line x1="20" y1="193" x2="380" y2="193" stroke={C.red} strokeWidth="1" strokeDasharray="2 3" opacity="0.5" />
+
+      {/* V-trajectory — dotted line showing the trap */}
+      <path d="M 115 170 Q 165 205 195 150 T 340 18"
+        stroke={C.red + "30"} strokeWidth="6" fill="none" strokeLinecap="round" />
+
+      {/* Warning X on Judas */}
+      <g transform="translate(130, 175)">
+        <circle r="9" fill={C.red} opacity="0.95" />
+        <path d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+      </g>
+      <text x="150" y="180" fill={C.red} fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.1em">JUDAS</text>
+
+      {/* Checkmark on real move */}
+      <g transform="translate(320, 40)">
+        <circle r="10" fill={C.green} opacity="0.95" />
+        <path d="M -4 0 L -1 3 L 4 -3" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      <text x="275" y="45" textAnchor="end" fill={C.green} fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.1em">REAL</text>
+
       {candles.map((c, i) => <Candle key={i} {...c} />)}
     </svg>
   );

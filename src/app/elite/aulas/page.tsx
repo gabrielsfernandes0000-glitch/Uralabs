@@ -138,20 +138,6 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
             background: "linear-gradient(to bottom, transparent 40%, rgba(14,14,16,0.55) 75%, rgba(14,14,16,0.85) 100%)"
           }} />
 
-          {/* Module badge — top-right */}
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-md" style={{
-            backgroundColor: lesson.locked ? "rgba(255,255,255,0.04)" : `${mod.accentHex}22`,
-            border: `1px solid ${lesson.locked ? "rgba(255,255,255,0.06)" : mod.accentHex + "40"}`,
-          }}>
-            <span className="text-[9px] font-bold font-mono uppercase tracking-wider" style={{ color: lesson.locked ? "rgba(255,255,255,0.3)" : mod.accentHex }}>
-              {mod.number}.{String(index + 1).padStart(2, "0")}
-            </span>
-            <div className="w-px h-2.5" style={{ backgroundColor: lesson.locked ? "rgba(255,255,255,0.08)" : mod.accentHex + "40" }} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: lesson.locked ? "rgba(255,255,255,0.25)" : mod.accentHex + "CC" }}>
-              {mod.title}
-            </span>
-          </div>
-
           {/* Title — overlaid bottom */}
           <div className="absolute bottom-0 left-0 right-0 px-3.5 pb-3 pt-8 pointer-events-none">
             <h3 className={`text-[15px] font-bold tracking-tight leading-tight line-clamp-2 ${lesson.locked ? "text-white/40" : "text-white"}`}
