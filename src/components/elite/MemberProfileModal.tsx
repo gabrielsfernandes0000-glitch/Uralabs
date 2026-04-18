@@ -25,8 +25,8 @@ type ProfileResponse = {
   posts_count: number;
   first_message_at: string | null;
   last_message_at: string | null;
-  voice_streak: number;
-  voice_seconds_today: number;
+  streak_days: number;
+  claims_today: number;
 };
 
 function formatJoined(iso: string): string {
@@ -101,8 +101,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             posts_count: 0,
             first_message_at: null,
             last_message_at: null,
-            voice_streak: 0,
-            voice_seconds_today: 0,
+            streak_days: 0,
+            claims_today: 0,
           });
       } finally {
         if (!cancelled) setLoading(false);
@@ -125,8 +125,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
 
   const lifetimeCoin = profile?.balance.lifetime_earned ?? 0;
   const postsCount = profile?.posts_count ?? 0;
-  const voiceStreak = profile?.voice_streak ?? 0;
-  const voiceMinutesToday = Math.round((profile?.voice_seconds_today ?? 0) / 60);
+  const streakDays = profile?.streak_days ?? 0;
+  const claimsToday = profile?.claims_today ?? 0;
   const daysSinceLastMsg = daysSince(profile?.last_message_at ?? null);
 
   return (
@@ -201,9 +201,9 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           </div>
           <div className="p-4 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Flame className={`w-3 h-3 ${voiceStreak > 0 ? "text-brand-500" : "text-white/20"} ${voiceStreak > 0 ? "fill-brand-500/30" : ""}`} />
-              <p className="text-[18px] font-bold font-mono leading-none" style={{ color: voiceStreak > 0 ? tierAccent : "rgba(255,255,255,0.85)" }}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : `${voiceStreak}d`}
+              <Flame className={`w-3 h-3 ${streakDays > 0 ? "text-brand-500" : "text-white/20"} ${streakDays > 0 ? "fill-brand-500/30" : ""}`} />
+              <p className="text-[18px] font-bold font-mono leading-none" style={{ color: streakDays > 0 ? tierAccent : "rgba(255,255,255,0.85)" }}>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : `${streakDays}d`}
               </p>
             </div>
             <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Streak</p>
@@ -225,13 +225,13 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           </div>
         </div>
 
-        {/* Voz hoje + última mensagem sutil */}
-        {(voiceMinutesToday > 0 || daysSinceLastMsg != null) && (
+        {/* Claims hoje + última mensagem sutil */}
+        {(claimsToday > 0 || daysSinceLastMsg != null) && (
           <div className="px-5 py-2 border-b border-white/[0.04] bg-white/[0.01] flex items-center justify-center gap-4 flex-wrap">
-            {voiceMinutesToday > 0 && (
+            {claimsToday > 0 && (
               <p className="text-[10px] text-white/40 flex items-center gap-1">
                 <Mic className="w-3 h-3" />
-                {voiceMinutesToday}min em voz hoje
+                {claimsToday} drop{claimsToday > 1 ? "s" : ""} coletado{claimsToday > 1 ? "s" : ""} hoje
               </p>
             )}
             {daysSinceLastMsg != null && (

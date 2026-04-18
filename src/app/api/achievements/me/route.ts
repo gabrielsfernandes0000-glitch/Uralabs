@@ -12,6 +12,6 @@ export async function GET() {
 
   return NextResponse.json({
     unlocks: state.achievements,
-    voice_streak: state.voice.streak_days,
+    streak_days: state.streak.days,
   });
 }

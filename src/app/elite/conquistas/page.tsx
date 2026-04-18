@@ -414,11 +414,11 @@ export default function ConquistasPage() {
         if (!res.ok) return;
         const data = (await res.json()) as {
           unlocks: Array<{ achievement_id: string }>;
-          voice_streak: number;
+          streak_days: number;
         };
         if (cancelled) return;
         setUnlockedIds(new Set(data.unlocks.map((u) => u.achievement_id)));
-        setServerStreak(data.voice_streak ?? 0);
+        setServerStreak(data.streak_days ?? 0);
       } catch {
         // fail silently — mostra tudo como locked
         if (!cancelled) setUnlockedIds(new Set());
