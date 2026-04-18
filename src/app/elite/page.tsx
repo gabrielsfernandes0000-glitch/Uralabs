@@ -2,7 +2,7 @@ import { getSession } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Flame, ArrowRight, BookOpen, FileText, TrendingUp, Brain, Zap, ChevronRight, Target, Radio, PenLine, Users, Play } from "lucide-react";
 import Link from "next/link";
-import { CURRICULUM, TOTAL_LESSONS } from "@/lib/curriculum";
+import { getCurriculum } from "@/lib/curriculum.server";
 import { LiveStat } from "@/components/elite/ProgressStats";
 import { Avatar } from "@/components/elite/Avatar";
 import { GlowBorder } from "@/components/elite/GlowBorder";
@@ -77,9 +77,11 @@ export default async function EliteDashboard() {
   };
   const completedSteps = steps.filter(s => s.done).length;
 
+  const curriculum = await getCurriculum();
+  const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   const stats = {
     lessonsCompleted: 0,
-    totalLessons: TOTAL_LESSONS,
+    totalLessons,
     streak: 0,
     daysRemaining: 180,
   };
@@ -254,7 +256,7 @@ export default async function EliteDashboard() {
           </div>
 
           <div className="space-y-2.5">
-            {CURRICULUM.filter(m => m.lessons.length > 0).map((mod, i) => (
+            {curriculum.filter(m => m.lessons.length > 0).map((mod, i) => (
               <div key={mod.id} className="flex items-center gap-3">
                 <span className="text-[10px] font-mono w-5" style={{ color: mod.accentHex + "70" }}>{mod.number}</span>
                 <span className="text-[11px] text-white/50 flex-1 truncate">{mod.title}</span>
