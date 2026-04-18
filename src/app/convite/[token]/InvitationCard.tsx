@@ -165,67 +165,27 @@ export function InvitationCard({
             </div>
             <div className="hidden sm:block h-6 w-px" style={{ backgroundColor: "rgba(255,255,255,0.08)" }} />
             {(() => {
-              const ocupadas = invite.vagasTotais - invite.vagasRestantes;
-              const pctFilled = invite.vagasTotais > 0 ? (ocupadas / invite.vagasTotais) * 100 : 0;
-              const turmaNova = ocupadas === 0;
               const quaseCheia = invite.vagasRestantes <= 3;
-              const cor = quaseCheia
-                ? "#FF5500"
-                : invite.vagasRestantes <= invite.vagasTotais * 0.2
-                  ? "#FF8800"
-                  : "#C9A461";
-
+              const escassa = invite.vagasRestantes <= invite.vagasTotais * 0.2;
+              const cor = quaseCheia ? "#FF5500" : escassa ? "#FF8800" : "#C9A461";
               return (
-                <div className="flex flex-col items-center gap-2 min-w-[150px]">
+                <div className="flex flex-col items-center gap-1">
                   <div
                     className="text-[9px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(255,255,255,0.35)" }}
                   >
-                    {turmaNova ? "Turma aberta" : quaseCheia ? "Últimas vagas" : "Ocupação"}
+                    {quaseCheia ? "Últimas vagas" : "Turma"}
                   </div>
-                  {turmaNova ? (
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="font-mono text-base font-medium" style={{ color: "#C9A461" }}>
-                        {invite.vagasTotais}
-                      </span>
-                      <span
-                        className="text-xs"
-                        style={{ color: "rgba(255,255,255,0.45)" }}
-                      >
-                        vagas
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-baseline gap-1.5">
-                      <span
-                        className="font-mono text-base font-medium"
-                        style={{ color: cor }}
-                      >
-                        {ocupadas}
-                      </span>
-                      <span
-                        className="text-xs"
-                        style={{ color: "rgba(255,255,255,0.45)" }}
-                      >
-                        de {invite.vagasTotais} preenchidas
-                      </span>
-                    </div>
-                  )}
-                  {/* Progress bar — sempre presente pra ancorar visualmente, mesmo se 0% */}
-                  <div
-                    className="relative h-0.5 w-full rounded-full overflow-hidden"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
-                    aria-hidden
-                  >
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pctFilled}%` }}
-                      transition={{ duration: 1.2, ease: EASE_OUT, delay: 0.9 }}
-                      className="absolute left-0 top-0 h-full"
-                      style={{
-                        background: `linear-gradient(90deg, ${cor}, ${cor}cc)`,
-                      }}
-                    />
+                  <div className="flex items-baseline gap-1.5">
+                    <span
+                      className="font-mono text-base font-medium"
+                      style={{ color: cor }}
+                    >
+                      {quaseCheia ? invite.vagasRestantes : invite.vagasTotais}
+                    </span>
+                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      {quaseCheia ? "restantes" : "vagas"}
+                    </span>
                   </div>
                 </div>
               );
