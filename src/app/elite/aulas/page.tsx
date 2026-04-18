@@ -640,6 +640,33 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
         <div className="relative aspect-video overflow-hidden">
           <LessonThumbnail lesson={lesson} mod={mod} index={index} />
 
+          {/* Darken overlay for title readability */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "linear-gradient(to bottom, transparent 40%, rgba(14,14,16,0.55) 75%, rgba(14,14,16,0.85) 100%)"
+          }} />
+
+          {/* Module badge — top-right */}
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-md" style={{
+            backgroundColor: lesson.locked ? "rgba(255,255,255,0.04)" : `${mod.accentHex}22`,
+            border: `1px solid ${lesson.locked ? "rgba(255,255,255,0.06)" : mod.accentHex + "40"}`,
+          }}>
+            <span className="text-[9px] font-bold font-mono uppercase tracking-wider" style={{ color: lesson.locked ? "rgba(255,255,255,0.3)" : mod.accentHex }}>
+              {mod.number}.{String(index + 1).padStart(2, "0")}
+            </span>
+            <div className="w-px h-2.5" style={{ backgroundColor: lesson.locked ? "rgba(255,255,255,0.08)" : mod.accentHex + "40" }} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: lesson.locked ? "rgba(255,255,255,0.25)" : mod.accentHex + "CC" }}>
+              {mod.title}
+            </span>
+          </div>
+
+          {/* Title — overlaid bottom */}
+          <div className="absolute bottom-0 left-0 right-0 px-3.5 pb-3 pt-8 pointer-events-none">
+            <h3 className={`text-[15px] font-bold tracking-tight leading-tight line-clamp-2 ${lesson.locked ? "text-white/40" : "text-white"}`}
+              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {lesson.title}
+            </h3>
+          </div>
+
           {/* Lock overlay */}
           {lesson.locked && (
             <div className="absolute inset-0 bg-dark-950/60 backdrop-blur-[2px] flex items-center justify-center">
@@ -651,7 +678,7 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
 
           {/* Completed */}
           {lesson.completed && !lesson.locked && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-2.5 left-2.5">
               <div className="w-7 h-7 rounded-full bg-green-500/25 border border-green-500/50 flex items-center justify-center backdrop-blur-sm">
                 <Check className="w-3.5 h-3.5 text-green-400" />
               </div>
@@ -660,7 +687,7 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
 
           {/* Play on hover */}
           {!lesson.locked && hovered && (
-            <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl"
                 style={{ backgroundColor: mod.accentHex }}>
                 <Play className="w-6 h-6 text-white fill-white ml-0.5" />
@@ -669,22 +696,13 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
           )}
         </div>
 
-        {/* Content — fixed height */}
-        <div className="px-4 pt-3 pb-4 bg-[#141417] h-[110px] flex flex-col">
-          <div className="flex items-baseline gap-2 mb-1.5">
-            <span className="text-[12px] font-bold font-mono shrink-0" style={{ color: lesson.locked ? "rgba(255,255,255,0.1)" : mod.accentHex + "70" }}>
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <h3 className={`text-[14px] font-bold tracking-tight leading-snug line-clamp-1 ${lesson.locked ? "text-white/30" : "text-white/90"}`}>
-              {lesson.title}
-            </h3>
-          </div>
-
-          <p className={`text-[11px] leading-relaxed line-clamp-2 flex-1 ${lesson.locked ? "text-white/20" : "text-white/40"}`}>
+        {/* Content — compact, title already on thumb */}
+        <div className="px-4 py-3 bg-[#141417] flex flex-col gap-2">
+          <p className={`text-[11px] leading-relaxed line-clamp-2 ${lesson.locked ? "text-white/20" : "text-white/45"}`}>
             {lesson.subtitle}
           </p>
 
-          <div className="flex items-center gap-3 mt-auto pt-1.5">
+          <div className="flex items-center gap-3">
             <div className={`flex items-center gap-1.5 ${lesson.locked ? "text-white/20" : "text-white/35"}`}>
               <Clock className="w-3 h-3" />
               <span className="text-[10px] font-medium">{lesson.duration}</span>
@@ -879,81 +897,76 @@ function Hero() {
   const heroAccent = next?.mod.accentHex || "#FF5500";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] min-h-[320px]" style={{ background: "#111114" }}>
-      {/* Background effects */}
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08]" style={{ background: "#111114" }}>
+      {/* Background effects — subtler */}
       <div className="absolute inset-0" style={{
-        background: `radial-gradient(ellipse 80% 80% at 80% 30%, ${heroAccent}15, transparent 60%),
-                     radial-gradient(ellipse 50% 50% at 10% 80%, ${heroAccent}08, transparent 40%)`
+        background: `radial-gradient(ellipse 60% 80% at 85% 40%, ${heroAccent}12, transparent 60%)`
       }} />
       <div className="absolute inset-0" style={{
-        backgroundImage: `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                          linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`,
-        backgroundSize: "48px 48px",
-        maskImage: "radial-gradient(ellipse 60% 60% at 70% 40%, black 20%, transparent 70%)",
-        WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 70% 40%, black 20%, transparent 70%)"
-      }} />
-      {/* Left fade for readability */}
-      <div className="absolute inset-0" style={{
-        background: "linear-gradient(90deg, #111114 30%, #111114aa 50%, transparent 75%)"
+        background: "linear-gradient(90deg, #111114 40%, #111114cc 55%, transparent 80%)"
       }} />
 
-      <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-8 min-h-[320px]">
-        <div className="flex-1 flex flex-col justify-end">
-          <span className="text-[11px] font-bold tracking-[0.25em] uppercase mb-5" style={{ color: heroAccent + "AA" }}>
-            Turma 4.0 · Elite
-          </span>
+      <div className="relative z-10 px-6 md:px-8 py-5 md:py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        {/* Left — lesson info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: heroAccent + "CC" }}>
+              Turma 4.0
+            </span>
+            {next && (
+              <>
+                <span className="text-white/20">·</span>
+                <span className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">
+                  Módulo {next.mod.number} · Aula {String(next.idx + 1).padStart(2, "0")}
+                </span>
+              </>
+            )}
+          </div>
 
           {next ? (
             <>
-              <p className="text-[14px] text-white/45 mb-2">Continue de onde parou</p>
-              <h1 className="text-[32px] md:text-[42px] font-bold text-white tracking-tight leading-[1.1] mb-3">
+              <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight mb-0.5">
                 {next.lesson.title}
               </h1>
-              <p className="text-[15px] text-white/45 mb-8 max-w-lg leading-relaxed">{next.lesson.subtitle}</p>
+              <p className="text-[13px] text-white/40 mb-3 max-w-xl leading-relaxed line-clamp-1">{next.lesson.subtitle}</p>
 
-              <div className="flex items-center gap-5 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => next && router.push(`/elite/aulas/${next.lesson.id}`)}
-                  className="flex items-center gap-3 px-8 py-4 rounded-xl text-[15px] font-bold transition-all shadow-xl hover:brightness-110 hover:-translate-y-0.5"
-                  style={{ backgroundColor: heroAccent, color: "white", boxShadow: `0 8px 32px ${heroAccent}40` }}>
-                  <Play className="w-5 h-5 fill-white" />
-                  Assistir Aula
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all hover:brightness-110 hover:-translate-y-0.5"
+                  style={{ backgroundColor: heroAccent, color: "white", boxShadow: `0 4px 20px ${heroAccent}35` }}>
+                  <Play className="w-3.5 h-3.5 fill-white" />
+                  Continuar aula
                 </button>
-                <div className="flex items-center gap-2 text-white/40">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-[14px] font-medium">{next.lesson.duration}</span>
+                <div className="flex items-center gap-1.5 text-white/35">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="text-[12px] font-medium">{next.lesson.duration}</span>
                 </div>
-                <span className="text-[13px] text-white/30 font-medium">
-                  Módulo {next.mod.number} · Aula {String(next.idx + 1).padStart(2, "0")}
-                </span>
               </div>
             </>
           ) : (
             <>
-              <h1 className="text-[32px] md:text-[42px] font-bold text-white tracking-tight mb-3">Currículo Elite</h1>
-              <p className="text-[15px] text-white/45">5 módulos · {totalLessons} aulas · Do zero à mesa proprietária</p>
+              <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight mb-1">Currículo Elite</h1>
+              <p className="text-[13px] text-white/40">5 módulos · {totalLessons} aulas · Do zero à mesa proprietária</p>
             </>
           )}
         </div>
 
-        {/* Progress card */}
-        <div className="flex items-center gap-6 p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
-          <div className="relative w-[76px] h-[76px]">
-            <svg className="w-[76px] h-[76px] -rotate-90" viewBox="0 0 76 76">
-              <circle cx="38" cy="38" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
-              <circle cx="38" cy="38" r="32" fill="none" stroke={heroAccent} strokeWidth="4" strokeLinecap="round"
-                strokeDasharray={`${progress * 2.01} 201`} className="transition-all duration-1000" />
+        {/* Right — compact progress */}
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="relative w-[56px] h-[56px]">
+            <svg className="w-[56px] h-[56px] -rotate-90" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+              <circle cx="28" cy="28" r="24" fill="none" stroke={heroAccent} strokeWidth="3" strokeLinecap="round"
+                strokeDasharray={`${progress * 1.508} 151`} className="transition-all duration-1000" />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[20px] font-bold text-white">{progress}%</span>
+              <span className="text-[13px] font-bold text-white">{progress}%</span>
             </div>
           </div>
           <div>
-            <p className="text-[20px] text-white font-bold">{completedLessons}/{totalLessons}</p>
-            <p className="text-[12px] text-white/40 mt-0.5">aulas completas</p>
-            <p className="text-[11px] text-white/25 mt-2">
-              {CURRICULUM.filter((m) => m.lessons.length > 0 && m.lessons.every((l) => l.completed)).length} de 4 módulos
-            </p>
+            <p className="text-[15px] text-white font-bold leading-none">{completedLessons}<span className="text-white/30 font-medium">/{totalLessons}</span></p>
+            <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">aulas completas</p>
           </div>
         </div>
       </div>
@@ -1172,11 +1185,12 @@ export default function AulasPage() {
   return (
     <div className="space-y-14">
       <Hero />
-      <LivesSection />
 
       {CURRICULUM.map((mod) => (
         <ModuleSection key={mod.id} mod={mod} />
       ))}
+
+      <LivesSection />
 
       <div className="text-center py-6">
         <p className="text-[12px] text-white/30">
