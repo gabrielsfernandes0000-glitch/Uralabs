@@ -127,7 +127,11 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
 
   if (!member) return null;
 
-  const bannerSlug = profile?.cosmetics?.banner?.prize_slug;
+  // Pré-seta cosméticos a partir do DiscordMember (já vem do bulk join em list-discord-members)
+  // e sobrescreve com profile fresco quando o fetch terminar. Zero flash / delay no abrir.
+  const bannerSlug = profile?.cosmetics?.banner?.prize_slug ?? member.bannerSlug ?? undefined;
+  const frameSlug = profile?.cosmetics?.avatar_frame?.prize_slug ?? member.frameSlug ?? null;
+  const effectSlug = profile?.cosmetics?.avatar_effect?.prize_slug ?? member.effectSlug ?? null;
   const hasBanner = isBannerSlug(bannerSlug);
   const tierAccent = hasBanner ? bannerAccent(bannerSlug) : (member.tier === "elite" ? "#FF5500" : "#3B82F6");
   const tierLabel = member.tier === "elite" ? "Elite 4.0" : "VIP";
@@ -189,8 +193,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
                 src={member.avatarUrl}
                 name={member.globalName}
                 size={80}
-                frameSlug={profile?.cosmetics?.avatar_frame?.prize_slug ?? null}
-                auraSlug={profile?.cosmetics?.avatar_effect?.prize_slug ?? null}
+                frameSlug={frameSlug}
+                auraSlug={effectSlug}
                 animated="always"
               />
             </div>
