@@ -1,75 +1,108 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Play } from "lucide-react";
 
 /* ────────────────────────────────────────────
-   LessonChart — Interactive Lightweight Charts for lessons
+   LessonChart — Didactic chart component
 
-   Each scenario shows a realistic NQ 5-min chart with
-   annotations (price lines, markers) teaching a specific concept.
+   Each scenario tells a story: numbered steps on the chart
+   connect to labeled cards below explaining the WHY.
+
+   Uses lightweight-charts (TradingView engine) for the candles,
+   with a custom SVG overlay for zones, phases, and annotations
+   that line up exactly with the price/time axes.
    ──────────────────────────────────────────── */
 
-export type ChartScenario = keyof typeof SCENARIOS;
+type Time = number;
 
-interface Candle {
-  time: number;
-  o: number;
-  h: number;
-  l: number;
-  c: number;
+interface Candle { time: Time; o: number; h: number; l: number; c: number; }
+
+interface Phase {
+  kind: "time" | "price";
+  start: number;
+  end: number;
+  color: string;
+  label: string;
 }
 
-interface PriceLine {
+interface Zone {
+  startTime: Time;
+  endTime: Time;
+  topPrice: number;
+  bottomPrice: number;
+  color: string;
+  label: string;
+  style?: "solid" | "dashed";
+}
+
+interface Level {
   price: number;
   color: string;
-  title: string;
-  style?: number; // 0=solid, 1=dotted, 2=dashed
+  label: string;
+  style?: "solid" | "dashed";
+  important?: boolean;
 }
 
-interface Marker {
-  time: number;
-  position: "aboveBar" | "belowBar";
-  color: string;
-  shape: "circle" | "arrowUp" | "arrowDown" | "square";
-  text: string;
+interface Step { num: string; label: string; color: string; desc: string; }
+
+interface Annotation {
+  stepNum: string;
+  time: Time;
+  price: number;
+  offset?: "above" | "below";
 }
 
 interface ScenarioData {
+  title: string;
   candles: Candle[];
-  priceLines: PriceLine[];
-  markers: Marker[];
+  phases?: Phase[];
+  zones?: Zone[];
+  levels?: Level[];
+  steps?: Step[];
+  annotations?: Annotation[];
   height?: number;
 }
 
+const BASE = 1744617000;
+const t = (n: number) => BASE + n * 300;
+
 /* ────────────────────────────────────────────
-   Scenario Data — realistic NQ 5min candles
+   Color Tokens (aligned with Elite platform palette)
+   ──────────────────────────────────────────── */
+const C = {
+  brand:  "#FF5500",  // URA orange — primary accent
+  blue:   "#3B82F6",  // Order Blocks
+  purple: "#A855F7",  // FVG / imbalance
+  gold:   "#F59E0B",  // Sessions / Fibonacci levels
+  green:  "#10B981",  // Bullish / discount / distribution
+  red:    "#EF4444",  // Bearish / premium / manipulation
+  gray:   "#64748B",  // Neutral / structure
+} as const;
+
+/* ────────────────────────────────────────────
+   SCENARIOS — richer data model with narrative
    ──────────────────────────────────────────── */
 
-const BASE = 1744617000; // base timestamp
-
-function t(offset: number) { return BASE + offset * 300; }
-
 const SCENARIOS = {
-  /* ── AMD Sweep — Accumulation → Manipulation → Distribution ── */
+  /* ────────── 1. AMD — Accumulation, Manipulation, Distribution ────────── */
   "amd-sweep": {
+    title: "AMD · Acumulação → Manipulação → Distribuição",
     candles: [
-      // Accumulation — sideways range
-      { time: t(0), o: 18100, h: 18115, l: 18090, c: 18108 },
-      { time: t(1), o: 18108, h: 18118, l: 18095, c: 18102 },
-      { time: t(2), o: 18102, h: 18120, l: 18092, c: 18115 },
-      { time: t(3), o: 18115, h: 18122, l: 18098, c: 18105 },
-      { time: t(4), o: 18105, h: 18118, l: 18090, c: 18095 },
-      { time: t(5), o: 18095, h: 18112, l: 18088, c: 18108 },
-      { time: t(6), o: 18108, h: 18120, l: 18095, c: 18098 },
-      { time: t(7), o: 18098, h: 18115, l: 18085, c: 18110 },
-      { time: t(8), o: 18110, h: 18118, l: 18092, c: 18100 },
-      { time: t(9), o: 18100, h: 18112, l: 18088, c: 18095 },
-      // Manipulation — sweep down
+      { time: t(0),  o: 18100, h: 18115, l: 18090, c: 18108 },
+      { time: t(1),  o: 18108, h: 18118, l: 18095, c: 18102 },
+      { time: t(2),  o: 18102, h: 18120, l: 18092, c: 18115 },
+      { time: t(3),  o: 18115, h: 18122, l: 18098, c: 18105 },
+      { time: t(4),  o: 18105, h: 18118, l: 18090, c: 18095 },
+      { time: t(5),  o: 18095, h: 18112, l: 18088, c: 18108 },
+      { time: t(6),  o: 18108, h: 18120, l: 18095, c: 18098 },
+      { time: t(7),  o: 18098, h: 18115, l: 18085, c: 18110 },
+      { time: t(8),  o: 18110, h: 18118, l: 18092, c: 18100 },
+      { time: t(9),  o: 18100, h: 18112, l: 18088, c: 18095 },
       { time: t(10), o: 18095, h: 18100, l: 18055, c: 18060 },
       { time: t(11), o: 18060, h: 18065, l: 18030, c: 18035 },
       { time: t(12), o: 18035, h: 18042, l: 18010, c: 18018 },
       { time: t(13), o: 18018, h: 18025, l: 17985, c: 17992 },
-      // Distribution — reversal up
       { time: t(14), o: 17992, h: 18050, l: 17980, c: 18042 },
       { time: t(15), o: 18042, h: 18085, l: 18038, c: 18078 },
       { time: t(16), o: 18078, h: 18115, l: 18072, c: 18108 },
@@ -79,478 +112,741 @@ const SCENARIOS = {
       { time: t(20), o: 18192, h: 18228, l: 18185, c: 18220 },
       { time: t(21), o: 18220, h: 18255, l: 18215, c: 18248 },
     ],
-    priceLines: [
-      { price: 18120, color: "#787b86", title: "Range High", style: 2 },
-      { price: 18085, color: "#787b86", title: "Range Low", style: 2 },
-      { price: 17980, color: "#ef5350", title: "Sweep Low", style: 2 },
-      { price: 18042, color: "#2962ff", title: "Entry (OB)", style: 2 },
-      { price: 18250, color: "#26a69a", title: "TP (BSL)", style: 2 },
+    phases: [
+      { kind: "time", start: t(0),  end: t(9),  color: C.purple, label: "Acumulação" },
+      { kind: "time", start: t(10), end: t(13), color: C.red,    label: "Manipulação" },
+      { kind: "time", start: t(14), end: t(21), color: C.green,  label: "Distribuição" },
     ],
-    markers: [
-      { time: t(0), position: "aboveBar", color: "#A855F7", shape: "square", text: "A" },
-      { time: t(10), position: "aboveBar", color: "#EF4444", shape: "square", text: "M" },
-      { time: t(14), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Reversão" },
-      { time: t(16), position: "aboveBar", color: "#10B981", shape: "square", text: "D" },
+    levels: [
+      { price: 18120, color: "rgba(255,255,255,0.25)", label: "Range High", style: "dashed" },
+      { price: 18085, color: "rgba(255,255,255,0.25)", label: "Range Low",  style: "dashed" },
+      { price: 18250, color: C.green, label: "TP (BSL)", style: "dashed" },
     ],
+    steps: [
+      { num: "1", label: "Acumulação", color: C.purple, desc: "Range apertado. Institucionais posicionando silenciosamente. Não opere aqui — você vira isca." },
+      { num: "2", label: "Manipulação", color: C.red,    desc: "Sweep varre os lows, pega sell stops. A liquidez é engolida — é a isca, não o movimento real." },
+      { num: "3", label: "Distribuição", color: C.green,  desc: "Reversão com força. Movimento real busca BSL acima do range. Entrada ideal: na reversão." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(4),  price: 18118, offset: "above" },
+      { stepNum: "2", time: t(12), price: 18010, offset: "below" },
+      { stepNum: "3", time: t(17), price: 18145, offset: "above" },
+    ],
+    height: 360,
   } satisfies ScenarioData,
 
-  /* ── OB Bounce — Price returns to Order Block ── */
+  /* ────────── 2. Order Block bounce ────────── */
   "ob-bounce": {
+    title: "Order Block · Zona institucional defendida",
     candles: [
-      // Setup — impulse up from OB
-      { time: t(0), o: 18200, h: 18215, l: 18195, c: 18210 },
-      { time: t(1), o: 18210, h: 18212, l: 18180, c: 18185 }, // OB candle (last bearish before impulse)
-      { time: t(2), o: 18185, h: 18240, l: 18182, c: 18235 }, // Impulse up
-      { time: t(3), o: 18235, h: 18270, l: 18230, c: 18265 },
-      { time: t(4), o: 18265, h: 18300, l: 18258, c: 18295 },
-      { time: t(5), o: 18295, h: 18325, l: 18288, c: 18318 },
-      { time: t(6), o: 18318, h: 18340, l: 18310, c: 18335 },
-      // Pullback — retracing to OB
-      { time: t(7), o: 18335, h: 18338, l: 18305, c: 18310 },
-      { time: t(8), o: 18310, h: 18315, l: 18280, c: 18285 },
-      { time: t(9), o: 18285, h: 18290, l: 18255, c: 18260 },
+      { time: t(0),  o: 18200, h: 18215, l: 18195, c: 18210 },
+      { time: t(1),  o: 18210, h: 18212, l: 18180, c: 18185 },
+      { time: t(2),  o: 18185, h: 18240, l: 18182, c: 18235 },
+      { time: t(3),  o: 18235, h: 18270, l: 18230, c: 18265 },
+      { time: t(4),  o: 18265, h: 18300, l: 18258, c: 18295 },
+      { time: t(5),  o: 18295, h: 18325, l: 18288, c: 18318 },
+      { time: t(6),  o: 18318, h: 18340, l: 18310, c: 18335 },
+      { time: t(7),  o: 18335, h: 18338, l: 18305, c: 18310 },
+      { time: t(8),  o: 18310, h: 18315, l: 18280, c: 18285 },
+      { time: t(9),  o: 18285, h: 18290, l: 18255, c: 18260 },
       { time: t(10), o: 18260, h: 18265, l: 18230, c: 18235 },
       { time: t(11), o: 18235, h: 18240, l: 18205, c: 18210 },
-      { time: t(12), o: 18210, h: 18215, l: 18185, c: 18190 }, // Touches OB
-      // Bounce from OB
-      { time: t(13), o: 18190, h: 18240, l: 18185, c: 18235 }, // Engulfing bounce
-      { time: t(14), o: 18235, h: 18275, l: 18230, c: 18270 },
-      { time: t(15), o: 18270, h: 18310, l: 18265, c: 18305 },
+      { time: t(12), o: 18210, h: 18215, l: 18185, c: 18192 },
+      { time: t(13), o: 18192, h: 18242, l: 18188, c: 18238 },
+      { time: t(14), o: 18238, h: 18278, l: 18232, c: 18272 },
+      { time: t(15), o: 18272, h: 18312, l: 18268, c: 18305 },
       { time: t(16), o: 18305, h: 18350, l: 18298, c: 18342 },
       { time: t(17), o: 18342, h: 18380, l: 18335, c: 18372 },
     ],
-    priceLines: [
-      { price: 18212, color: "#3B82F6", title: "OB High", style: 2 },
-      { price: 18180, color: "#3B82F6", title: "OB Low", style: 2 },
+    zones: [
+      { startTime: t(1), endTime: t(17), topPrice: 18212, bottomPrice: 18180, color: C.blue, label: "OB" },
     ],
-    markers: [
-      { time: t(1), position: "aboveBar", color: "#3B82F6", shape: "square", text: "OB" },
-      { time: t(12), position: "belowBar", color: "#3B82F6", shape: "circle", text: "Toca OB" },
-      { time: t(13), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Bounce" },
+    steps: [
+      { num: "1", label: "OB formado", color: C.blue,  desc: "Último candle bearish antes do impulso bullish. Marca onde institucionais se posicionaram comprados." },
+      { num: "2", label: "Pullback",   color: C.gray,  desc: "Preço retorna pra mitigar a zona. Testa se os institucionais ainda defendem o nível." },
+      { num: "3", label: "Reação",     color: C.green, desc: "Engulfing bullish no OB confirma defesa. Entrada aqui, stop abaixo da zona inteira." },
     ],
+    annotations: [
+      { stepNum: "1", time: t(1),  price: 18180, offset: "below" },
+      { stepNum: "2", time: t(12), price: 18185, offset: "below" },
+      { stepNum: "3", time: t(13), price: 18242, offset: "above" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── FVG Fill — Fair Value Gap getting filled ── */
+  /* ────────── 3. FVG — Fair Value Gap fill ────────── */
   "fvg-fill": {
+    title: "FVG · Desequilíbrio preenchido",
     candles: [
-      { time: t(0), o: 18100, h: 18115, l: 18090, c: 18110 },
-      { time: t(1), o: 18110, h: 18120, l: 18105, c: 18115 },
-      { time: t(2), o: 18115, h: 18125, l: 18108, c: 18120 }, // Before FVG
-      { time: t(3), o: 18120, h: 18190, l: 18118, c: 18185 }, // Big impulse (creates FVG)
-      { time: t(4), o: 18185, h: 18220, l: 18178, c: 18215 }, // After FVG
-      { time: t(5), o: 18215, h: 18250, l: 18210, c: 18245 },
-      { time: t(6), o: 18245, h: 18265, l: 18238, c: 18258 },
-      // Pullback to fill FVG
-      { time: t(7), o: 18258, h: 18262, l: 18230, c: 18235 },
-      { time: t(8), o: 18235, h: 18238, l: 18200, c: 18205 },
-      { time: t(9), o: 18205, h: 18210, l: 18178, c: 18182 }, // Fills FVG zone
-      { time: t(10), o: 18182, h: 18185, l: 18155, c: 18160 }, // Into FVG
-      // Bounce from FVG
-      { time: t(11), o: 18160, h: 18205, l: 18155, c: 18200 },
-      { time: t(12), o: 18200, h: 18240, l: 18195, c: 18235 },
-      { time: t(13), o: 18235, h: 18275, l: 18230, c: 18270 },
-      { time: t(14), o: 18270, h: 18305, l: 18265, c: 18298 },
+      { time: t(0),  o: 18100, h: 18115, l: 18090, c: 18110 },
+      { time: t(1),  o: 18110, h: 18120, l: 18105, c: 18115 },
+      { time: t(2),  o: 18115, h: 18125, l: 18108, c: 18120 },
+      { time: t(3),  o: 18120, h: 18190, l: 18118, c: 18185 },
+      { time: t(4),  o: 18185, h: 18220, l: 18178, c: 18215 },
+      { time: t(5),  o: 18215, h: 18250, l: 18210, c: 18245 },
+      { time: t(6),  o: 18245, h: 18265, l: 18238, c: 18258 },
+      { time: t(7),  o: 18258, h: 18262, l: 18230, c: 18235 },
+      { time: t(8),  o: 18235, h: 18238, l: 18200, c: 18205 },
+      { time: t(9),  o: 18205, h: 18210, l: 18178, c: 18182 },
+      { time: t(10), o: 18182, h: 18185, l: 18158, c: 18165 },
+      { time: t(11), o: 18165, h: 18210, l: 18160, c: 18205 },
+      { time: t(12), o: 18205, h: 18245, l: 18200, c: 18240 },
+      { time: t(13), o: 18240, h: 18278, l: 18235, c: 18272 },
+      { time: t(14), o: 18272, h: 18308, l: 18268, c: 18300 },
     ],
-    priceLines: [
-      { price: 18178, color: "#3B82F6", title: "FVG Top", style: 2 },
-      { price: 18125, color: "#3B82F6", title: "FVG Bottom", style: 2 },
+    zones: [
+      { startTime: t(2), endTime: t(14), topPrice: 18178, bottomPrice: 18125, color: C.purple, label: "FVG", style: "dashed" },
     ],
-    markers: [
-      { time: t(3), position: "aboveBar", color: "#3B82F6", shape: "square", text: "FVG" },
-      { time: t(10), position: "belowBar", color: "#3B82F6", shape: "circle", text: "Preenchimento" },
-      { time: t(11), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Reação" },
+    levels: [
+      { price: 18152, color: C.purple, label: "CE (50%)", style: "dashed" },
     ],
+    steps: [
+      { num: "1", label: "Impulso deixa gap",  color: C.purple, desc: "Candle grande não preenchido pelos vizinhos. O vácuo é o FVG — ordens institucionais não executadas." },
+      { num: "2", label: "Preenchimento",      color: C.gray,   desc: "Preço volta pra dentro do gap. O 50% (Consequent Encroachment) é o ponto de equilíbrio mais forte." },
+      { num: "3", label: "Reação",             color: C.green,  desc: "Gap defendido. Movimento continua na direção original, com desconto melhor." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(3),  price: 18120, offset: "below" },
+      { stepNum: "2", time: t(10), price: 18158, offset: "below" },
+      { stepNum: "3", time: t(11), price: 18210, offset: "above" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── Premium & Discount — Fibonacci zones ── */
+  /* ────────── 4. Premium × Discount ────────── */
   "premium-discount": {
+    title: "Premium × Discount · Zonas de valor",
     candles: [
-      // Swing high to low
-      { time: t(0), o: 18480, h: 18500, l: 18470, c: 18495 }, // Swing high
-      { time: t(1), o: 18495, h: 18498, l: 18460, c: 18465 },
-      { time: t(2), o: 18465, h: 18470, l: 18420, c: 18425 },
-      { time: t(3), o: 18425, h: 18435, l: 18380, c: 18390 },
-      { time: t(4), o: 18390, h: 18400, l: 18340, c: 18350 },
-      { time: t(5), o: 18350, h: 18360, l: 18300, c: 18310 },
-      { time: t(6), o: 18310, h: 18320, l: 18270, c: 18280 },
-      { time: t(7), o: 18280, h: 18290, l: 18240, c: 18250 },
-      { time: t(8), o: 18250, h: 18260, l: 18200, c: 18210 },
-      { time: t(9), o: 18210, h: 18220, l: 18000, c: 18005 }, // Swing low
-      // Rally back — enters premium
+      { time: t(0),  o: 18480, h: 18500, l: 18470, c: 18495 },
+      { time: t(1),  o: 18495, h: 18498, l: 18460, c: 18465 },
+      { time: t(2),  o: 18465, h: 18470, l: 18420, c: 18425 },
+      { time: t(3),  o: 18425, h: 18435, l: 18380, c: 18390 },
+      { time: t(4),  o: 18390, h: 18400, l: 18340, c: 18350 },
+      { time: t(5),  o: 18350, h: 18360, l: 18300, c: 18310 },
+      { time: t(6),  o: 18310, h: 18320, l: 18270, c: 18280 },
+      { time: t(7),  o: 18280, h: 18290, l: 18240, c: 18250 },
+      { time: t(8),  o: 18250, h: 18260, l: 18200, c: 18210 },
+      { time: t(9),  o: 18210, h: 18220, l: 18000, c: 18005 },
       { time: t(10), o: 18005, h: 18080, l: 18000, c: 18072 },
       { time: t(11), o: 18072, h: 18150, l: 18068, c: 18142 },
       { time: t(12), o: 18142, h: 18220, l: 18135, c: 18215 },
       { time: t(13), o: 18215, h: 18290, l: 18210, c: 18285 },
-      { time: t(14), o: 18285, h: 18360, l: 18280, c: 18350 }, // Into premium
-      // Rejection in premium
+      { time: t(14), o: 18285, h: 18360, l: 18280, c: 18350 },
       { time: t(15), o: 18350, h: 18370, l: 18300, c: 18310 },
       { time: t(16), o: 18310, h: 18320, l: 18260, c: 18270 },
     ],
-    priceLines: [
-      { price: 18500, color: "#787b86", title: "Swing High", style: 0 },
-      { price: 18000, color: "#787b86", title: "Swing Low", style: 0 },
-      { price: 18250, color: "#F59E0B", title: "50% (Equilibrium)", style: 2 },
+    phases: [
+      { kind: "price", start: 18250, end: 18500, color: C.red,   label: "Premium" },
+      { kind: "price", start: 18000, end: 18250, color: C.green, label: "Discount" },
     ],
-    markers: [
-      { time: t(0), position: "aboveBar", color: "#EF4444", shape: "square", text: "Premium" },
-      { time: t(9), position: "belowBar", color: "#10B981", shape: "square", text: "Discount" },
-      { time: t(14), position: "aboveBar", color: "#EF4444", shape: "arrowDown", text: "Zona cara" },
+    levels: [
+      { price: 18500, color: "rgba(255,255,255,0.30)", label: "Swing High" },
+      { price: 18250, color: C.brand, label: "Equilíbrio · 50%", important: true },
+      { price: 18000, color: "rgba(255,255,255,0.30)", label: "Swing Low" },
     ],
+    steps: [
+      { num: "1", label: "Define o range",  color: C.gray,  desc: "Swing High até Swing Low — a distância completa do movimento recente." },
+      { num: "2", label: "Equilíbrio 50%",  color: C.brand, desc: "Linha de Fibonacci 50% divide zona cara (premium) de zona barata (discount)." },
+      { num: "3", label: "Preço em premium", color: C.red,  desc: "Institucionais vendem em premium. Comprar aqui é pagar caro — espere discount pra entradas de compra." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(0),  price: 18495, offset: "above" },
+      { stepNum: "2", time: t(12), price: 18220, offset: "above" },
+      { stepNum: "3", time: t(14), price: 18360, offset: "above" },
+    ],
+    height: 380,
   } satisfies ScenarioData,
 
-  /* ── Liquidity Sweep — Equal lows swept ── */
+  /* ────────── 5. Liquidity Sweep ────────── */
   "liquidity-sweep": {
+    title: "Sweep de liquidez · Triple bottom varrido",
     candles: [
-      // Building equal lows (retail "support")
-      { time: t(0), o: 18200, h: 18220, l: 18180, c: 18210 },
-      { time: t(1), o: 18210, h: 18240, l: 18200, c: 18235 },
-      { time: t(2), o: 18235, h: 18250, l: 18180, c: 18185 }, // Low 1
-      { time: t(3), o: 18185, h: 18230, l: 18178, c: 18225 },
-      { time: t(4), o: 18225, h: 18260, l: 18215, c: 18255 },
-      { time: t(5), o: 18255, h: 18270, l: 18182, c: 18188 }, // Low 2 (equal low)
-      { time: t(6), o: 18188, h: 18240, l: 18180, c: 18232 },
-      { time: t(7), o: 18232, h: 18265, l: 18225, c: 18260 },
-      { time: t(8), o: 18260, h: 18275, l: 18185, c: 18190 }, // Low 3 (triple bottom)
-      // Sweep — breaks below all lows
-      { time: t(9), o: 18190, h: 18195, l: 18140, c: 18148 }, // Sweep candle
-      { time: t(10), o: 18148, h: 18152, l: 18120, c: 18128 }, // Deep sweep
-      // Instant reversal
-      { time: t(11), o: 18128, h: 18200, l: 18122, c: 18195 }, // Engulfing
+      { time: t(0),  o: 18200, h: 18220, l: 18180, c: 18210 },
+      { time: t(1),  o: 18210, h: 18240, l: 18200, c: 18235 },
+      { time: t(2),  o: 18235, h: 18250, l: 18180, c: 18185 },
+      { time: t(3),  o: 18185, h: 18230, l: 18178, c: 18225 },
+      { time: t(4),  o: 18225, h: 18260, l: 18215, c: 18255 },
+      { time: t(5),  o: 18255, h: 18270, l: 18182, c: 18188 },
+      { time: t(6),  o: 18188, h: 18240, l: 18180, c: 18232 },
+      { time: t(7),  o: 18232, h: 18265, l: 18225, c: 18260 },
+      { time: t(8),  o: 18260, h: 18275, l: 18185, c: 18190 },
+      { time: t(9),  o: 18190, h: 18195, l: 18140, c: 18148 },
+      { time: t(10), o: 18148, h: 18152, l: 18120, c: 18128 },
+      { time: t(11), o: 18128, h: 18200, l: 18122, c: 18195 },
       { time: t(12), o: 18195, h: 18260, l: 18190, c: 18252 },
       { time: t(13), o: 18252, h: 18310, l: 18248, c: 18305 },
       { time: t(14), o: 18305, h: 18365, l: 18298, c: 18358 },
       { time: t(15), o: 18358, h: 18410, l: 18350, c: 18402 },
     ],
-    priceLines: [
-      { price: 18178, color: "#EF4444", title: "SSL (Equal Lows)", style: 2 },
-      { price: 18120, color: "#EF4444", title: "Sweep Low", style: 1 },
+    zones: [
+      { startTime: t(0),  endTime: t(10), topPrice: 18185, bottomPrice: 18175, color: C.red, label: "Pool SSL", style: "dashed" },
     ],
-    markers: [
-      { time: t(2), position: "belowBar", color: "#EF4444", shape: "circle", text: "Low 1" },
-      { time: t(5), position: "belowBar", color: "#EF4444", shape: "circle", text: "Low 2" },
-      { time: t(8), position: "belowBar", color: "#EF4444", shape: "circle", text: "Low 3" },
-      { time: t(10), position: "belowBar", color: "#EF4444", shape: "arrowDown", text: "Sweep!" },
-      { time: t(11), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Reversão" },
+    levels: [
+      { price: 18120, color: C.red, label: "Sweep Low" },
     ],
+    steps: [
+      { num: "1", label: "Equal lows formam pool",  color: C.red,   desc: "3 fundos iguais. Sell stops de quem comprou no suporte acumulam logo abaixo." },
+      { num: "2", label: "Sweep varre",              color: C.purple, desc: "Candle rompe abaixo de todos os lows. Institucionais pegam a liquidez — não é breakout real." },
+      { num: "3", label: "Reversão",                 color: C.green, desc: "Engulfing forte inverte imediatamente. Movimento real começa na direção oposta ao sweep." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(5),  price: 18180, offset: "below" },
+      { stepNum: "2", time: t(10), price: 18120, offset: "below" },
+      { stepNum: "3", time: t(11), price: 18200, offset: "above" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── Session Asia — Asia range + London sweep ── */
+  /* ────────── 6. Sessions — Asia → London → NY ────────── */
   "session-asia": {
+    title: "Sessões · Asia → Londres → NY",
     candles: [
-      // Asia session — tight range
-      { time: t(0), o: 18200, h: 18218, l: 18192, c: 18210 },
-      { time: t(1), o: 18210, h: 18222, l: 18198, c: 18205 },
-      { time: t(2), o: 18205, h: 18220, l: 18195, c: 18215 },
-      { time: t(3), o: 18215, h: 18225, l: 18200, c: 18208 },
-      { time: t(4), o: 18208, h: 18222, l: 18195, c: 18218 },
-      { time: t(5), o: 18218, h: 18228, l: 18202, c: 18210 },
-      // London open — sweep Asia High then reverse
-      { time: t(6), o: 18210, h: 18248, l: 18205, c: 18242 }, // Break above
-      { time: t(7), o: 18242, h: 18258, l: 18235, c: 18255 }, // Fake breakout
-      { time: t(8), o: 18255, h: 18260, l: 18210, c: 18215 }, // Rejection
-      { time: t(9), o: 18215, h: 18220, l: 18175, c: 18180 }, // London reversal
+      { time: t(0),  o: 18200, h: 18218, l: 18192, c: 18210 },
+      { time: t(1),  o: 18210, h: 18222, l: 18198, c: 18205 },
+      { time: t(2),  o: 18205, h: 18220, l: 18195, c: 18215 },
+      { time: t(3),  o: 18215, h: 18225, l: 18200, c: 18208 },
+      { time: t(4),  o: 18208, h: 18222, l: 18195, c: 18218 },
+      { time: t(5),  o: 18218, h: 18228, l: 18202, c: 18210 },
+      { time: t(6),  o: 18210, h: 18248, l: 18205, c: 18242 },
+      { time: t(7),  o: 18242, h: 18258, l: 18235, c: 18255 },
+      { time: t(8),  o: 18255, h: 18260, l: 18210, c: 18215 },
+      { time: t(9),  o: 18215, h: 18220, l: 18175, c: 18180 },
       { time: t(10), o: 18180, h: 18185, l: 18145, c: 18150 },
       { time: t(11), o: 18150, h: 18158, l: 18115, c: 18120 },
-      // NY continuation
       { time: t(12), o: 18120, h: 18125, l: 18080, c: 18088 },
       { time: t(13), o: 18088, h: 18095, l: 18050, c: 18058 },
       { time: t(14), o: 18058, h: 18065, l: 18025, c: 18035 },
     ],
-    priceLines: [
-      { price: 18228, color: "#F59E0B", title: "Asia High", style: 2 },
-      { price: 18192, color: "#F59E0B", title: "Asia Low", style: 2 },
+    phases: [
+      { kind: "time", start: t(0),  end: t(5),  color: C.blue,  label: "Asia" },
+      { kind: "time", start: t(6),  end: t(11), color: C.gold,  label: "Londres" },
+      { kind: "time", start: t(12), end: t(14), color: C.brand, label: "New York" },
     ],
-    markers: [
-      { time: t(0), position: "aboveBar", color: "#6366F1", shape: "square", text: "Ásia" },
-      { time: t(6), position: "aboveBar", color: "#F59E0B", shape: "square", text: "Londres" },
-      { time: t(7), position: "aboveBar", color: "#EF4444", shape: "arrowDown", text: "Sweep Asia High" },
-      { time: t(12), position: "aboveBar", color: "#FF5500", shape: "square", text: "NY" },
+    levels: [
+      { price: 18228, color: "rgba(255,255,255,0.25)", label: "Asia High", style: "dashed" },
+      { price: 18192, color: "rgba(255,255,255,0.25)", label: "Asia Low",  style: "dashed" },
     ],
+    steps: [
+      { num: "1", label: "Asia · range",     color: C.blue,  desc: "Volume baixo, preço lateralizado. Liquidez acumula acima/abaixo do range." },
+      { num: "2", label: "Londres · sweep",  color: C.gold,  desc: "Rompe Asia High falsamente, pega buy stops e reverte. É o Judas." },
+      { num: "3", label: "NY · continuação", color: C.brand, desc: "Movimento real bearish. New York dá continuidade ao que Londres iniciou." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(2),  price: 18195, offset: "below" },
+      { stepNum: "2", time: t(7),  price: 18258, offset: "above" },
+      { stepNum: "3", time: t(13), price: 18050, offset: "below" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── Judas Swing — False move at open ── */
+  /* ────────── 7. Judas Swing ────────── */
   "judas-swing": {
+    title: "Judas Swing · Falso movimento na abertura",
     candles: [
-      // Pre-market context — bullish bias
-      { time: t(0), o: 18150, h: 18172, l: 18142, c: 18168 },
-      { time: t(1), o: 18168, h: 18185, l: 18160, c: 18180 },
-      { time: t(2), o: 18180, h: 18198, l: 18175, c: 18192 },
-      { time: t(3), o: 18192, h: 18205, l: 18188, c: 18200 },
-      // NY open — Judas Swing DOWN (false move)
-      { time: t(4), o: 18200, h: 18205, l: 18158, c: 18162 }, // Big drop
-      { time: t(5), o: 18162, h: 18168, l: 18130, c: 18135 }, // More drop
-      { time: t(6), o: 18135, h: 18140, l: 18108, c: 18115 }, // Sweep lows
-      // Reversal — bullish bias wins
-      { time: t(7), o: 18115, h: 18180, l: 18110, c: 18175 }, // Engulfing
-      { time: t(8), o: 18175, h: 18230, l: 18170, c: 18225 },
-      { time: t(9), o: 18225, h: 18278, l: 18220, c: 18272 },
+      { time: t(0),  o: 18150, h: 18172, l: 18142, c: 18168 },
+      { time: t(1),  o: 18168, h: 18185, l: 18160, c: 18180 },
+      { time: t(2),  o: 18180, h: 18198, l: 18175, c: 18192 },
+      { time: t(3),  o: 18192, h: 18205, l: 18188, c: 18200 },
+      { time: t(4),  o: 18200, h: 18205, l: 18158, c: 18162 },
+      { time: t(5),  o: 18162, h: 18168, l: 18130, c: 18135 },
+      { time: t(6),  o: 18135, h: 18140, l: 18108, c: 18115 },
+      { time: t(7),  o: 18115, h: 18180, l: 18110, c: 18175 },
+      { time: t(8),  o: 18175, h: 18230, l: 18170, c: 18225 },
+      { time: t(9),  o: 18225, h: 18278, l: 18220, c: 18272 },
       { time: t(10), o: 18272, h: 18325, l: 18268, c: 18318 },
       { time: t(11), o: 18318, h: 18370, l: 18312, c: 18365 },
       { time: t(12), o: 18365, h: 18410, l: 18358, c: 18405 },
     ],
-    priceLines: [
-      { price: 18108, color: "#EF4444", title: "Judas Low (Sweep)", style: 2 },
-      { price: 18200, color: "#787b86", title: "Open", style: 1 },
+    phases: [
+      { kind: "time", start: t(4),  end: t(6),  color: C.red,   label: "Judas (falso)" },
+      { kind: "time", start: t(7),  end: t(12), color: C.green, label: "Movimento real" },
     ],
-    markers: [
-      { time: t(4), position: "aboveBar", color: "#EF4444", shape: "arrowDown", text: "Judas Swing" },
-      { time: t(6), position: "belowBar", color: "#EF4444", shape: "circle", text: "Trap" },
-      { time: t(7), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Reversão real" },
+    levels: [
+      { price: 18200, color: "rgba(255,255,255,0.30)", label: "Abertura", style: "dashed" },
+      { price: 18108, color: C.red, label: "Judas Low", style: "dashed" },
     ],
+    steps: [
+      { num: "1", label: "Viés bullish",    color: C.green, desc: "Pré-market sinaliza alta. Esperado: compras após NY abrir." },
+      { num: "2", label: "Judas bearish",   color: C.red,   desc: "NY abre com spike pra baixo. É o movimento oposto ao viés — isca clássica." },
+      { num: "3", label: "Reversão real",   color: C.green, desc: "Preço inverte forte na direção do viés original. Essa é a entrada." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(2),  price: 18175, offset: "below" },
+      { stepNum: "2", time: t(6),  price: 18108, offset: "below" },
+      { stepNum: "3", time: t(7),  price: 18180, offset: "above" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── SMT Divergence — NQ vs ES diverging ── */
+  /* ────────── 8. SMT Divergence ────────── */
   "smt-diverge": {
+    title: "SMT Divergence · NQ × ES",
     candles: [
-      // NQ making higher high while ES fails
-      { time: t(0), o: 18200, h: 18230, l: 18190, c: 18225 },
-      { time: t(1), o: 18225, h: 18260, l: 18218, c: 18255 },
-      { time: t(2), o: 18255, h: 18290, l: 18248, c: 18285 },
-      { time: t(3), o: 18285, h: 18320, l: 18278, c: 18310 }, // NQ high 1
-      { time: t(4), o: 18310, h: 18315, l: 18275, c: 18280 },
-      { time: t(5), o: 18280, h: 18285, l: 18245, c: 18250 },
-      { time: t(6), o: 18250, h: 18270, l: 18240, c: 18265 },
-      { time: t(7), o: 18265, h: 18300, l: 18258, c: 18295 },
-      { time: t(8), o: 18295, h: 18335, l: 18288, c: 18328 }, // NQ higher high!
-      // But then reversal — SMT was right
-      { time: t(9), o: 18328, h: 18332, l: 18290, c: 18295 },
+      { time: t(0),  o: 18200, h: 18230, l: 18190, c: 18225 },
+      { time: t(1),  o: 18225, h: 18260, l: 18218, c: 18255 },
+      { time: t(2),  o: 18255, h: 18290, l: 18248, c: 18285 },
+      { time: t(3),  o: 18285, h: 18320, l: 18278, c: 18310 },
+      { time: t(4),  o: 18310, h: 18315, l: 18275, c: 18280 },
+      { time: t(5),  o: 18280, h: 18285, l: 18245, c: 18250 },
+      { time: t(6),  o: 18250, h: 18270, l: 18240, c: 18265 },
+      { time: t(7),  o: 18265, h: 18300, l: 18258, c: 18295 },
+      { time: t(8),  o: 18295, h: 18335, l: 18288, c: 18328 },
+      { time: t(9),  o: 18328, h: 18332, l: 18290, c: 18295 },
       { time: t(10), o: 18295, h: 18300, l: 18250, c: 18258 },
       { time: t(11), o: 18258, h: 18265, l: 18210, c: 18218 },
       { time: t(12), o: 18218, h: 18225, l: 18170, c: 18180 },
     ],
-    priceLines: [
-      { price: 18320, color: "#787b86", title: "NQ High 1", style: 2 },
-      { price: 18335, color: "#EF4444", title: "NQ Higher High (SMT!)", style: 2 },
+    levels: [
+      { price: 18320, color: "rgba(255,255,255,0.25)", label: "High 1", style: "dashed" },
+      { price: 18335, color: C.red, label: "HH · NQ só", style: "dashed" },
     ],
-    markers: [
-      { time: t(3), position: "aboveBar", color: "#787b86", shape: "circle", text: "High 1" },
-      { time: t(8), position: "aboveBar", color: "#EF4444", shape: "arrowDown", text: "Higher High (ES falhou)" },
-      { time: t(9), position: "aboveBar", color: "#EF4444", shape: "square", text: "Reversão SMT" },
+    steps: [
+      { num: "1", label: "NQ faz High 1",     color: C.gray,  desc: "Primeiro topo marcado. ES (índice correlacionado) também marca topo próximo." },
+      { num: "2", label: "NQ higher high",    color: C.red,   desc: "NQ rompe pra cima, mas ES não confirma — diverge, falhando em fazer HH." },
+      { num: "3", label: "Reversão",          color: C.green, desc: "Divergência = manipulação. O HH do NQ foi sweep de liquidez, não movimento real." },
     ],
+    annotations: [
+      { stepNum: "1", time: t(3),  price: 18320, offset: "above" },
+      { stepNum: "2", time: t(8),  price: 18335, offset: "above" },
+      { stepNum: "3", time: t(10), price: 18300, offset: "above" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── Entry Setup — Full setup with entry, SL, TP ── */
+  /* ────────── 9. Entry setup — full trade ────────── */
   "entry-setup": {
+    title: "Setup completo · Entry · Stop · Alvo",
     candles: [
-      // Context — sweep + OB
-      { time: t(0), o: 18200, h: 18215, l: 18190, c: 18208 },
-      { time: t(1), o: 18208, h: 18220, l: 18195, c: 18198 }, // OB candle
-      { time: t(2), o: 18198, h: 18250, l: 18195, c: 18245 },
-      { time: t(3), o: 18245, h: 18280, l: 18240, c: 18275 },
-      { time: t(4), o: 18275, h: 18300, l: 18268, c: 18295 },
-      // Pullback to sweep + OB
-      { time: t(5), o: 18295, h: 18298, l: 18260, c: 18265 },
-      { time: t(6), o: 18265, h: 18270, l: 18228, c: 18232 },
-      { time: t(7), o: 18232, h: 18238, l: 18195, c: 18200 }, // Sweeps into OB
-      { time: t(8), o: 18200, h: 18205, l: 18178, c: 18182 }, // Deep into OB with FVG
-      // Entry + rally to TP
-      { time: t(9), o: 18182, h: 18230, l: 18175, c: 18225 }, // Entry candle — engulfing
+      { time: t(0),  o: 18200, h: 18215, l: 18190, c: 18208 },
+      { time: t(1),  o: 18208, h: 18220, l: 18195, c: 18198 },
+      { time: t(2),  o: 18198, h: 18250, l: 18195, c: 18245 },
+      { time: t(3),  o: 18245, h: 18280, l: 18240, c: 18275 },
+      { time: t(4),  o: 18275, h: 18300, l: 18268, c: 18295 },
+      { time: t(5),  o: 18295, h: 18298, l: 18260, c: 18265 },
+      { time: t(6),  o: 18265, h: 18270, l: 18228, c: 18232 },
+      { time: t(7),  o: 18232, h: 18238, l: 18195, c: 18200 },
+      { time: t(8),  o: 18200, h: 18205, l: 18178, c: 18182 },
+      { time: t(9),  o: 18182, h: 18230, l: 18175, c: 18225 },
       { time: t(10), o: 18225, h: 18268, l: 18220, c: 18262 },
       { time: t(11), o: 18262, h: 18305, l: 18258, c: 18298 },
       { time: t(12), o: 18298, h: 18345, l: 18292, c: 18340 },
       { time: t(13), o: 18340, h: 18382, l: 18335, c: 18378 },
-      { time: t(14), o: 18378, h: 18415, l: 18372, c: 18410 }, // Hits TP zone
+      { time: t(14), o: 18378, h: 18415, l: 18372, c: 18410 },
     ],
-    priceLines: [
-      { price: 18220, color: "#3B82F6", title: "OB High", style: 2 },
-      { price: 18195, color: "#3B82F6", title: "OB Low", style: 2 },
-      { price: 18195, color: "#2962ff", title: "Entry", style: 0 },
-      { price: 18170, color: "#ef5350", title: "Stop Loss (-1R)", style: 2 },
-      { price: 18420, color: "#26a69a", title: "Take Profit (+3R)", style: 2 },
+    zones: [
+      { startTime: t(1), endTime: t(9), topPrice: 18220, bottomPrice: 18195, color: C.blue, label: "OB + FVG" },
     ],
-    markers: [
-      { time: t(1), position: "aboveBar", color: "#3B82F6", shape: "square", text: "OB" },
-      { time: t(8), position: "belowBar", color: "#3B82F6", shape: "circle", text: "Sweep + FVG" },
-      { time: t(9), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Entry" },
-      { time: t(14), position: "aboveBar", color: "#26a69a", shape: "circle", text: "TP 3R" },
+    levels: [
+      { price: 18195, color: C.blue,  label: "Entry",      important: true },
+      { price: 18170, color: C.red,   label: "SL · −1R",   style: "dashed" },
+      { price: 18420, color: C.green, label: "TP · +3R",   style: "dashed" },
     ],
+    steps: [
+      { num: "1", label: "Contexto",          color: C.gray,  desc: "Impulse bullish deixa OB na formação. Marca a zona com o último candle bearish." },
+      { num: "2", label: "Pullback + sweep",  color: C.purple, desc: "Preço retorna, varre o entry e toca no OB com FVG interno. Confluência tripla." },
+      { num: "3", label: "Execução",          color: C.green, desc: "Engulfing confirma. Entry 18.195 · SL 18.170 (−1R) · TP 18.420 (+3R). Alvo: 1:9." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(1),  price: 18220, offset: "above" },
+      { stepNum: "2", time: t(8),  price: 18178, offset: "below" },
+      { stepNum: "3", time: t(9),  price: 18230, offset: "above" },
+    ],
+    height: 380,
   } satisfies ScenarioData,
 
-  /* ── Candle Anatomy — Teaching candle reading ── */
+  /* ────────── 10. Candle anatomy ────────── */
   "candle-anatomy": {
+    title: "Leitura de Candle · Corpo × Pavio",
     candles: [
-      { time: t(0), o: 18200, h: 18225, l: 18185, c: 18220 }, // Bullish with wicks
-      { time: t(1), o: 18220, h: 18250, l: 18190, c: 18195 }, // Bearish with wicks
-      { time: t(2), o: 18195, h: 18210, l: 18192, c: 18208 }, // Small bullish (indecision)
-      { time: t(3), o: 18208, h: 18260, l: 18205, c: 18255 }, // Big bullish (momentum)
-      { time: t(4), o: 18255, h: 18290, l: 18248, c: 18252 }, // Doji — long wicks both sides
-      { time: t(5), o: 18252, h: 18285, l: 18250, c: 18280 }, // Bullish engulfing
-      { time: t(6), o: 18280, h: 18282, l: 18240, c: 18245 }, // Rejection wick
+      { time: t(0), o: 18200, h: 18225, l: 18185, c: 18220 },
+      { time: t(1), o: 18220, h: 18250, l: 18190, c: 18195 },
+      { time: t(2), o: 18195, h: 18210, l: 18192, c: 18208 },
+      { time: t(3), o: 18208, h: 18260, l: 18205, c: 18255 },
+      { time: t(4), o: 18255, h: 18290, l: 18248, c: 18252 },
+      { time: t(5), o: 18252, h: 18285, l: 18250, c: 18280 },
+      { time: t(6), o: 18280, h: 18282, l: 18240, c: 18245 },
     ],
-    priceLines: [],
-    markers: [
-      { time: t(0), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Bullish" },
-      { time: t(1), position: "aboveBar", color: "#EF4444", shape: "arrowDown", text: "Bearish" },
-      { time: t(4), position: "aboveBar", color: "#F59E0B", shape: "circle", text: "Doji (indecisão)" },
-      { time: t(5), position: "belowBar", color: "#10B981", shape: "arrowUp", text: "Engulfing" },
-      { time: t(6), position: "aboveBar", color: "#EF4444", shape: "arrowDown", text: "Rejeição" },
+    steps: [
+      { num: "1", label: "Corpo grande",  color: C.green, desc: "Corpo grande = convicção. Mostra qual lado dominou: verde = compradores, vermelho = vendedores." },
+      { num: "2", label: "Doji",          color: C.gold,  desc: "Corpo pequeno com pavios longos = indecisão. Em zona importante, pode preceder reversão." },
+      { num: "3", label: "Rejeição",      color: C.red,   desc: "Pavio longo rejeitando um nível = o preço testou e foi empurrado de volta. Sinal de força oposta." },
     ],
-    height: 350,
+    annotations: [
+      { stepNum: "1", time: t(3), price: 18260, offset: "above" },
+      { stepNum: "2", time: t(4), price: 18290, offset: "above" },
+      { stepNum: "3", time: t(6), price: 18240, offset: "below" },
+    ],
+    height: 340,
   } satisfies ScenarioData,
 
-  /* ── Risk Shield — Showing proper risk management ── */
+  /* ────────── 11. Risk shield — 1:3 RR visualization ────────── */
   "risk-shield": {
+    title: "Gestão de Risco · Por que 1:3?",
     candles: [
-      // Good trade — 1R risk, 3R reward
       { time: t(0), o: 18200, h: 18215, l: 18192, c: 18210 },
       { time: t(1), o: 18210, h: 18212, l: 18185, c: 18190 },
-      { time: t(2), o: 18190, h: 18195, l: 18170, c: 18175 }, // Entry zone
-      { time: t(3), o: 18175, h: 18220, l: 18172, c: 18215 }, // Entry + bounce
+      { time: t(2), o: 18190, h: 18195, l: 18170, c: 18175 },
+      { time: t(3), o: 18175, h: 18220, l: 18172, c: 18215 },
       { time: t(4), o: 18215, h: 18255, l: 18210, c: 18250 },
       { time: t(5), o: 18250, h: 18290, l: 18245, c: 18285 },
-      { time: t(6), o: 18285, h: 18325, l: 18280, c: 18320 }, // +3R hit
+      { time: t(6), o: 18285, h: 18325, l: 18280, c: 18320 },
     ],
-    priceLines: [
-      { price: 18175, color: "#2962ff", title: "Entry", style: 0 },
-      { price: 18155, color: "#ef5350", title: "SL -1R ($50)", style: 2 },
-      { price: 18235, color: "#787b86", title: "+1R", style: 1 },
-      { price: 18295, color: "#787b86", title: "+2R", style: 1 },
-      { price: 18325, color: "#26a69a", title: "TP +3R ($150)", style: 2 },
+    phases: [
+      { kind: "price", start: 18155, end: 18175, color: C.red,   label: "Risco · 1R" },
+      { kind: "price", start: 18175, end: 18325, color: C.green, label: "Lucro · 3R" },
     ],
-    markers: [
-      { time: t(3), position: "belowBar", color: "#2962ff", shape: "arrowUp", text: "Entry" },
-      { time: t(6), position: "aboveBar", color: "#26a69a", shape: "circle", text: "+3R" },
+    levels: [
+      { price: 18175, color: C.blue,  label: "Entry",       important: true },
+      { price: 18155, color: C.red,   label: "SL · −1R ($50)", style: "dashed" },
+      { price: 18235, color: "rgba(255,255,255,0.20)", label: "+1R" },
+      { price: 18295, color: "rgba(255,255,255,0.20)", label: "+2R" },
+      { price: 18325, color: C.green, label: "TP · +3R ($150)", style: "dashed" },
     ],
-    height: 350,
+    steps: [
+      { num: "1", label: "Define 1R",         color: C.blue,  desc: "Distância entre entry e stop = 1R. Nesse trade: 20 pontos = $50 de risco." },
+      { num: "2", label: "Parcial em +1.5R",  color: C.gold,  desc: "Realiza 50%, move stop pro breakeven. Garante lucro com risco zero no restante." },
+      { num: "3", label: "Target +3R",        color: C.green, desc: "Assimetria mata: 1 win paga 3 losses. Win rate de 40% já é lucrativo com 1:3." },
+    ],
+    annotations: [
+      { stepNum: "1", time: t(3), price: 18175, offset: "below" },
+      { stepNum: "2", time: t(4), price: 18255, offset: "above" },
+      { stepNum: "3", time: t(6), price: 18325, offset: "above" },
+    ],
+    height: 380,
   } satisfies ScenarioData,
 } as const;
+
+export type ChartScenario = keyof typeof SCENARIOS;
+
+export function hasLiveChart(chartType: string): chartType is ChartScenario {
+  return chartType in SCENARIOS;
+}
+
+/* ────────────────────────────────────────────
+   Overlay coordinate cache
+   ──────────────────────────────────────────── */
+
+interface OverlayState {
+  w: number;
+  h: number;
+  phases: Array<Phase & { x1: number; x2: number; y1: number; y2: number }>;
+  zones: Array<Zone & { x1: number; x2: number; y1: number; y2: number }>;
+  annotations: Array<Annotation & { x: number; y: number }>;
+}
 
 /* ────────────────────────────────────────────
    LessonChart Component
    ──────────────────────────────────────────── */
 
 export function LessonChart({ scenario }: { scenario: ChartScenario }) {
+  const data = SCENARIOS[scenario] as ScenarioData;
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
-
-  const data = SCENARIOS[scenario];
+  const seriesRef = useRef<ReturnType<ReturnType<typeof import("lightweight-charts").createChart>["addSeries"]> | null>(null);
+  const [overlay, setOverlay] = useState<OverlayState>({ w: 0, h: 0, phases: [], zones: [], annotations: [] });
 
   useEffect(() => {
     if (!containerRef.current) return;
-
     let disposed = false;
+    let cleanupResize: (() => void) | null = null;
 
     const init = async () => {
-      const { createChart, CandlestickSeries, ColorType, createSeriesMarkers } = await import("lightweight-charts");
-
+      const { createChart, CandlestickSeries, ColorType } = await import("lightweight-charts");
       if (disposed || !containerRef.current) return;
 
       const chart = createChart(containerRef.current, {
         width: containerRef.current.clientWidth,
-        height: (data as ScenarioData).height ?? 300,
+        height: data.height ?? 340,
         layout: {
-          background: { type: ColorType.Solid, color: "#0a0e1a" },
-          textColor: "#787b86",
+          background: { type: ColorType.Solid, color: "#0e0e10" },
+          textColor: "rgba(255,255,255,0.40)",
           fontSize: 10,
           fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
         },
         grid: {
-          vertLines: { color: "#141824" },
-          horzLines: { color: "#141824" },
+          vertLines: { color: "rgba(255,255,255,0.025)" },
+          horzLines: { color: "rgba(255,255,255,0.025)" },
         },
         crosshair: {
-          vertLine: { color: "#758696", width: 1, style: 3, labelBackgroundColor: "#2962ff" },
-          horzLine: { color: "#758696", width: 1, style: 3, labelBackgroundColor: "#2962ff" },
+          vertLine: { color: "rgba(255,255,255,0.18)", width: 1, style: 3, labelBackgroundColor: "#141417" },
+          horzLine: { color: "rgba(255,255,255,0.18)", width: 1, style: 3, labelBackgroundColor: "#141417" },
         },
         rightPriceScale: {
-          borderColor: "#1e222d",
-          scaleMargins: { top: 0.08, bottom: 0.08 },
+          borderColor: "rgba(255,255,255,0.05)",
+          scaleMargins: { top: 0.12, bottom: 0.12 },
+          textColor: "rgba(255,255,255,0.45)",
         },
         timeScale: {
-          borderColor: "#1e222d",
+          borderColor: "rgba(255,255,255,0.05)",
           timeVisible: false,
-          rightOffset: 5,
-          barSpacing: 16,
+          visible: false,
+          rightOffset: 2,
+          barSpacing: 14,
           fixLeftEdge: true,
           fixRightEdge: true,
         },
       });
 
       const series = chart.addSeries(CandlestickSeries, {
-        upColor: "#26a69a",
-        downColor: "#ef5350",
-        borderUpColor: "#26a69a",
-        borderDownColor: "#ef5350",
-        wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350",
+        upColor: C.green,
+        downColor: C.red,
+        borderUpColor: C.green,
+        borderDownColor: C.red,
+        wickUpColor: C.green,
+        wickDownColor: C.red,
       });
 
       type UTCTimestamp = import("lightweight-charts").UTCTimestamp;
 
       series.setData(data.candles.map((c) => ({
         time: c.time as UTCTimestamp,
-        open: c.o,
-        high: c.h,
-        low: c.l,
-        close: c.c,
+        open: c.o, high: c.h, low: c.l, close: c.c,
       })));
 
-      // Price lines
-      for (const pl of data.priceLines) {
+      for (const lvl of data.levels ?? []) {
         series.createPriceLine({
-          price: pl.price,
-          color: pl.color,
-          lineWidth: 1,
-          lineStyle: pl.style ?? 2,
+          price: lvl.price,
+          color: lvl.color,
+          lineWidth: lvl.important ? 2 : 1,
+          lineStyle: lvl.style === "dashed" ? 2 : 0,
           axisLabelVisible: true,
-          title: pl.title,
+          title: lvl.label,
         });
-      }
-
-      // Markers
-      if (data.markers.length > 0) {
-        createSeriesMarkers(series, data.markers.map((m) => ({
-          time: m.time as UTCTimestamp,
-          position: m.position,
-          color: m.color,
-          shape: m.shape,
-          text: m.text,
-        })));
       }
 
       chart.timeScale().fitContent();
       chartRef.current = chart;
+      seriesRef.current = series;
 
-      // Resize
+      const recompute = () => {
+        if (!containerRef.current || !chartRef.current || !seriesRef.current || disposed) return;
+        const w = containerRef.current.clientWidth;
+        const h = data.height ?? 340;
+        const ts = chart.timeScale();
+
+        const toNum = (v: unknown): number => {
+          if (typeof v === "number" && Number.isFinite(v)) return v;
+          return 0;
+        };
+
+        const phases = (data.phases ?? []).map((p) => {
+          if (p.kind === "time") {
+            return {
+              ...p,
+              x1: toNum(ts.timeToCoordinate(p.start as UTCTimestamp)),
+              x2: toNum(ts.timeToCoordinate(p.end as UTCTimestamp)),
+              y1: 0,
+              y2: h,
+            };
+          }
+          return {
+            ...p,
+            x1: 0,
+            x2: w,
+            y1: toNum(series.priceToCoordinate(p.end)),
+            y2: toNum(series.priceToCoordinate(p.start)),
+          };
+        });
+
+        const zones = (data.zones ?? []).map((z) => ({
+          ...z,
+          x1: toNum(ts.timeToCoordinate(z.startTime as UTCTimestamp)),
+          x2: toNum(ts.timeToCoordinate(z.endTime as UTCTimestamp)) || w,
+          y1: toNum(series.priceToCoordinate(z.topPrice)),
+          y2: toNum(series.priceToCoordinate(z.bottomPrice)),
+        }));
+
+        const annotations = (data.annotations ?? []).map((a) => ({
+          ...a,
+          x: toNum(ts.timeToCoordinate(a.time as UTCTimestamp)),
+          y: toNum(series.priceToCoordinate(a.price)),
+        }));
+
+        setOverlay({ w, h, phases, zones, annotations });
+      };
+
+      // Initial compute — multiple passes to handle slow chart mount
+      requestAnimationFrame(() => {
+        setTimeout(() => { if (!disposed) recompute(); }, 30);
+        setTimeout(() => { if (!disposed) recompute(); }, 150);
+        setTimeout(() => { if (!disposed) recompute(); }, 400);
+      });
+
+      chart.timeScale().subscribeVisibleTimeRangeChange(recompute);
+
       const ro = new ResizeObserver(() => {
-        if (containerRef.current && !disposed) {
-          chart.applyOptions({ width: containerRef.current.clientWidth });
-        }
+        if (!containerRef.current || disposed) return;
+        chart.applyOptions({ width: containerRef.current.clientWidth });
+        setTimeout(recompute, 30);
       });
       ro.observe(containerRef.current);
-
-      return () => { ro.disconnect(); };
+      cleanupResize = () => ro.disconnect();
     };
 
     init();
 
     return () => {
       disposed = true;
+      if (cleanupResize) cleanupResize();
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
       }
+      seriesRef.current = null;
     };
   }, [data]);
 
+  const stepByNum = new Map((data.steps ?? []).map((s) => [s.num, s]));
+
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0a0e1a] overflow-hidden mb-5">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[#1e222d]" style={{ background: "#141417" }}>
-        <div className="flex items-center gap-3">
-          <span className="text-[12px] text-[#d1d4dc] font-bold font-mono">NQ1!</span>
-          <div className="h-3 w-px bg-[#1e222d]" />
-          <span className="text-[11px] text-[#787b86] font-mono">5</span>
-          <div className="h-3 w-px bg-[#1e222d]" />
-          <span className="text-[10px] text-[#787b86]">Cenário educacional</span>
+    <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden my-5 shadow-[0_0_0_1px_rgba(255,255,255,0.01)]">
+      {/* Header */}
+      <div className="px-5 py-3 border-b border-white/[0.04] flex items-center gap-2.5 bg-[#111114]">
+        <div className="w-5 h-5 rounded-[5px] flex items-center justify-center" style={{ backgroundColor: C.brand + "18" }}>
+          <Play className="w-2.5 h-2.5" style={{ color: C.brand }} fill="currentColor" />
         </div>
-        <span className="text-[9px] text-white/20 font-mono">Interativo — mova o mouse</span>
+        <span className="text-[12.5px] font-bold text-white tracking-tight">{data.title}</span>
       </div>
-      <div ref={containerRef} className="w-full" />
+
+      {/* Chart + SVG overlay */}
+      <div className="relative">
+        <div ref={containerRef} className="w-full" />
+        {overlay.w > 0 && (
+          <svg
+            className="absolute inset-0 pointer-events-none"
+            width={overlay.w}
+            height={overlay.h}
+            viewBox={`0 0 ${overlay.w} ${overlay.h}`}
+            style={{ zIndex: 10 }}
+          >
+            {/* Phase backgrounds */}
+            {overlay.phases.map((p, i) => {
+              const w = Math.max(0, p.x2 - p.x1);
+              const h = Math.max(0, p.y2 - p.y1);
+              if (w === 0 || h === 0) return null;
+              const labelY = p.kind === "time" ? 18 : p.y1 + 14;
+              const labelX = (p.x1 + p.x2) / 2;
+              return (
+                <g key={`ph-${i}`}>
+                  <rect x={p.x1} y={p.y1} width={w} height={h} fill={p.color} opacity={0.14} />
+                  {p.kind === "time" && (
+                    <>
+                      <line x1={p.x1} y1="0" x2={p.x1} y2={overlay.h} stroke={p.color} strokeWidth="1" opacity="0.35" strokeDasharray="3 3" />
+                      <line x1={p.x2} y1="0" x2={p.x2} y2={overlay.h} stroke={p.color} strokeWidth="1" opacity="0.35" strokeDasharray="3 3" />
+                    </>
+                  )}
+                  <text
+                    x={labelX}
+                    y={labelY}
+                    textAnchor="middle"
+                    fill={p.color}
+                    fontSize="9.5"
+                    fontWeight="700"
+                    fontFamily="'JetBrains Mono', monospace"
+                    opacity="0.85"
+                    style={{ textTransform: "uppercase", letterSpacing: "0.12em" }}
+                  >
+                    {p.label}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Zones (OB, FVG, supply) */}
+            {overlay.zones.map((z, i) => {
+              const w = Math.max(0, z.x2 - z.x1);
+              const h = Math.max(0, z.y2 - z.y1);
+              if (w === 0 || h === 0) return null;
+              const labelW = Math.max(34, z.label.length * 6 + 12);
+              return (
+                <g key={`z-${i}`}>
+                  <rect
+                    x={z.x1}
+                    y={z.y1}
+                    width={w}
+                    height={h}
+                    fill={z.color}
+                    opacity="0.22"
+                    stroke={z.color}
+                    strokeWidth="1.5"
+                    strokeDasharray={z.style === "dashed" ? "5 3" : undefined}
+                    rx="2"
+                  />
+                  <rect x={z.x1} y={z.y1 - 17} width={labelW} height="14" fill={z.color} rx="2" />
+                  <text
+                    x={z.x1 + labelW / 2}
+                    y={z.y1 - 6}
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize="9.5"
+                    fontWeight="700"
+                    fontFamily="'JetBrains Mono', monospace"
+                    style={{ letterSpacing: "0.05em" }}
+                  >
+                    {z.label}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Annotations — numbered badges with connector */}
+            {overlay.annotations.map((a, i) => {
+              const step = stepByNum.get(a.stepNum);
+              const color = step?.color ?? C.brand;
+              const yOffset = a.offset === "below" ? 28 : -28;
+              const badgeY = a.y + yOffset;
+              return (
+                <g key={`an-${i}`}>
+                  <line
+                    x1={a.x}
+                    y1={a.y}
+                    x2={a.x}
+                    y2={badgeY + (yOffset < 0 ? 12 : -12)}
+                    stroke={color}
+                    strokeWidth="1"
+                    strokeDasharray="2 2"
+                    opacity="0.6"
+                  />
+                  <circle cx={a.x} cy={badgeY} r="13" fill={color} stroke="#0e0e10" strokeWidth="2.5" />
+                  <text
+                    x={a.x}
+                    y={badgeY + 4}
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize="12"
+                    fontWeight="800"
+                    fontFamily="'JetBrains Mono', monospace"
+                  >
+                    {a.stepNum}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        )}
+      </div>
+
+      {/* Narrative steps — legend below chart */}
+      {data.steps && data.steps.length > 0 && (
+        <div className="px-5 py-4 border-t border-white/[0.04] bg-[#0a0a0c]">
+          <div className={`grid gap-3 ${data.steps.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+            {data.steps.map((s) => (
+              <div key={s.num} className="flex items-start gap-3">
+                <div
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: s.color + "22", border: `1px solid ${s.color}55` }}
+                >
+                  <span className="text-[11px] font-extrabold font-mono" style={{ color: s.color }}>{s.num}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12.5px] font-bold text-white/90 mb-1 leading-tight">{s.label}</p>
+                  <p className="text-[11.5px] text-white/45 leading-relaxed">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
-}
-
-/** Check if a chart type has a live chart scenario */
-export function hasLiveChart(chartType: string): chartType is ChartScenario {
-  return chartType in SCENARIOS;
 }

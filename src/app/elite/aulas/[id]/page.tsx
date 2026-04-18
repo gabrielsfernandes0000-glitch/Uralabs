@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Play, Check, CheckCircle, Clock,
   FileText, Download, BookOpen, ChevronDown, ChevronUp, RotateCcw,
-  Sparkles, Star, Crosshair, RefreshCw,
+  Sparkles, Star, RefreshCw,
 } from "lucide-react";
 import { findLesson, getNextLesson, getPrevLesson } from "@/lib/curriculum";
 import type { QuizQuestion, LessonData } from "@/lib/curriculum";
@@ -657,200 +657,6 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
 }
 
 /* ────────────────────────────────────────────
-   Identifique no Gráfico — interactive chart challenges
-   ──────────────────────────────────────────── */
-
-interface ChartChallenge {
-  question: string;
-  options: { label: string; price: number; correct: boolean }[];
-  explanation: string;
-}
-
-interface ChartMarkData {
-  challenges: ChartChallenge[];
-  candles: { time: number; o: number; h: number; l: number; c: number }[];
-}
-
-function MarkOnChartSection({ marks, accent }: { marks: ChartMarkData; accent: string }) {
-  const [current, setCurrent] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [revealed, setRevealed] = useState(false);
-  const [results, setResults] = useState<boolean[]>([]);
-  const [finished, setFinished] = useState(false);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
-  const seriesRef = useRef<ReturnType<ReturnType<typeof import("lightweight-charts").createChart>["addSeries"]> | null>(null);
-  const addedLinesRef = useRef<Set<string>>(new Set());
-
-  const q = marks.challenges[current];
-
-  // Initialize chart
-  useEffect(() => {
-    if (!chartContainerRef.current) return;
-    let disposed = false;
-
-    const init = async () => {
-      const { createChart, CandlestickSeries, ColorType } = await import("lightweight-charts");
-      if (disposed || !chartContainerRef.current) return;
-
-      const chart = createChart(chartContainerRef.current, {
-        width: chartContainerRef.current.clientWidth,
-        height: 380,
-        layout: {
-          background: { type: ColorType.Solid, color: "#0a0a0c" },
-          textColor: "#787b86", fontSize: 10,
-          fontFamily: "'JetBrains Mono', monospace",
-        },
-        grid: { vertLines: { color: "#141417" }, horzLines: { color: "#141417" } },
-        crosshair: {
-          vertLine: { color: "#555", width: 1, style: 3, labelBackgroundColor: "#333" },
-          horzLine: { color: "#555", width: 1, style: 3, labelBackgroundColor: "#333" },
-        },
-        rightPriceScale: { borderColor: "#1a1a1f", scaleMargins: { top: 0.08, bottom: 0.08 } },
-        timeScale: { borderColor: "#1a1a1f", timeVisible: false, barSpacing: 18, fixLeftEdge: true, fixRightEdge: true },
-      });
-
-      const series = chart.addSeries(CandlestickSeries, {
-        upColor: "#26a69a", downColor: "#ef5350",
-        borderUpColor: "#26a69a", borderDownColor: "#ef5350",
-        wickUpColor: "#26a69a", wickDownColor: "#ef5350",
-      });
-
-      type UTCTimestamp = import("lightweight-charts").UTCTimestamp;
-      series.setData(marks.candles.map(c => ({ time: c.time as UTCTimestamp, open: c.o, high: c.h, low: c.l, close: c.c })));
-      chart.timeScale().fitContent();
-
-      chartRef.current = chart;
-      seriesRef.current = series;
-
-      const ro = new ResizeObserver(() => {
-        if (chartContainerRef.current && !disposed) chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-      });
-      ro.observe(chartContainerRef.current);
-      return () => ro.disconnect();
-    };
-
-    init();
-    return () => { disposed = true; chartRef.current?.remove(); chartRef.current = null; seriesRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleConfirm = () => {
-    if (selected === null || !q) return;
-    const isCorrect = q.options[selected].correct;
-    setRevealed(true);
-    setResults(prev => [...prev, isCorrect]);
-
-    // Mark the correct zone on the chart
-    const correctOpt = q.options.find(o => o.correct)!;
-    const key = `mark-${current}`;
-    if (seriesRef.current && !addedLinesRef.current.has(key)) {
-      seriesRef.current.createPriceLine({
-        price: correctOpt.price,
-        color: isCorrect ? "#22C55E" : "#EF4444",
-        lineWidth: 1, lineStyle: 0, axisLabelVisible: true,
-        title: correctOpt.label,
-      });
-      addedLinesRef.current.add(key);
-    }
-  };
-
-  const handleNext = () => {
-    if (current < marks.challenges.length - 1) {
-      setCurrent(prev => prev + 1);
-      setSelected(null);
-      setRevealed(false);
-    } else {
-      setFinished(true);
-    }
-  };
-
-  if (finished) {
-    const correct = results.filter(Boolean).length;
-    return (
-      <div className="flex flex-col items-center py-10">
-        <CheckCircle className="w-10 h-10 text-green-400/80 mb-4" />
-        <h4 className="text-[18px] font-bold text-white mb-2">Exercício completo</h4>
-        <p className="text-[14px] text-white/50 mb-1">{correct}/{results.length} marcações corretas</p>
-        <p className="text-[12px] text-white/30 mb-6">As zonas corretas estão marcadas no gráfico acima</p>
-        <button onClick={() => { setCurrent(0); setSelected(null); setRevealed(false); setResults([]); setFinished(false); addedLinesRef.current.clear(); }}
-          className="flex items-center gap-2 text-[13px] text-white/30 hover:text-white/60 transition-colors">
-          <RotateCcw className="w-3.5 h-3.5" /> Refazer
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      {/* Chart */}
-      <div className="rounded-xl overflow-hidden border border-white/[0.08] mb-5">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[#1a1a1f]" style={{ background: "#111114" }}>
-          <div className="flex items-center gap-3">
-            <span className="text-[12px] text-white/80 font-bold font-mono">NQ1!</span>
-            <div className="h-3 w-px bg-white/[0.08]" />
-            <span className="text-[11px] text-white/30">Identifique no gráfico</span>
-          </div>
-          <span className="text-[10px] text-white/25 font-mono">{current + 1}/{marks.challenges.length}</span>
-        </div>
-        <div ref={chartContainerRef} className="w-full" />
-      </div>
-
-      {/* Question */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5">
-        <p className="text-[14px] text-white/80 font-medium mb-4">{q.question}</p>
-
-        <div className="space-y-2 mb-4">
-          {q.options.map((opt, i) => {
-            let cls = "border-white/[0.05] text-white/50 hover:border-white/[0.12] hover:bg-white/[0.02]";
-            if (revealed && opt.correct) cls = "border-green-500/40 bg-green-500/[0.06] text-green-400";
-            else if (revealed && selected === i && !opt.correct) cls = "border-red-500/40 bg-red-500/[0.06] text-red-400";
-            else if (!revealed && selected === i) cls = "border-white/[0.20] bg-white/[0.05] text-white";
-
-            return (
-              <button key={i} onClick={() => !revealed && setSelected(i)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left ${cls}`}>
-                <span className="text-[12px] font-mono text-white/30 w-5">{String.fromCharCode(65 + i)}</span>
-                <span className="text-[13px] font-medium">{opt.label}</span>
-                <span className="ml-auto text-[11px] font-mono text-white/20">{opt.price.toLocaleString()}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Explanation */}
-        {revealed && (
-          <div className={`px-4 py-3 rounded-xl mb-4 ${results[results.length - 1] ? "bg-green-500/[0.05] border border-green-500/10" : "bg-red-500/[0.05] border border-red-500/10"}`}>
-            <p className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${results[results.length - 1] ? "text-green-400/80" : "text-red-400/80"}`}>
-              {results[results.length - 1] ? "Correto!" : "Não exatamente"}
-            </p>
-            <p className="text-[12px] text-white/50 leading-relaxed">{q.explanation}</p>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex justify-end">
-          {!revealed ? (
-            <button onClick={handleConfirm} disabled={selected === null}
-              className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all ${
-                selected !== null ? "bg-brand-500 text-white hover:brightness-110" : "bg-white/[0.03] text-white/20 cursor-not-allowed"
-              }`}>
-              Confirmar
-            </button>
-          ) : (
-            <button onClick={handleNext}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.10] text-[13px] font-bold text-white/80 hover:bg-white/[0.08] transition-all">
-              {current < marks.challenges.length - 1 ? "Próxima" : "Finalizar"}
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
    Checklist Component
    ──────────────────────────────────────────── */
 
@@ -975,110 +781,6 @@ const FLASHCARDS: Record<string, Flashcard[]> = {
   ],
 };
 
-const BT = 1744617000;
-const markCandles = [
-  { time: BT, o: 18200, h: 18218, l: 18185, c: 18210 },
-  { time: BT + 300, o: 18210, h: 18225, l: 18195, c: 18198 }, // OB candle
-  { time: BT + 600, o: 18198, h: 18248, l: 18195, c: 18242 }, // impulse (FVG)
-  { time: BT + 900, o: 18242, h: 18275, l: 18235, c: 18270 },
-  { time: BT + 1200, o: 18270, h: 18298, l: 18262, c: 18290 },
-  { time: BT + 1500, o: 18290, h: 18315, l: 18282, c: 18308 }, // BSL high
-  { time: BT + 1800, o: 18308, h: 18322, l: 18295, c: 18300 },
-  { time: BT + 2100, o: 18300, h: 18305, l: 18268, c: 18275 },
-  { time: BT + 2400, o: 18275, h: 18280, l: 18240, c: 18248 },
-  { time: BT + 2700, o: 18248, h: 18258, l: 18218, c: 18225 },
-  { time: BT + 3000, o: 18225, h: 18230, l: 18188, c: 18195 },
-  { time: BT + 3300, o: 18195, h: 18200, l: 18165, c: 18172 },
-  { time: BT + 3600, o: 18172, h: 18178, l: 18142, c: 18148 },
-  { time: BT + 3900, o: 18148, h: 18155, l: 18120, c: 18128 }, // SSL sweep low
-  { time: BT + 4200, o: 18128, h: 18195, l: 18122, c: 18188 }, // reversal
-  { time: BT + 4500, o: 18188, h: 18242, l: 18182, c: 18238 },
-  { time: BT + 4800, o: 18238, h: 18285, l: 18232, c: 18278 },
-  { time: BT + 5100, o: 18278, h: 18325, l: 18272, c: 18318 },
-  { time: BT + 5400, o: 18318, h: 18362, l: 18312, c: 18355 },
-  { time: BT + 5700, o: 18355, h: 18395, l: 18348, c: 18388 },
-];
-
-const CHART_MARKS: Record<string, ChartMarkData> = {
-  "order-blocks": {
-    candles: markCandles,
-    challenges: [
-      {
-        question: "Olhe os primeiros candles. Qual é o último candle bearish antes do impulso de alta? Essa é a zona do OB bullish.",
-        options: [
-          { label: "OB em 18.195–18.225", price: 18210, correct: true },
-          { label: "OB em 18.270–18.298", price: 18284, correct: false },
-          { label: "OB em 18.308–18.322", price: 18315, correct: false },
-        ],
-        explanation: "O candle 2 (18.210→18.198) é o último candle bearish antes do impulso que levou o preço de 18.198 até 18.308. Essa zona (18.195–18.225) é o OB bullish — quando o preço retornar, espere reação aqui.",
-      },
-      {
-        question: "O preço subiu até 18.322 e depois caiu forte. Onde está o OB bearish que causou a queda?",
-        options: [
-          { label: "OB em 18.140–18.170", price: 18155, correct: false },
-          { label: "OB em 18.295–18.322", price: 18308, correct: true },
-          { label: "OB em 18.240–18.275", price: 18258, correct: false },
-        ],
-        explanation: "O topo em 18.322 marca o último candle bullish antes da reversão. A zona 18.295–18.322 é o OB bearish — se o preço voltar ali, é zona de venda. O preço caiu 200 pontos a partir dessa zona.",
-      },
-      {
-        question: "Depois da queda até 18.120, o preço reverteu com força. Onde seria a entry ideal baseado no OB da reversão?",
-        options: [
-          { label: "Entry no OB em 18.148–18.178", price: 18163, correct: true },
-          { label: "Entry em 18.238–18.278", price: 18258, correct: false },
-          { label: "Entry em 18.120 (o fundo)", price: 18120, correct: false },
-        ],
-        explanation: "O candle em 18.148 é o último bearish antes do engulfing de reversão (18.128→18.188). Esse é o OB do sweep. Entry ali dá o melhor R:R. Comprar no fundo (18.120) sem confirmação é jogar moeda.",
-      },
-    ],
-  },
-  "fvg-breaker": {
-    candles: markCandles,
-    challenges: [
-      {
-        question: "Entre os candles 2 e 4, o preço subiu ~70 pontos rapidamente. Onde está o FVG (gap não preenchido)?",
-        options: [
-          { label: "FVG entre 18.218 e 18.242", price: 18230, correct: true },
-          { label: "FVG entre 18.270 e 18.298", price: 18284, correct: false },
-          { label: "FVG entre 18.308 e 18.322", price: 18315, correct: false },
-        ],
-        explanation: "O FVG fica entre o high do candle 1 (18.218) e o low do candle 3 (18.242). Esse espaço não teve troca justa de preço — é um 'buraco' que o mercado tende a preencher antes de continuar.",
-      },
-      {
-        question: "O OB bullish em 18.195–18.225 falhou — o preço passou direto caindo até 18.120. O que esse OB se tornou?",
-        options: [
-          { label: "Continua sendo OB bullish", price: 18210, correct: false },
-          { label: "Virou Breaker Block — agora é resistência", price: 18210, correct: true },
-          { label: "Não significa nada", price: 18210, correct: false },
-        ],
-        explanation: "Quando um OB falha (preço passa sem reagir), ele se torna um Breaker Block. O OB bullish quebrado agora funciona como resistência. Se o preço voltar ali, espere rejeição pra baixo — a estrutura mudou.",
-      },
-    ],
-  },
-  liquidez: {
-    candles: markCandles,
-    challenges: [
-      {
-        question: "Observe o topo do movimento em 18.308–18.322. Acima desses highs tem stops de quem vendeu. Onde está a Buy Side Liquidity?",
-        options: [
-          { label: "BSL acima de 18.322", price: 18322, correct: true },
-          { label: "BSL em 18.200", price: 18200, correct: false },
-          { label: "BSL abaixo de 18.120", price: 18120, correct: false },
-        ],
-        explanation: "Buy Side Liquidity (BSL) fica ACIMA de highs — são stops de quem está short. Os institucionais sabem que tem liquidez ali e podem varrer esses stops antes de reverter. O high de 18.322 é um ímã de liquidez.",
-      },
-      {
-        question: "O preço fez vários lows entre 18.148 e 18.172 antes de cair até 18.120. O que aconteceu?",
-        options: [
-          { label: "Rompeu o suporte — é queda", price: 18148, correct: false },
-          { label: "Sweep da SSL — varreu os stops e reverteu", price: 18128, correct: true },
-          { label: "Movimento aleatório", price: 18150, correct: false },
-        ],
-        explanation: "Os lows em 18.148–18.172 acumularam stops de compra (SSL). O preço rompeu brevemente até 18.120 (sweep) e imediatamente reverteu com um engulfing. Os institucionais pegaram a liquidez que precisavam. Clássico sweep → reversão.",
-      },
-    ],
-  },
-};
 
 /* ────────────────────────────────────────────
    Main Lesson Page
@@ -1110,7 +812,6 @@ export default function LessonPage() {
   const next = getNextLesson(lessonId);
   const accent = mod.accentHex;
   const flashcards = FLASHCARDS[lessonId];
-  const chartMarks = CHART_MARKS[lessonId];
 
   const handleQuizComplete = (score: number, total: number) => {
     const passed = score / total >= 0.8;
@@ -1218,13 +919,6 @@ export default function LessonPage() {
       {lesson.hasQuiz && lesson.quiz && lesson.quiz.length > 0 && (
         <Section title={`Quiz — ${lesson.quiz.length} perguntas`} icon={BookOpen} defaultOpen accent={accent}>
           <QuizSection questions={lesson.quiz} accent={accent} onComplete={handleQuizComplete} />
-        </Section>
-      )}
-
-      {/* Identifique no Gráfico */}
-      {chartMarks && (
-        <Section title="Identifique no Gráfico" icon={Crosshair} accent={accent}>
-          <MarkOnChartSection marks={chartMarks} accent={accent} />
         </Section>
       )}
 
