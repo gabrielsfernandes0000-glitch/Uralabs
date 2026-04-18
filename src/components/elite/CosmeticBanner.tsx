@@ -27,11 +27,8 @@ export type BannerSlug =
   | "judas-swing"
   | "degen-nights"
   // Tarot-trading v3
-  | "o-mago-smc"
   | "a-torre-flash"
   | "o-sol-bull"
-  | "a-morte-liq"
-  | "o-diabo-fomo"
   | "a-temperanca-rr";
 
 export type BannerVariant = "full" | "sidebar" | "card" | "strip";
@@ -62,11 +59,8 @@ const BANNER_ACCENT: Record<BannerSlug, string> = {
   "judas-swing": "#A855F7",
   "degen-nights": "#EC4899",
   // Tarot v3
-  "o-mago-smc": "#A855F7",
   "a-torre-flash": "#3B82F6",
   "o-sol-bull": "#F59E0B",
-  "a-morte-liq": "#EF4444",
-  "o-diabo-fomo": "#7C3AED",
   "a-temperanca-rr": "#10B981",
 };
 
@@ -98,12 +92,9 @@ export function CosmeticBanner({ slug, variant = "full", animated, interactive, 
     case "btc-fire":         return <BtcFire       {...commonProps} className={className} />;
     case "judas-swing":      return <JudasSwing    {...commonProps} className={className} />;
     case "degen-nights":     return <DegenNights   {...commonProps} className={className} />;
-    // Tarot v3
-    case "o-mago-smc":       return <OMagoSmc       {...commonProps} className={className} />;
+    // Tarot v3 — só os que passam em qualidade visual
     case "a-torre-flash":    return <ATorreFlash    {...commonProps} className={className} />;
     case "o-sol-bull":       return <OSolBull       {...commonProps} className={className} />;
-    case "a-morte-liq":      return <AMorteLiq      {...commonProps} className={className} />;
-    case "o-diabo-fomo":     return <ODiaboFomo     {...commonProps} className={className} />;
     case "a-temperanca-rr":  return <ATemperancaRr  {...commonProps} className={className} />;
   }
 }
@@ -562,46 +553,10 @@ function DegenNights({ variant, animated, accent, className }: BannerChildProps)
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   TAROT v3 — 6 banners arcanos adaptados pro nicho trade/crypto
+   TAROT v3 — banners arcanos adaptados pro nicho trade/crypto
+   (só os que passaram em qualidade visual; removidos: o-mago-smc,
+    a-morte-liq, o-diabo-fomo)
    ═════════════════════════════════════════════════════════════════════ */
-
-function OMagoSmc({ variant, animated, accent, className }: BannerChildProps) {
-  if (variant === "strip") return <StripAccent accent={accent} pattern="mago" className={className} />;
-  return (
-    <Frame animName="o-mago-smc" variant={variant} animated={animated} accent={accent} className={className}>
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${accent}30, transparent 65%), linear-gradient(135deg, ${accent}18 0%, transparent 60%)` }} />
-      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
-        {/* Cajado diagonal */}
-        <line x1="80" y1="160" x2="180" y2="40" stroke="#8B4513" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="80" cy="160" r="6" fill={accent} opacity="0.6" />
-        {/* Orb no topo do cajado */}
-        <g className="mago-orb" transform="translate(180, 40)">
-          <circle r="28" fill={accent} opacity="0.25" style={{ filter: `drop-shadow(0 0 12px ${accent})` }} />
-          <circle r="22" fill="none" stroke={accent} strokeWidth="1.5" opacity="0.8" />
-          {/* Velas dentro do orb */}
-          <g className="mago-orb-candles">
-            {[-12, -4, 4, 12].map((x, i) => (
-              <rect key={i} x={x - 1.5} y={i % 2 === 0 ? -8 : 0} width="3" height="12" fill={accent} opacity="0.9" rx="0.5" />
-            ))}
-          </g>
-        </g>
-        {/* Runas flutuando */}
-        {["Ω", "△", "✦", "⧖"].map((r, i) => (
-          <text key={i} className="mago-rune" x={40 + i * 90} y={110} fontSize="16" fontFamily="serif" fill={accent} opacity="0.6" style={{ ["--i" as string]: i }}>{r}</text>
-        ))}
-        <text x="200" y="165" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="4" fill={`${accent}90`}>I · O MAGO</text>
-      </svg>
-      <style>{`
-        .banner-o-mago-smc .mago-orb-candles { animation: magoOrb 8s linear infinite; transform-origin: center; transform-box: fill-box; }
-        .banner-o-mago-smc .mago-rune { animation: magoRune 3s ease-in-out calc(var(--i) * 0.5s) infinite; }
-        .banner-o-mago-smc[data-anim="always"] .mago-orb-candles { animation: magoOrb 4s linear infinite; }
-        .banner-o-mago-smc[data-anim="always"]:hover .mago-orb-candles, .banner-o-mago-smc[data-anim="hover"]:hover .mago-orb-candles { animation: magoOrb 1s linear infinite; }
-        @keyframes magoOrb { from { transform: rotate(0) } to { transform: rotate(360deg) } }
-        @keyframes magoRune { 0%, 100% { opacity: 0.4 } 50% { opacity: 1 } }
-      `}</style>
-    </Frame>
-  );
-}
 
 function ATorreFlash({ variant, animated, accent, className }: BannerChildProps) {
   if (variant === "strip") return <StripAccent accent={accent} pattern="torre" className={className} />;
@@ -674,74 +629,6 @@ function OSolBull({ variant, animated, accent, className }: BannerChildProps) {
         .banner-o-sol-bull[data-anim="always"]:hover .sol-rays, .banner-o-sol-bull[data-anim="hover"]:hover .sol-rays { animation: solSpin 4s linear infinite; }
         @keyframes solSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
         @keyframes solPrice { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(-20px); opacity: 0 } }
-      `}</style>
-    </Frame>
-  );
-}
-
-function AMorteLiq({ variant, animated, accent, className }: BannerChildProps) {
-  if (variant === "strip") return <StripAccent accent={accent} pattern="morte" className={className} />;
-  return (
-    <Frame animName="a-morte-liq" variant={variant} animated={animated} accent={accent} className={className}>
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 40% 80% at 50% 100%, ${accent}35, transparent 60%), linear-gradient(180deg, #0a0a0c 0%, ${accent}10 100%)` }} />
-      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
-        {/* Silhueta ceifadora */}
-        <g transform="translate(100, 20)" opacity="0.8">
-          <path d="M 0 20 Q 10 0 25 10 L 30 30 L 25 80 L 35 160 L 15 160 L 5 80 Z" fill="#1a1a1a" stroke={accent} strokeWidth="0.8" />
-          <ellipse cx="15" cy="18" rx="8" ry="10" fill="#0a0a0a" />
-          {/* Foice */}
-          <path d="M 30 25 L 55 20 Q 50 5 30 10" stroke={accent} strokeWidth="2" fill="none" strokeLinecap="round" />
-          <line x1="30" y1="25" x2="30" y2="140" stroke="#8B4513" strokeWidth="2" />
-        </g>
-        {/* "LIQ" enorme */}
-        <text className="morte-liq" x="280" y="100" textAnchor="middle" fontSize="56" fontFamily="serif" fontWeight="bold" fill={accent}
-          style={{ filter: `drop-shadow(0 0 12px ${accent})` }}>LIQ</text>
-        {/* Velas vermelhas caindo no fundo */}
-        {[180, 230, 330, 370].map((x, i) => (
-          <rect key={i} x={x - 3} y={130 + (i % 2) * 10} width="6" height={25 + (i % 3) * 5} fill={accent} opacity="0.5" rx="1" />
-        ))}
-        <text x="200" y="170" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}90`}>XIII · A MORTE</text>
-      </svg>
-      <style>{`
-        .banner-a-morte-liq .morte-liq { animation: morteLiqFade 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
-        .banner-a-morte-liq[data-anim="always"] .morte-liq { animation: morteLiqPulse 1.2s ease-in-out infinite; }
-        .banner-a-morte-liq[data-anim="always"]:hover .morte-liq, .banner-a-morte-liq[data-anim="hover"]:hover .morte-liq { animation: morteLiqShake 0.3s linear infinite; }
-        @keyframes morteLiqFade { 0%, 100% { opacity: 0.7 } 50% { opacity: 1 } }
-        @keyframes morteLiqPulse { 0%, 100% { opacity: 0.8; transform: scale(1) } 50% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 20px currentColor) } }
-        @keyframes morteLiqShake { 0%, 100% { transform: translateX(0) } 25% { transform: translateX(-2px) } 75% { transform: translateX(2px) } }
-      `}</style>
-    </Frame>
-  );
-}
-
-function ODiaboFomo({ variant, animated, accent, className }: BannerChildProps) {
-  if (variant === "strip") return <StripAccent accent={accent} pattern="diabo" className={className} />;
-  return (
-    <Frame animName="o-diabo-fomo" variant={variant} animated={animated} accent={accent} className={className}>
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${accent}30, transparent 65%), #0a0a0c` }} />
-      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
-        {/* Chifres centrais */}
-        <g transform="translate(200, 100)">
-          <path d="M -22 0 Q -32 -30 -40 -55 Q -20 -35 -12 -15" fill={accent} opacity="0.9" stroke="#000" strokeWidth="0.5"
-            style={{ filter: `drop-shadow(0 0 8px ${accent})` }} />
-          <path d="M 22 0 Q 32 -30 40 -55 Q 20 -35 12 -15" fill={accent} opacity="0.9" stroke="#000" strokeWidth="0.5"
-            style={{ filter: `drop-shadow(0 0 8px ${accent})` }} />
-          {/* Olho central */}
-          <circle cx="0" cy="0" r="10" fill={accent} style={{ filter: `drop-shadow(0 0 10px ${accent})` }} />
-          <circle cx="0" cy="0" r="5" fill="#000" />
-        </g>
-        {/* Preços fugindo (da direita pra esquerda) */}
-        {["HYPE", "NOW!", "MOON", "+300%", "BUY", "FOMO"].map((t, i) => (
-          <text key={i} className="diabo-price" x={380} y={30 + (i % 4) * 35} fontSize="12" fontFamily="monospace" fontWeight="bold" fill={accent}
-            opacity="0.8" style={{ ["--i" as string]: i, filter: `drop-shadow(0 0 4px ${accent})` }}>{t}</text>
-        ))}
-        <text x="200" y="172" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}a0`}>XV · O DIABO</text>
-      </svg>
-      <style>{`
-        .banner-o-diabo-fomo .diabo-price { animation: diaboFlee 4s linear calc(var(--i) * 0.6s) infinite; }
-        .banner-o-diabo-fomo[data-anim="always"] .diabo-price { animation: diaboFlee 3s linear calc(var(--i) * 0.4s) infinite; }
-        .banner-o-diabo-fomo[data-anim="always"]:hover .diabo-price, .banner-o-diabo-fomo[data-anim="hover"]:hover .diabo-price { animation: diaboFlee 1s linear calc(var(--i) * 0.1s) infinite; }
-        @keyframes diaboFlee { 0% { transform: translateX(0); opacity: 0 } 10% { opacity: 1 } 100% { transform: translateX(-450px); opacity: 0 } }
       `}</style>
     </Frame>
   );

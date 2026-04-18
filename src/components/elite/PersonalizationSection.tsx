@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Palette, Check, Loader2, Lock } from "lucide-react";
+import { Palette, Check, Loader2, Lock, AlertCircle } from "lucide-react";
 import { CosmeticBanner, isBannerSlug } from "./CosmeticBanner";
 import { AvatarWithCosmetics, normalizeFrameSlug, normalizeAuraSlug } from "./AvatarCosmetics";
 
@@ -36,6 +36,8 @@ const SAMPLE_AVATAR = "/favicon.ico";
 export function PersonalizationSection() {
   const [items, setItems] = useState<OwnedCosmetic[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [equipError, setEquipError] = useState<string | null>(null);
+  const [equipSuccess, setEquipSuccess] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
@@ -55,6 +57,8 @@ export function PersonalizationSection() {
 
   function equip(cosmeticId: string) {
     setPendingId(cosmeticId);
+    setEquipError(null);
+    setEquipSuccess(null);
     startTransition(async () => {
       try {
         const res = await fetch("/api/cosmetics", {
@@ -62,8 +66,15 @@ export function PersonalizationSection() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ cosmetic_id: cosmeticId }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload.error ?? `HTTP ${res.status}`);
+        const equipped = items?.find((i) => i.cosmetic_id === cosmeticId);
+        setEquipSuccess(`${equipped?.prize_name ?? "Cosmético"} equipado — recarrega a página pra ver no sidebar`);
+        setTimeout(() => setEquipSuccess(null), 4000);
         await refetch();
+      } catch (e) {
+        setEquipError(e instanceof Error ? e.message : "erro ao equipar");
+        setTimeout(() => setEquipError(null), 5000);
       } finally {
         setPendingId(null);
       }
@@ -111,6 +122,19 @@ export function PersonalizationSection() {
         </div>
         <span className="text-[10px] text-white/35 font-mono">{items.length} owned</span>
       </div>
+
+      {equipError && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/[0.06] px-3 py-2 text-[12px] text-red-300">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          Falha ao equipar: {equipError}
+        </div>
+      )}
+      {equipSuccess && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/[0.06] px-3 py-2 text-[12px] text-emerald-300">
+          <Check className="w-3.5 h-3.5 shrink-0" />
+          {equipSuccess}
+        </div>
+      )}
 
       {(["banner", "avatar_frame", "avatar_effect"] as const).map((type) => {
         const meta = TYPE_META[type];

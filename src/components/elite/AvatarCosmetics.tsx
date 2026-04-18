@@ -16,36 +16,33 @@ import { Avatar } from "./Avatar";
    ──────────────────────────────────────────────────────────── */
 
 export type FrameSlug =
-  | "touro-chifres" | "urso-garras" | "cartola-wall" | "halo-hodler"
-  | "laurel-mesa" | "coroa-diamante" | "asas-touro" | "pix-ring"
+  | "urso-garras" | "cartola-wall" | "halo-hodler"
+  | "laurel-mesa" | "coroa-diamante" | "pix-ring"
   // Tarot v3
-  | "arcano-solar" | "arcano-lunar" | "arcano-estelar"
-  | "runas-traders" | "pentagrama" | "sigilo-mago";
+  | "arcano-solar" | "arcano-lunar" | "arcano-estelar" | "pentagrama";
 
 export type AuraSlug =
   | "fogo-btc" | "verde-lucro" | "vermelho-rekt" | "matrix-rain"
-  | "neon-ring" | "dourada-payout" | "relampago" | "cosmos"
+  | "neon-ring" | "dourada-payout" | "cosmos"
   // Tarot v3
-  | "nevoa-mistica" | "runas-orbital" | "energia-arcana"
+  | "runas-orbital" | "energia-arcana"
   | "sombras" | "luz-divina" | "portal-etereo";
 
 const FRAME_ACCENT: Record<FrameSlug, string> = {
-  "touro-chifres": "#10B981", "urso-garras": "#EF4444",
-  "cartola-wall": "#F59E0B", "halo-hodler": "#FFD700",
-  "laurel-mesa": "#10B981", "coroa-diamante": "#06B6D4",
-  "asas-touro": "#FFD700", "pix-ring": "#00D4FF",
+  "urso-garras": "#EF4444", "cartola-wall": "#F59E0B", "halo-hodler": "#FFD700",
+  "laurel-mesa": "#10B981", "coroa-diamante": "#06B6D4", "pix-ring": "#00D4FF",
   // Tarot
   "arcano-solar": "#F59E0B", "arcano-lunar": "#06B6D4", "arcano-estelar": "#8B5CF6",
-  "runas-traders": "#EC4899", "pentagrama": "#DC2626", "sigilo-mago": "#A855F7",
+  "pentagrama": "#DC2626",
 };
 
 const AURA_ACCENT: Record<AuraSlug, string> = {
   "fogo-btc": "#F7931A", "verde-lucro": "#10B981",
   "vermelho-rekt": "#EF4444", "matrix-rain": "#06B6D4",
   "neon-ring": "#EC4899", "dourada-payout": "#F59E0B",
-  "relampago": "#FCD34D", "cosmos": "#A855F7",
+  "cosmos": "#A855F7",
   // Tarot
-  "nevoa-mistica": "#A855F7", "runas-orbital": "#06B6D4", "energia-arcana": "#EC4899",
+  "runas-orbital": "#06B6D4", "energia-arcana": "#EC4899",
   "sombras": "#7F1D1D", "luz-divina": "#FBBF24", "portal-etereo": "#8B5CF6",
 };
 
@@ -128,21 +125,17 @@ function FrameVariant({ slug, size }: { slug: FrameSlug; size: number }) {
   const accent = FRAME_ACCENT[slug];
   const props = { size, accent };
   switch (slug) {
-    case "touro-chifres":  return <FrameTouroChifres  {...props} />;
     case "urso-garras":    return <FrameUrsoGarras    {...props} />;
     case "cartola-wall":   return <FrameCartolaWall   {...props} />;
     case "halo-hodler":    return <FrameHaloHodler    {...props} />;
     case "laurel-mesa":    return <FrameLaurelMesa    {...props} />;
     case "coroa-diamante": return <FrameCoroaDiamante {...props} />;
-    case "asas-touro":     return <FrameAsasTouro     {...props} />;
     case "pix-ring":       return <FramePixRing       {...props} />;
     // Tarot v3
     case "arcano-solar":   return <FrameArcanoSolar   {...props} />;
     case "arcano-lunar":   return <FrameArcanoLunar   {...props} />;
     case "arcano-estelar": return <FrameArcanoEstelar {...props} />;
-    case "runas-traders":  return <FrameRunasTraders  {...props} />;
     case "pentagrama":     return <FramePentagrama    {...props} />;
-    case "sigilo-mago":    return <FrameSigiloMago    {...props} />;
   }
 }
 
@@ -299,10 +292,8 @@ function AuraVariant({ slug, size }: { slug: AuraSlug; size: number }) {
     case "matrix-rain":     return <AuraMatrixRain    {...props} />;
     case "neon-ring":       return <AuraNeonRing      {...props} />;
     case "dourada-payout":  return <AuraDouradaPayout {...props} />;
-    case "relampago":       return <AuraRelampago     {...props} />;
     case "cosmos":          return <AuraCosmos        {...props} />;
     // Tarot v3
-    case "nevoa-mistica":    return <AuraNevoa         {...props} />;
     case "runas-orbital":    return <AuraRunasOrbital  {...props} />;
     case "energia-arcana":   return <AuraEnergiaArcana {...props} />;
     case "sombras":          return <AuraSombras       {...props} />;
