@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Users, Trophy, TrendingUp, Activity, MessageCircle, Flame,
-  ThumbsUp, Send, Clock, Star, Eye, Target, Award, Zap,
+  ThumbsUp, Send, Clock, Star, Eye, Target, Award, Zap, Plus, X, Upload, Image as ImageIcon, Shield,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────
@@ -19,17 +19,24 @@ interface Member {
   color: string;
   initials: string;
   turma: "1.0" | "2.0" | "3.0" | "4.0";
+  /** Discord avatar URL (or DiceBear fallback for mocks). */
+  photoUrl?: string;
 }
 
+/** DiceBear seeded avatar — consistent, no API key, works for mocks.
+ *  Real members get their actual Discord avatar via session. */
+const photo = (seed: string) =>
+  `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(seed)}&backgroundColor=0e0e10,1a1a1f,141417&backgroundType=gradientLinear`;
+
 const MEMBERS: Record<string, Member> = {
-  ura:       { handle: "@uranickk",      name: "URA",              color: "#FF5500", initials: "U",  turma: "1.0" },
-  mateus:    { handle: "@mateus.trader", name: "Mateus Oliveira",  color: "#3B82F6", initials: "MO", turma: "1.0" },
-  jp:        { handle: "@jpgalan",       name: "JP Galán",         color: "#10B981", initials: "JP", turma: "1.0" },
-  lucas:     { handle: "@lucas.smc",     name: "Lucas Rocha",      color: "#A855F7", initials: "LR", turma: "1.0" },
-  bruna:     { handle: "@bruna.trade",   name: "Bruna Albuquerque",color: "#EC4899", initials: "BA", turma: "1.0" },
-  rafa:      { handle: "@rafatrade",     name: "Rafael Costa",     color: "#F59E0B", initials: "RC", turma: "2.0" },
-  pedro:     { handle: "@pedrofx",       name: "Pedro Martins",    color: "#06B6D4", initials: "PM", turma: "2.0" },
-  thiago:    { handle: "@thiagoprice",   name: "Thiago Prestes",   color: "#EF4444", initials: "TP", turma: "3.0" },
+  ura:    { handle: "@uranickk",      name: "URA",               color: "#FF5500", initials: "U",  turma: "1.0", photoUrl: photo("uranickk-og") },
+  mateus: { handle: "@mateus.trader", name: "Mateus Oliveira",   color: "#3B82F6", initials: "MO", turma: "1.0", photoUrl: photo("mateus-trader") },
+  jp:     { handle: "@jpgalan",       name: "JP Galán",          color: "#10B981", initials: "JP", turma: "1.0", photoUrl: photo("jpgalan-og") },
+  lucas:  { handle: "@lucas.smc",     name: "Lucas Rocha",       color: "#A855F7", initials: "LR", turma: "1.0", photoUrl: photo("lucas-smc") },
+  bruna:  { handle: "@bruna.trade",   name: "Bruna Albuquerque", color: "#EC4899", initials: "BA", turma: "1.0", photoUrl: photo("bruna-trade") },
+  rafa:   { handle: "@rafatrade",     name: "Rafael Costa",      color: "#F59E0B", initials: "RC", turma: "2.0", photoUrl: photo("rafatrade-20") },
+  pedro:  { handle: "@pedrofx",       name: "Pedro Martins",     color: "#06B6D4", initials: "PM", turma: "2.0", photoUrl: photo("pedrofx-20") },
+  thiago: { handle: "@thiagoprice",   name: "Thiago Prestes",    color: "#EF4444", initials: "TP", turma: "3.0", photoUrl: photo("thiagoprice-30") },
 };
 
 interface Achievement {
@@ -104,10 +111,21 @@ const POSTS: Post[] = [
 ];
 
 /* ────────────────────────────────────────────
-   Reusable avatar
+   Reusable avatar — Discord photo when available, else colored initials
    ──────────────────────────────────────────── */
 function Avatar({ member, size = "md" }: { member: Member; size?: "sm" | "md" | "lg" }) {
   const sizes = { sm: "w-7 h-7 text-[10px]", md: "w-9 h-9 text-[11px]", lg: "w-12 h-12 text-[13px]" };
+  if (member.photoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={member.photoUrl}
+        alt={member.name}
+        className={`${sizes[size]} rounded-full object-cover shrink-0`}
+        style={{ border: `1px solid ${member.color}40`, background: `linear-gradient(135deg, ${member.color}25, ${member.color}08)` }}
+      />
+    );
+  }
   return (
     <div className={`${sizes[size]} rounded-full flex items-center justify-center font-bold font-mono shrink-0`}
       style={{ background: `linear-gradient(135deg, ${member.color}30, ${member.color}10)`, color: member.color, border: `1px solid ${member.color}40` }}>
@@ -117,12 +135,211 @@ function Avatar({ member, size = "md" }: { member: Member; size?: "sm" | "md" | 
 }
 
 /* ────────────────────────────────────────────
+   Submit Achievement Modal
+   ──────────────────────────────────────────── */
+
+interface PendingAchievement {
+  id: string;
+  type: "mesa" | "payout" | "badge" | "milestone";
+  title: string;
+  detail: string;
+  value?: string;
+  screenshot?: string;  // base64 data url
+  submittedAt: number;
+  status: "pending" | "approved" | "rejected";
+}
+
+const PENDING_KEY = "ura.turma.pendingAchievements";
+
+function SubmitAchievementModal({ open, onClose, onSubmit }: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (p: PendingAchievement) => void;
+}) {
+  const [type, setType] = useState<"mesa" | "payout" | "badge" | "milestone">("payout");
+  const [title, setTitle] = useState("");
+  const [detail, setDetail] = useState("");
+  const [value, setValue] = useState("");
+  const [screenshot, setScreenshot] = useState<string>("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  if (!open) return null;
+
+  const types = [
+    { id: "payout" as const,    icon: TrendingUp, label: "Payout",    color: "#10B981", hint: "Saque aprovado de mesa prop ou corretora" },
+    { id: "mesa" as const,      icon: Award,      label: "Mesa",      color: "#F59E0B", hint: "Aprovação em challenge / mesa prop" },
+    { id: "badge" as const,     icon: Star,       label: "Badge",     color: "#A855F7", hint: "Conquista especial da plataforma" },
+    { id: "milestone" as const, icon: Flame,      label: "Milestone", color: "#3B82F6", hint: "Marco pessoal (ex: 100 trades)" },
+  ];
+
+  const handleFile = (file: File) => {
+    if (file.size > 2_000_000) return alert("Imagem muito grande (máx 2MB)");
+    const reader = new FileReader();
+    reader.onload = () => setScreenshot(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const canSubmit = title.trim().length > 2 && detail.trim().length > 2;
+
+  const submit = () => {
+    if (!canSubmit) return;
+    const p: PendingAchievement = {
+      id: `p${Date.now()}`,
+      type, title: title.trim(), detail: detail.trim(),
+      value: value.trim() || undefined,
+      screenshot: screenshot || undefined,
+      submittedAt: Date.now(),
+      status: "pending",
+    };
+    onSubmit(p);
+    // Reset
+    setType("payout"); setTitle(""); setDetail(""); setValue(""); setScreenshot("");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      <div className="relative w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#141417] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
+          <div>
+            <h2 className="text-[16px] font-bold text-white tracking-tight">Submeter conquista</h2>
+            <p className="text-[11px] text-white/40 mt-0.5">URA valida · aparece no mural após aprovação</p>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Type picker */}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-2">Tipo</p>
+            <div className="grid grid-cols-2 gap-2">
+              {types.map((t) => (
+                <button key={t.id} onClick={() => setType(t.id)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all text-left ${
+                    type === t.id ? "shadow-sm" : "border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.02]"
+                  }`}
+                  style={type === t.id ? { borderColor: t.color + "55", backgroundColor: t.color + "10" } : undefined}>
+                  <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: t.color + "18" }}>
+                    <t.icon className="w-3.5 h-3.5" style={{ color: t.color }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`text-[12px] font-bold leading-tight ${type === t.id ? "text-white" : "text-white/70"}`}>{t.label}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-[10.5px] text-white/35 mt-1.5">{types.find(t => t.id === type)?.hint}</p>
+          </div>
+
+          {/* Title */}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-1.5">Título</p>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+              placeholder={type === "payout" ? "Ex: Payout FundingPips" : type === "mesa" ? "Ex: Aprovado na TopStep" : "Ex: 100 trades registrados"}
+              className="w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/85 placeholder-white/25 focus:outline-none focus:border-white/[0.18] transition-colors" />
+          </div>
+
+          {/* Detail */}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-1.5">Detalhe</p>
+            <input type="text" value={detail} onChange={(e) => setDetail(e.target.value)}
+              placeholder="Ex: Conta $100k — 2º payout"
+              className="w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/85 placeholder-white/25 focus:outline-none focus:border-white/[0.18] transition-colors" />
+          </div>
+
+          {/* Value (optional, payout only) */}
+          {(type === "payout" || type === "mesa") && (
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-1.5">
+                Valor {type === "payout" && <span className="text-white/25 font-medium normal-case tracking-normal">(opcional)</span>}
+              </p>
+              <input type="text" value={value} onChange={(e) => setValue(e.target.value)}
+                placeholder="Ex: $2.400"
+                className="w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[13px] text-white/85 placeholder-white/25 focus:outline-none focus:border-white/[0.18] transition-colors" />
+            </div>
+          )}
+
+          {/* Screenshot upload */}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/40 mb-1.5">
+              Comprovante <span className="text-white/25 font-medium normal-case tracking-normal">(print do email ou dashboard)</span>
+            </p>
+            {screenshot ? (
+              <div className="relative rounded-lg overflow-hidden border border-white/[0.08]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={screenshot} alt="Comprovante" className="w-full max-h-60 object-contain bg-[#0a0a0c]" />
+                <button onClick={() => setScreenshot("")} className="absolute top-2 right-2 w-7 h-7 rounded-md bg-black/60 backdrop-blur flex items-center justify-center text-white/80 hover:bg-black/80 transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => fileRef.current?.click()}
+                className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border border-dashed border-white/[0.10] bg-white/[0.02] hover:border-white/[0.20] hover:bg-white/[0.04] transition-all">
+                <Upload className="w-4 h-4 text-white/35" />
+                <p className="text-[12px] text-white/55 font-medium">Clique pra subir imagem</p>
+                <p className="text-[10px] text-white/25">PNG, JPG · máx 2MB</p>
+              </button>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          </div>
+
+          {/* Trust note */}
+          <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+            <Shield className="w-3.5 h-3.5 text-white/40 mt-0.5 shrink-0" />
+            <p className="text-[10.5px] text-white/40 leading-relaxed">
+              Sem acesso ao seu email. URA valida o comprovante antes da conquista aparecer publicamente na turma.
+            </p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-white/[0.05] bg-[#0e0e10]">
+          <button onClick={onClose} className="px-4 py-2 text-[12.5px] text-white/50 hover:text-white/80 transition-colors font-medium">
+            Cancelar
+          </button>
+          <button onClick={submit} disabled={!canSubmit}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-[12.5px] font-bold transition-all ${
+              canSubmit ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] text-white/25 cursor-not-allowed"
+            }`}>
+            <Send className="w-3.5 h-3.5" />
+            Enviar pra validar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
    Mural View — achievement feed
    ──────────────────────────────────────────── */
 
 function MuralView() {
+  const [pending, setPending] = useState<PendingAchievement[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Load pending from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PENDING_KEY);
+      if (saved) setPending(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const handleSubmit = (p: PendingAchievement) => {
+    const next = [p, ...pending];
+    setPending(next);
+    try { localStorage.setItem(PENDING_KEY, JSON.stringify(next)); } catch {}
+  };
+
   return (
     <div className="space-y-5">
+      <SubmitAchievementModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} />
+
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
@@ -147,10 +364,46 @@ function MuralView() {
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-yellow-500/70" />
               <h2 className="text-[13px] font-bold text-white/85">Mural de Conquistas</h2>
+              <span className="text-[10px] text-white/30 font-mono">{ACHIEVEMENTS.length + pending.filter(p => p.status === "pending").length}</span>
             </div>
-            <span className="text-[10px] text-white/30 font-mono">{ACHIEVEMENTS.length} esta semana</span>
+            <button onClick={() => setModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all">
+              <Plus className="w-3 h-3" /> Submeter
+            </button>
           </div>
           <div className="divide-y divide-white/[0.04]">
+            {/* Pending submissions from current user */}
+            {pending.filter(p => p.status === "pending").map((p) => {
+              const typeStyle = {
+                mesa:      { color: "#F59E0B", icon: Award,   label: "MESA" },
+                payout:    { color: "#10B981", icon: TrendingUp, label: "PAYOUT" },
+                badge:     { color: "#A855F7", icon: Star,    label: "BADGE" },
+                milestone: { color: "#3B82F6", icon: Flame,   label: "MILESTONE" },
+              }[p.type];
+              return (
+                <div key={p.id} className="flex items-center gap-3 px-5 py-3 bg-brand-500/[0.03] hover:bg-brand-500/[0.05] transition-colors">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-dashed border-white/[0.20]">
+                    <Clock className="w-4 h-4 text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <p className="text-[12.5px] font-bold text-white/80 truncate">Você</p>
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: typeStyle.color + "18", color: typeStyle.color }}>
+                        {typeStyle.label}
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/[0.05] border border-dashed border-white/[0.15] text-white/50">
+                        Aguardando validação
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-white/70 leading-snug">{p.title}</p>
+                    <p className="text-[11px] text-white/35 mt-0.5">{p.detail}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {p.value && <p className="text-[13px] font-bold font-mono text-white/60">{p.value}</p>}
+                    <p className="text-[10px] text-white/25 mt-0.5">agora</p>
+                  </div>
+                </div>
+              );
+            })}
             {ACHIEVEMENTS.map((a, i) => {
               const m = MEMBERS[a.member];
               const typeStyle = {
