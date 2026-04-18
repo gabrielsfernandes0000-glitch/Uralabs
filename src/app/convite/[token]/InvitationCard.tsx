@@ -164,22 +164,57 @@ export function InvitationCard({
               </div>
             </div>
             <div className="hidden sm:block h-6 w-px" style={{ backgroundColor: "rgba(255,255,255,0.08)" }} />
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-2 min-w-[140px]">
               <div
                 className="text-[9px] uppercase tracking-[0.25em]"
                 style={{ color: "rgba(255,255,255,0.35)" }}
               >
-                Vagas
+                Vagas abertas
               </div>
-              <div className="text-sm" style={{ color: "rgba(250,250,250,0.9)" }}>
-                <span className="font-mono font-medium" style={{ color: invite.vagasRestantes <= 5 ? "#FF5500" : "#C9A461" }}>
-                  {invite.vagasRestantes}
-                </span>
-                <span style={{ color: "rgba(255,255,255,0.4)" }}>
-                  {" "}
-                  /{invite.vagasTotais}
-                </span>
-              </div>
+              {(() => {
+                const ocupadas = invite.vagasTotais - invite.vagasRestantes;
+                const pctFilled = invite.vagasTotais > 0 ? (ocupadas / invite.vagasTotais) * 100 : 0;
+                const cor =
+                  invite.vagasRestantes <= 3
+                    ? "#FF5500"
+                    : invite.vagasRestantes <= invite.vagasTotais * 0.2
+                      ? "#FF8800"
+                      : "#C9A461";
+                return (
+                  <>
+                    <div className="flex items-baseline gap-1.5">
+                      <span
+                        className="font-mono text-base font-medium"
+                        style={{ color: cor }}
+                      >
+                        {invite.vagasRestantes}
+                      </span>
+                      <span
+                        className="text-xs"
+                        style={{ color: "rgba(255,255,255,0.45)" }}
+                      >
+                        de {invite.vagasTotais}
+                      </span>
+                    </div>
+                    {/* Progress bar — mostra ocupação visual */}
+                    <div
+                      className="relative h-0.5 w-full rounded-full overflow-hidden"
+                      style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+                      aria-hidden
+                    >
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pctFilled}%` }}
+                        transition={{ duration: 1.2, ease: EASE_OUT, delay: 0.9 }}
+                        className="absolute left-0 top-0 h-full"
+                        style={{
+                          background: `linear-gradient(90deg, ${cor}, ${cor}cc)`,
+                        }}
+                      />
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </motion.div>
 
