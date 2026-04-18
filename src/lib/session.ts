@@ -55,3 +55,20 @@ export async function destroySession() {
   const jar = await cookies();
   jar.delete(COOKIE_NAME);
 }
+
+/** Access tier helpers — VIP unlocks aulas, Elite unlocks everything. */
+export function canAccessPlatform(session: SessionPayload | null): boolean {
+  if (!session) return false;
+  return session.isElite || session.isVip;
+}
+
+export function canAccessEliteOnly(session: SessionPayload | null): boolean {
+  return !!session?.isElite;
+}
+
+/** Tier label ("Elite 4.0" / "VIP") for UI chips. */
+export function tierLabel(session: SessionPayload): string {
+  if (session.isElite) return "Elite 4.0";
+  if (session.isVip) return "VIP";
+  return "";
+}

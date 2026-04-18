@@ -5,20 +5,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Flame, Menu, X, LogOut,
+  Flame, Menu, X, LogOut, Lock, Radio,
   LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Avatar } from "@/components/elite/Avatar";
 
-const NAV_ITEMS = [
-  { href: "/elite", icon: LayoutDashboard, label: "Dashboard", exact: true },
-  { href: "/elite/aulas", icon: BookOpen, label: "Aulas", exact: false },
-  { href: "/elite/pratica", icon: Crosshair, label: "Prática", exact: false },
-  { href: "/elite/conquistas", icon: Trophy, label: "Conquistas", exact: false },
-  { href: "/elite/corretora", icon: BarChart3, label: "Corretora", exact: false },
-  { href: "/elite/turma", icon: Users, label: "Turma", exact: false },
+type NavItem = { href: string; icon: typeof LayoutDashboard; label: string; exact?: boolean; eliteOnly?: boolean };
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/elite",            icon: LayoutDashboard, label: "Dashboard",  exact: true },
+  { href: "/elite/aulas",      icon: BookOpen,        label: "Aulas" },
+  { href: "/elite/calls",      icon: Radio,           label: "Calls",      eliteOnly: true },
+  { href: "/elite/pratica",    icon: Crosshair,       label: "Prática",    eliteOnly: true },
+  { href: "/elite/corretora",  icon: BarChart3,       label: "Corretora",  eliteOnly: true },
+  { href: "/elite/conquistas", icon: Trophy,          label: "Conquistas", eliteOnly: true },
+  { href: "/elite/turma",      icon: Users,           label: "Turma",      eliteOnly: true },
 ];
 
 export function EliteSidebar({ session }: { session: SessionPayload }) {
@@ -77,14 +80,16 @@ export function EliteSidebar({ session }: { session: SessionPayload }) {
                 ? pathname === item.href
                 : pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
+              const locked = Boolean(item.eliteOnly && !session.isElite);
+              const href = locked ? "/elite/desbloquear" : item.href;
 
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={href}
                   onClick={() => setMobileOpen(false)}
                   className={`relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
-                    isActive ? "text-white" : "text-white/35 hover:text-white/70 hover:bg-white/[0.02]"
+                    isActive ? "text-white" : locked ? "text-white/25 hover:text-white/50 hover:bg-white/[0.02]" : "text-white/35 hover:text-white/70 hover:bg-white/[0.02]"
                   }`}
                 >
                   {/* Active background — slides between items */}
@@ -112,7 +117,12 @@ export function EliteSidebar({ session }: { session: SessionPayload }) {
                       : "text-white/25 group-hover:text-white/50"
                   }`} />
 
-                  <span className="relative font-medium">{item.label}</span>
+                  <span className="relative font-medium flex-1">{item.label}</span>
+
+                  {/* Lock badge for VIPs on Elite-only items */}
+                  {locked && (
+                    <Lock className="relative w-3 h-3 text-white/20" />
+                  )}
                 </Link>
               );
             })}
@@ -129,7 +139,9 @@ export function EliteSidebar({ session }: { session: SessionPayload }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold text-white/80 truncate">{displayName}</p>
-                <p className="text-[9px] text-brand-500/50 font-bold tracking-[0.15em] uppercase">Elite 4.0</p>
+                <p className={`text-[9px] font-bold tracking-[0.15em] uppercase ${session.isElite ? "text-brand-500/60" : "text-blue-500/60"}`}>
+                  {session.isElite ? "Elite 4.0" : "VIP"}
+                </p>
               </div>
               <a href="/api/auth/logout" className="p-2 rounded-lg text-white/15 hover:text-red-400 hover:bg-red-500/[0.06] transition-all" title="Sair">
                 <LogOut className="w-4 h-4" />

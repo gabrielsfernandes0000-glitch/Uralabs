@@ -54,6 +54,8 @@ export default async function EliteDashboard() {
   const s = session || devSession;
   const avatar = avatarUrl(s.userId, s.avatar, 128);
   const displayName = s.globalName || s.username;
+  const isElite = s.isElite;
+  const tierLabelText = isElite ? "Elite 4.0" : "VIP";
 
   const now = new Date();
   const brHour = (now.getUTCHours() - 3 + 24) % 24;
@@ -62,7 +64,17 @@ export default async function EliteDashboard() {
 
   const steps = getDaySteps();
   const currentIdx = getCurrentStepIndex(steps);
-  const currentStep = steps[currentIdx] || steps[0];
+  // For VIPs, the "next step" is always continuing a lesson (no live calls / pratica access)
+  const currentStep = isElite ? (steps[currentIdx] || steps[0]) : {
+    id: "study",
+    label: "Continuar aula",
+    description: "Próxima aula do currículo",
+    icon: Play,
+    href: "/elite/aulas",
+    accent: "#FF5500",
+    timeHint: "Quando quiser",
+    done: false,
+  };
   const completedSteps = steps.filter(s => s.done).length;
 
   const stats = {
@@ -90,8 +102,8 @@ export default async function EliteDashboard() {
               <p className="text-[11px] text-white/30 font-medium">{greeting},</p>
               <h1 className="text-[20px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[9px] text-brand-500/70 font-semibold tracking-[0.2em] uppercase flex items-center gap-1">
-                  <Flame className="w-3 h-3" /> Elite 4.0
+                <span className={`text-[9px] font-semibold tracking-[0.2em] uppercase flex items-center gap-1 ${isElite ? "text-brand-500/70" : "text-blue-400/70"}`}>
+                  <Flame className="w-3 h-3" /> {tierLabelText}
                 </span>
                 <span className="text-white/20">·</span>
                 <span className="text-[10px] text-white/25 capitalize">{dateStr}</span>
@@ -151,7 +163,8 @@ export default async function EliteDashboard() {
         </div>
       </div>
 
-      {/* ── Day Timeline — horizontal steps, compact ── */}
+      {/* ── Day Timeline — Elite-only (VIPs don't have live calls / pratica) ── */}
+      {isElite && (
       <div className="animate-in-up delay-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[12px] font-bold uppercase tracking-wider text-white/40">Rotina do Dia</h3>
@@ -199,15 +212,20 @@ export default async function EliteDashboard() {
           })}
         </div>
       </div>
+      )}
 
       {/* ── Quick access grid ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
+      <div className={`grid gap-3 ${isElite ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2 lg:grid-cols-3"}`}>
+        {(isElite ? [
           { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
+          { href: "/elite/calls",       icon: Radio,    value: "Live",                                                label: "Calls ao vivo" },
           { href: "/elite/pratica",     icon: Zap,      value: "Treino",                                              label: "Pratique o que aprendeu" },
-          { href: "/elite/conquistas",  icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Progresso" },
           { href: "/elite/turma",       icon: Users,    value: "Turma",                                               label: "Comunidade" },
-        ].map((item, i) => (
+        ] : [
+          { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
+          { href: "/elite/aulas",       icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Progresso" },
+          { href: "/elite/desbloquear", icon: Zap,      value: "Elite",                                               label: "Destravar mais" },
+        ]).map((item, i) => (
           <Link key={item.href} href={item.href} className={`animate-in-up delay-${5 + i} group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-4 hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300`}>
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
             <div className="flex items-center justify-between mb-2">
@@ -246,44 +264,67 @@ export default async function EliteDashboard() {
           </div>
         </div>
 
-        {/* Atividade da Turma — preenche espaço vazio do bottom */}
-        <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping opacity-60" />
+        {/* Right panel: Atividade da Turma (Elite) or Upgrade CTA (VIP) */}
+        {isElite ? (
+          <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping opacity-60" />
+                </div>
+                <h3 className="text-[13px] font-bold text-white/85">Atividade da Turma</h3>
               </div>
-              <h3 className="text-[13px] font-bold text-white/85">Atividade da Turma</h3>
+              <Link href="/elite/turma" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
+                Ver tudo <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
-            <Link href="/elite/turma" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
-              Ver tudo <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
 
-          <div className="space-y-2">
-            {[
-              { initials: "MO", color: "#3B82F6", name: "Mateus",  action: "payout",  detail: "FundingPips $2.400", time: "2h" },
-              { initials: "JP", color: "#10B981", name: "JP",      action: "mesa",    detail: "Aprovado na 5%ers",  time: "5h" },
-              { initials: "BA", color: "#EC4899", name: "Bruna",   action: "badge",   detail: "Badge Trinity",       time: "1d" },
-              { initials: "LR", color: "#A855F7", name: "Lucas",   action: "payout",  detail: "TopStep $1.100",     time: "1d" },
-            ].map((a, i) => (
-              <div key={i} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0"
-                  style={{ background: `linear-gradient(135deg, ${a.color}30, ${a.color}10)`, color: a.color, border: `1px solid ${a.color}40` }}>
-                  {a.initials}
+            <div className="space-y-2">
+              {[
+                { initials: "MO", color: "#3B82F6", name: "Mateus",  action: "payout",  detail: "FundingPips $2.400", time: "2h" },
+                { initials: "JP", color: "#10B981", name: "JP",      action: "mesa",    detail: "Aprovado na 5%ers",  time: "5h" },
+                { initials: "BA", color: "#EC4899", name: "Bruna",   action: "badge",   detail: "Badge Trinity",       time: "1d" },
+                { initials: "LR", color: "#A855F7", name: "Lucas",   action: "payout",  detail: "TopStep $1.100",     time: "1d" },
+              ].map((a, i) => (
+                <div key={i} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0"
+                    style={{ background: `linear-gradient(135deg, ${a.color}30, ${a.color}10)`, color: a.color, border: `1px solid ${a.color}40` }}>
+                    {a.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11.5px] text-white/80 leading-tight truncate">
+                      <span className="font-semibold">{a.name}</span>
+                      <span className="text-white/35"> · {a.detail}</span>
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-white/30 font-mono shrink-0">{a.time}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11.5px] text-white/80 leading-tight truncate">
-                    <span className="font-semibold">{a.name}</span>
-                    <span className="text-white/35"> · {a.detail}</span>
-                  </p>
-                </div>
-                <span className="text-[10px] text-white/30 font-mono shrink-0">{a.time}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <Link href="/elite/desbloquear" className="animate-in-up delay-8 group relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-[#1a0e05] to-[#0e0e10] p-5 hover:border-brand-500/40 transition-all">
+            <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.10] blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <Flame className="w-3.5 h-3.5 text-brand-500" fill="currentColor" />
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-500">Upgrade Elite</span>
+              </div>
+              <h3 className="text-[16px] font-bold text-white tracking-tight leading-tight mb-1">
+                Calls ao vivo + mesa prop
+              </h3>
+              <p className="text-[12px] text-white/45 leading-relaxed mb-4">
+                Elite destrava calls diárias com o URA, aulas sobre mesas proprietárias, treinos e a comunidade da turma.
+              </p>
+              <div className="flex items-center gap-2 text-[12px] font-bold text-brand-500 group-hover:translate-x-0.5 transition-transform">
+                Ver o que destrava
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </Link>
+        )}
       </div>
     </div>
   );

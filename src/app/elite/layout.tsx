@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/session";
+import { getSession, canAccessPlatform } from "@/lib/session";
 import { EliteSidebar } from "@/components/elite/Sidebar";
 
 export default async function EliteLayout({ children }: { children: React.ReactNode }) {
@@ -9,8 +9,10 @@ export default async function EliteLayout({ children }: { children: React.ReactN
     redirect("/login");
   }
 
-  if (!session.isElite) {
-    redirect("/login?error=not_elite");
+  // VIP and Elite both access the platform (VIP gets aulas + dashboard;
+  // Elite-only sections enforce an extra check at the page level).
+  if (!canAccessPlatform(session)) {
+    redirect("/login?error=not_authorized");
   }
 
   return (
