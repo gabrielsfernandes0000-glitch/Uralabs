@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Check, X, Shuffle, ArrowRight, Trophy, RotateCcw, Zap } from "lucide-react";
 import { LessonChart, type ChartScenario } from "@/components/elite/LessonChart";
@@ -213,6 +213,16 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/** Shuffle a scenario's options and return the new correct index.
+ *  Eliminates position bias — student can't memorize "always B". */
+function shuffleScenarioOptions(scenario: Scenario): { options: string[]; correct: number } {
+  const order = shuffle([0, 1, 2, 3]);
+  return {
+    options: order.map((i) => scenario.options[i]),
+    correct: order.indexOf(scenario.correct),
+  };
+}
+
 /* ────────────────────────────────────────────
    Treino Livre — Modo Infinito
    ──────────────────────────────────────────── */
@@ -228,12 +238,16 @@ export default function TreinoLivrePage() {
 
   const scenario = queue[currentIdx];
 
+  // Shuffle options per question — prevents "always B" bias.
+  // Re-computes when scenario id changes (not on every render).
+  const shuffled = useMemo(() => shuffleScenarioOptions(scenario), [scenario.id]);
+
   const handleAnswer = (idx: number) => {
     if (answered) return;
     setSelectedAnswer(idx);
     setAnswered(true);
     setStats(prev => ({
-      correct: prev.correct + (idx === scenario.correct ? 1 : 0),
+      correct: prev.correct + (idx === shuffled.correct ? 1 : 0),
       total: prev.total + 1,
     }));
   };
@@ -335,9 +349,9 @@ export default function TreinoLivrePage() {
 
       {/* Options */}
       <div className="space-y-2.5">
-        {scenario.options.map((option, idx) => {
+        {shuffled.options.map((option, idx) => {
           const isSelected = selectedAnswer === idx;
-          const isCorrect = idx === scenario.correct;
+          const isCorrect = idx === shuffled.correct;
           let borderColor = "border-white/[0.06]";
           let bg = "bg-[#0e0e10]";
           let textColor = "text-white/60";

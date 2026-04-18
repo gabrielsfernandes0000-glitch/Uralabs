@@ -1,9 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Check, X, Target, RotateCcw, Trophy } from "lucide-react";
 import { LessonChart, type ChartScenario } from "@/components/elite/LessonChart";
+
+/** Shuffle options and return new correct index. Eliminates position bias. */
+function shuffleOptions(options: string[], correctIdx: number): { options: string[]; correct: number } {
+  const order = [0, 1, 2, 3];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return {
+    options: order.map((i) => options[i]),
+    correct: order.indexOf(correctIdx),
+  };
+}
 
 /* ────────────────────────────────────────────
    Treino Step — cada step tem gráfico + pergunta
@@ -137,12 +150,19 @@ export default function TreinoPage() {
   const isLast = currentStep === treino.steps.length - 1;
   const allDone = currentStep >= treino.steps.length;
 
+  // Shuffle options per step — prevents position bias.
+  const shuffled = useMemo(
+    () => step ? shuffleOptions(step.options, step.correct) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [treinoId, currentStep]
+  );
+
   const handleAnswer = (idx: number) => {
-    if (answered) return;
+    if (answered || !shuffled) return;
     setSelectedAnswer(idx);
     setAnswered(true);
     setScore(prev => ({
-      correct: prev.correct + (idx === step.correct ? 1 : 0),
+      correct: prev.correct + (idx === shuffled.correct ? 1 : 0),
       total: prev.total + 1,
     }));
   };
@@ -229,9 +249,9 @@ export default function TreinoPage() {
 
       {/* Options */}
       <div className="space-y-2.5">
-        {step.options.map((option, idx) => {
+        {(shuffled?.options ?? step.options).map((option, idx) => {
           const isSelected = selectedAnswer === idx;
-          const isCorrect = idx === step.correct;
+          const isCorrect = idx === (shuffled?.correct ?? step.correct);
           let borderColor = "border-white/[0.06]";
           let bg = "bg-[#0e0e10]";
           let textColor = "text-white/60";

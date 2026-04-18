@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -322,7 +322,22 @@ function QuizSection({ questions, accent, onComplete }: {
   const [shake, setShake] = useState(false);
 
   const q = questions[current];
-  const isCorrect = selected !== null && selected === q.correct;
+
+  // Shuffle options per question — prevents position bias ("always B").
+  const shuffled = useMemo(() => {
+    const order = [0, 1, 2, 3];
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return {
+      options: order.map((i) => q.options[i]),
+      correct: order.indexOf(q.correct),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, q.question]);
+
+  const isCorrect = selected !== null && selected === shuffled.correct;
   const score = results.filter(Boolean).length;
 
   const handleSelect = (optIdx: number) => {
@@ -333,7 +348,7 @@ function QuizSection({ questions, accent, onComplete }: {
   const handleConfirm = () => {
     if (selected === null) return;
     setRevealed(true);
-    const correct = selected === q.correct;
+    const correct = selected === shuffled.correct;
     if (!correct) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
@@ -435,9 +450,9 @@ function QuizSection({ questions, accent, onComplete }: {
 
         {/* Options */}
         <div className="space-y-3">
-          {q.options.map((opt, optIdx) => {
+          {shuffled.options.map((opt, optIdx) => {
             const isSelected = selected === optIdx;
-            const isCorrectOpt = q.correct === optIdx;
+            const isCorrectOpt = shuffled.correct === optIdx;
             let cls = "border-white/[0.06] bg-transparent text-white/50 hover:border-white/[0.12] hover:bg-white/[0.02]";
 
             if (revealed) {
