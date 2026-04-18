@@ -80,16 +80,16 @@ export default async function EliteDashboard() {
           style={{ backgroundColor: currentStep.accent + "08" }} />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_60%_at_70%_20%,#000_40%,transparent_100%)]" />
 
-        <div className="relative z-10 p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
+        <div className="relative z-10 p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="absolute -inset-1 rounded-2xl blur-md" style={{ backgroundColor: currentStep.accent + "25" }} />
-              <Avatar src={avatar} name={displayName} size={64} className="relative rounded-2xl ring-2 ring-white/[0.06] ring-offset-2 ring-offset-[#0e0e10]" />
+              <div className="absolute -inset-1 rounded-xl blur-md" style={{ backgroundColor: currentStep.accent + "25" }} />
+              <Avatar src={avatar} name={displayName} size={52} className="relative rounded-xl ring-2 ring-white/[0.06] ring-offset-2 ring-offset-[#0e0e10]" />
             </div>
             <div>
-              <p className="text-[12px] text-white/30 font-medium">{greeting},</p>
-              <h1 className="text-[24px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
-              <div className="flex items-center gap-2 mt-1.5">
+              <p className="text-[11px] text-white/30 font-medium">{greeting},</p>
+              <h1 className="text-[20px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
+              <div className="flex items-center gap-2 mt-1">
                 <span className="text-[9px] text-brand-500/70 font-semibold tracking-[0.2em] uppercase flex items-center gap-1">
                   <Flame className="w-3 h-3" /> Elite 4.0
                 </span>
@@ -99,46 +99,63 @@ export default async function EliteDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="px-5 py-3 bg-white/[0.02] border border-brand-500/10 rounded-xl text-center min-w-[72px]">
-              <p className="text-[20px] text-white font-bold leading-none"><CountUp end={stats.streak} duration={1} /></p>
-              <p className="text-[9px] text-brand-500/40 uppercase tracking-wider mt-1">streak</p>
+          <div className="flex items-center gap-2">
+            <div className="px-4 py-2.5 bg-white/[0.02] border border-brand-500/10 rounded-lg text-center min-w-[64px]">
+              <p className="text-[17px] text-white font-bold leading-none"><CountUp end={stats.streak} duration={1} /></p>
+              <p className="text-[9px] text-brand-500/40 uppercase tracking-wider mt-0.5">streak</p>
             </div>
-            <div className="px-5 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl text-center min-w-[72px]">
-              <p className="text-[20px] text-white font-bold leading-none"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></p>
-              <p className="text-[9px] text-white/30 uppercase tracking-wider mt-1">dias restantes</p>
+            <div className="px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-lg text-center min-w-[64px]">
+              <p className="text-[17px] text-white font-bold leading-none"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></p>
+              <p className="text-[9px] text-white/30 uppercase tracking-wider mt-0.5">dias rest.</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Primary Action — THE one thing to do now ── */}
-      <Link href={currentStep.href} className="animate-in-up delay-2 group block relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
-        <GlowBorder color={currentStep.accent} duration={8} />
-        <div className="relative z-10 p-8 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center border" style={{ borderColor: currentStep.accent + "30", backgroundColor: currentStep.accent + "10" }}>
-              <currentStep.icon className="w-6 h-6" style={{ color: currentStep.accent }} />
+      {/* ── Primary Action + Rotina side by side on desktop ── */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Primary action — 2 cols */}
+        <Link href={currentStep.href} className="lg:col-span-2 animate-in-up delay-2 group block relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+          <GlowBorder color={currentStep.accent} duration={8} />
+          <div className="relative z-10 p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center border shrink-0" style={{ borderColor: currentStep.accent + "30", backgroundColor: currentStep.accent + "10" }}>
+                <currentStep.icon className="w-5 h-5" style={{ color: currentStep.accent }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-white/40 uppercase tracking-wider font-semibold mb-0.5">Próximo · {currentStep.timeHint}</p>
+                <h2 className="text-[18px] font-bold text-white leading-tight">{currentStep.label}</h2>
+                <p className="text-[12px] text-white/40 mt-0.5 truncate">{currentStep.description}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] text-white/40 uppercase tracking-wider font-semibold mb-1">Próximo passo · {currentStep.timeHint}</p>
-              <h2 className="text-[22px] font-bold text-white">{currentStep.label}</h2>
-              <p className="text-[13px] text-white/40 mt-0.5">{currentStep.description}</p>
+            <div className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12.5px] font-bold transition-all group-hover:scale-105 shrink-0"
+              style={{ backgroundColor: currentStep.accent, color: "white" }}>
+              Ir agora
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-2 px-6 py-3.5 rounded-xl text-[14px] font-bold transition-all group-hover:scale-105"
-            style={{ backgroundColor: currentStep.accent, color: "white" }}>
-            Ir agora
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </div>
-      </Link>
+        </Link>
 
-      {/* ── Day Timeline — horizontal steps ── */}
-      <div className="animate-in-up delay-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-[14px] font-semibold text-white/60">Rotina do Dia</h3>
-          <span className="text-[11px] text-white/30 font-mono">{completedSteps}/{steps.length}</span>
+        {/* Progress summary — 1 col */}
+        <div className="animate-in-up delay-3 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5 flex flex-col justify-center">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">Rotina hoje</p>
+            <span className="text-[12px] text-white/50 font-mono font-bold">{completedSteps}/{steps.length}</span>
+          </div>
+          <div className="h-[4px] bg-white/[0.04] rounded-full overflow-hidden mb-2">
+            <div className="h-full bg-brand-500 rounded-full transition-all duration-700" style={{ width: `${(completedSteps / steps.length) * 100}%` }} />
+          </div>
+          <p className="text-[11px] text-white/35 leading-relaxed">
+            {completedSteps === 0 ? "Comece o dia pelo Prep Sheet." : completedSteps === steps.length ? "Dia completo! Excelente disciplina." : `${steps.length - completedSteps} passos restantes hoje.`}
+          </p>
+        </div>
+      </div>
+
+      {/* ── Day Timeline — horizontal steps, compact ── */}
+      <div className="animate-in-up delay-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-white/40">Rotina do Dia</h3>
+          <span className="text-[10px] text-white/30 font-mono">{completedSteps}/{steps.length}</span>
         </div>
 
         <div className="flex items-start gap-0">
@@ -150,27 +167,27 @@ export default async function EliteDashboard() {
             return (
               <div key={step.id} className="flex-1 flex flex-col items-center relative">
                 {i < steps.length - 1 && (
-                  <div className="absolute top-6 h-[2px] z-0" style={{ left: "calc(50% + 30px)", right: "calc(-50% + 30px)" }}>
+                  <div className="absolute top-[18px] h-[2px] z-0" style={{ left: "calc(50% + 22px)", right: "calc(-50% + 22px)" }}>
                     <div className={`h-full rounded-full ${isPast || step.done ? "bg-green-500/30" : "bg-white/[0.06]"}`} />
                   </div>
                 )}
 
-                <Link href={step.href} className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                <Link href={step.href} className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                   step.done
                     ? "bg-green-500/15 border-2 border-green-500/30"
                     : isCurrent
-                    ? "border-2 shadow-lg"
+                    ? "border-2"
                     : "bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15]"
-                }`} style={isCurrent && !step.done ? { borderColor: step.accent + "50", boxShadow: `0 0 25px ${step.accent}25` } : undefined}>
+                }`} style={isCurrent && !step.done ? { borderColor: step.accent + "60", boxShadow: `0 0 18px ${step.accent}25` } : undefined}>
                   {step.done ? (
-                    <span className="text-green-400 text-[14px] font-bold">✓</span>
+                    <span className="text-green-400 text-[12px] font-bold">✓</span>
                   ) : (
-                    <StepIcon className="w-5 h-5" style={{ color: isCurrent ? step.accent : "rgba(255,255,255,0.20)" }} />
+                    <StepIcon className="w-4 h-4" style={{ color: isCurrent ? step.accent : "rgba(255,255,255,0.20)" }} />
                   )}
                 </Link>
 
-                <p className={`text-[10px] mt-2 text-center leading-tight ${
-                  isCurrent ? "text-white/70 font-medium" : step.done ? "text-green-400/50" : "text-white/30"
+                <p className={`text-[10px] mt-1.5 text-center leading-tight ${
+                  isCurrent ? "text-white/70 font-semibold" : step.done ? "text-green-400/50" : "text-white/30"
                 }`}>
                   {step.label}
                 </p>
@@ -185,68 +202,87 @@ export default async function EliteDashboard() {
 
       {/* ── Quick access grid ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Link href="/elite/aulas" className="animate-in-up delay-5 group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-5 hover:border-white/[0.15] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] transition-all duration-300">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-          <div className="flex items-center justify-between mb-3">
-            <BookOpen className="w-5 h-5 text-white/40" />
-            <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
-          </div>
-          <p className="text-[15px] text-white/80 font-bold"><LiveStat type="lessons" />/{stats.totalLessons}</p>
-          <p className="text-[11px] text-white/30">Aulas</p>
-        </Link>
-
-        <Link href="/elite/pratica" className="animate-in-up delay-6 group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-5 hover:border-white/[0.15] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] transition-all duration-300">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-          <div className="flex items-center justify-between mb-3">
-            <Zap className="w-5 h-5 text-white/40" />
-            <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
-          </div>
-          <p className="text-[15px] text-white/80 font-bold">Treino</p>
-          <p className="text-[11px] text-white/30">Pratique o que aprendeu</p>
-        </Link>
-
-        <Link href="/elite/conquistas" className="animate-in-up delay-7 group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-5 hover:border-white/[0.15] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] transition-all duration-300">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-          <div className="flex items-center justify-between mb-3">
-            <Target className="w-5 h-5 text-white/40" />
-            <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
-          </div>
-          <p className="text-[15px] text-white/80 font-bold"><LiveStat type="progress" totalLessons={stats.totalLessons} /></p>
-          <p className="text-[11px] text-white/30">Progresso</p>
-        </Link>
-
-        <Link href="/elite/turma" className="animate-in-up delay-8 group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-5 hover:border-white/[0.15] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] transition-all duration-300">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-          <div className="flex items-center justify-between mb-3">
-            <Users className="w-5 h-5 text-white/40" />
-            <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
-          </div>
-          <p className="text-[15px] text-white/80 font-bold">Turma</p>
-          <p className="text-[11px] text-white/30">Comunidade</p>
-        </Link>
+        {[
+          { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
+          { href: "/elite/pratica",     icon: Zap,      value: "Treino",                                              label: "Pratique o que aprendeu" },
+          { href: "/elite/conquistas",  icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Progresso" },
+          { href: "/elite/turma",       icon: Users,    value: "Turma",                                               label: "Comunidade" },
+        ].map((item, i) => (
+          <Link key={item.href} href={item.href} className={`animate-in-up delay-${5 + i} group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-4 hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300`}>
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+            <div className="flex items-center justify-between mb-2">
+              <item.icon className="w-4 h-4 text-white/40" />
+              <ChevronRight className="w-3 h-3 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <p className="text-[14px] text-white/85 font-bold leading-tight">{item.value}</p>
+            <p className="text-[10.5px] text-white/30 mt-0.5">{item.label}</p>
+          </Link>
+        ))}
       </div>
 
-      {/* ── Curriculum progress — compact ── */}
-      <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-5 rounded-full bg-brand-500/40" />
-            <h3 className="text-[14px] font-semibold text-white/70">Currículo</h3>
+      {/* ── Curriculum + Turma activity side by side ── */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Currículo */}
+        <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-brand-500/40" />
+              <h3 className="text-[13px] font-bold text-white/85">Currículo</h3>
+            </div>
+            <Link href="/elite/aulas" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
+              Ver tudo <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
-          <Link href="/elite/aulas" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
-            Ver tudo <ArrowRight className="w-3 h-3" />
-          </Link>
+
+          <div className="space-y-2.5">
+            {CURRICULUM.filter(m => m.lessons.length > 0).map((mod, i) => (
+              <div key={mod.id} className="flex items-center gap-3">
+                <span className="text-[10px] font-mono w-5" style={{ color: mod.accentHex + "70" }}>{mod.number}</span>
+                <span className="text-[11px] text-white/50 flex-1 truncate">{mod.title}</span>
+                <ProgressFill value={0} color={mod.accentHex} delay={0.8 + i * 0.15} className="w-[120px]" />
+                <span className="text-[10px] text-white/30 font-mono w-8 text-right">0/{mod.lessons.length}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-3">
-          {CURRICULUM.filter(m => m.lessons.length > 0).map((mod, i) => (
-            <div key={mod.id} className="flex items-center gap-3">
-              <span className="text-[10px] font-mono w-5" style={{ color: mod.accentHex + "60" }}>{mod.number}</span>
-              <span className="text-[11px] text-white/40 w-28 truncate">{mod.title}</span>
-              <ProgressFill value={0} color={mod.accentHex} delay={0.8 + i * 0.15} className="flex-1" />
-              <span className="text-[10px] text-white/30 font-mono w-8 text-right">0/{mod.lessons.length}</span>
+        {/* Atividade da Turma — preenche espaço vazio do bottom */}
+        <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping opacity-60" />
+              </div>
+              <h3 className="text-[13px] font-bold text-white/85">Atividade da Turma</h3>
             </div>
-          ))}
+            <Link href="/elite/turma" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
+              Ver tudo <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { initials: "MO", color: "#3B82F6", name: "Mateus",  action: "payout",  detail: "FundingPips $2.400", time: "2h" },
+              { initials: "JP", color: "#10B981", name: "JP",      action: "mesa",    detail: "Aprovado na 5%ers",  time: "5h" },
+              { initials: "BA", color: "#EC4899", name: "Bruna",   action: "badge",   detail: "Badge Trinity",       time: "1d" },
+              { initials: "LR", color: "#A855F7", name: "Lucas",   action: "payout",  detail: "TopStep $1.100",     time: "1d" },
+            ].map((a, i) => (
+              <div key={i} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0"
+                  style={{ background: `linear-gradient(135deg, ${a.color}30, ${a.color}10)`, color: a.color, border: `1px solid ${a.color}40` }}>
+                  {a.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11.5px] text-white/80 leading-tight truncate">
+                    <span className="font-semibold">{a.name}</span>
+                    <span className="text-white/35"> · {a.detail}</span>
+                  </p>
+                </div>
+                <span className="text-[10px] text-white/30 font-mono shrink-0">{a.time}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

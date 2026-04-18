@@ -486,68 +486,60 @@ export default function ConquistasPage() {
   const plaques = allBadges.filter((b) => b.unlocked && (b as Badge).hasPlaque).length;
 
   return (
-    <div className="space-y-8">
-      {/* ── Header ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#111114] border border-white/[0.06]">
-        <div className="absolute top-[-50%] left-[20%] w-[600px] h-[400px] bg-yellow-500/[0.04] blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-[-30%] right-[10%] w-[400px] h-[300px] bg-brand-500/[0.04] blur-[120px] pointer-events-none" />
-
-        <div className="relative z-10 p-8 lg:p-10">
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 mb-6">
+    <div className="space-y-5">
+      {/* Compact header + inline stats + tabs */}
+      <div className="flex items-center justify-between flex-wrap gap-5">
+        <div className="flex items-center gap-5">
+          <div>
+            <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">Suas Conquistas</h1>
+            <p className="text-[12px] text-white/40 mt-0.5">Badges · Skill Tree · Insights</p>
+          </div>
+          <div className="h-10 w-px bg-white/[0.06]" />
+          <div className="flex items-center gap-5">
             <div>
-              <h1 className="text-[32px] lg:text-[40px] font-bold text-white tracking-tight leading-none">
-                Suas Conquistas
-              </h1>
-              <p className="text-[14px] text-white/40 mt-3 max-w-md">
-                Cada badge conta uma história. As mais raras brilham — literalmente.
-              </p>
+              <p className="text-[22px] font-bold text-white leading-none font-mono">{unlocked}<span className="text-white/30">/{allBadges.length}</span></p>
+              <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">badges</p>
             </div>
-
-            <div className="flex items-center gap-8">
-              <div>
-                <p className="text-[36px] lg:text-[42px] font-bold text-white leading-none tracking-tight">{unlocked}</p>
-                <p className="text-[12px] text-white/30 mt-1">de {allBadges.length} badges</p>
-              </div>
-              <div className="w-px h-14 bg-white/[0.06]" />
-              <div>
-                <p className="text-[36px] lg:text-[42px] font-bold text-yellow-400/80 leading-none tracking-tight">{plaques}</p>
-                <p className="text-[12px] text-yellow-500/35 mt-1">plaquinhas físicas</p>
-              </div>
+            <div className="h-8 w-px bg-white/[0.06]" />
+            <div>
+              <p className="text-[22px] font-bold text-yellow-400/90 leading-none font-mono">{plaques}</p>
+              <p className="text-[10px] text-yellow-500/45 mt-1 uppercase tracking-wider">plaquinhas</p>
             </div>
           </div>
+        </div>
 
-          {/* Rarity legend */}
-          <div className="flex flex-wrap items-center gap-4 lg:gap-6 pt-6 border-t border-white/[0.04]">
-            {(["legendary", "rare", "uncommon", "common"] as Rarity[]).map((r) => (
-              <div key={r} className="flex items-center gap-2">
-                <div className={`w-1.5 h-1.5 rounded-full ${RARITY[r].dot}`} />
-                <span className={`text-[11px] font-medium ${RARITY[r].color}`}>{RARITY[r].label}</span>
-              </div>
-            ))}
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-1.5">
+          {([
+            { id: "badges" as ViewTab,   label: "Badges",     icon: Target },
+            { id: "tree" as ViewTab,     label: "Skill Tree", icon: TrendingUp },
+            { id: "insights" as ViewTab, label: "Insights",   icon: Brain },
+          ]).map((tab) => {
+            const active = view === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setView(tab.id)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-all ${
+                  active
+                    ? "border-white/[0.20] bg-white/[0.05] text-white"
+                    : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12]"
+                }`}>
+                <tab.icon className={`w-3.5 h-3.5 ${active ? "text-brand-500" : ""}`} />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* ── View Tabs ── */}
-      <div className="flex gap-2">
-        {([
-          { id: "badges" as ViewTab, label: "Badges", icon: Target },
-          { id: "tree" as ViewTab, label: "Skill Tree", icon: TrendingUp },
-          { id: "insights" as ViewTab, label: "Insights", icon: Brain },
-        ]).map((tab) => {
-          const active = view === tab.id;
-          return (
-            <button key={tab.id} onClick={() => setView(tab.id)}
-              className={`flex items-center gap-2.5 px-6 py-3.5 rounded-xl border text-[14px] font-semibold transition-all ${
-                active
-                  ? "border-white/[0.20] bg-white/[0.05] text-white"
-                  : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12] hover:bg-white/[0.02]"
-              }`}>
-              <tab.icon className={`w-4 h-4 ${active ? "text-brand-500" : ""}`} />
-              {tab.label}
-            </button>
-          );
-        })}
+      {/* Rarity legend — compact bar */}
+      <div className="flex flex-wrap items-center gap-4 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.02]">
+        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Raridade</span>
+        {(["legendary", "rare", "uncommon", "common"] as Rarity[]).map((r) => (
+          <div key={r} className="flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${RARITY[r].dot}`} />
+            <span className={`text-[11px] font-medium ${RARITY[r].color}`}>{RARITY[r].label}</span>
+          </div>
+        ))}
       </div>
 
       {/* ── Tab Content ── */}
@@ -566,8 +558,8 @@ export default function ConquistasPage() {
 
                 <div className={
                   isLegendary
-                    ? "grid grid-cols-1 lg:grid-cols-2 gap-4"
-                    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+                    ? "grid grid-cols-2 lg:grid-cols-4 gap-3"
+                    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
                 }>
                   {badges.map((badge) => (
                     <BadgeCard key={badge.id} badge={badge} large={isLegendary} />
