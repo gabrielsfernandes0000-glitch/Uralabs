@@ -18,6 +18,7 @@ import { AchievementBadge } from "./AchievementBadge";
  *   - posts count do Discord (discord_activity.total_messages)
  */
 
+type CosmeticMeta = Record<string, unknown>;
 type ProfileResponse = {
   user_id: string;
   balance: { balance: number; lifetime_earned: number; lifetime_spent: number };
@@ -27,7 +28,26 @@ type ProfileResponse = {
   last_message_at: string | null;
   streak_days: number;
   claims_today: number;
+  cosmetics?: {
+    banner: { prize_slug: string; prize_name: string; metadata: CosmeticMeta; acquired_at: string } | null;
+    profile_design: { prize_slug: string; prize_name: string; metadata: CosmeticMeta; acquired_at: string } | null;
+  };
 };
+
+/** Pega um `background` aplicável pro header baseado na metadata do banner.
+ *  Suporta: { image_url }, { gradient: "..." }, { color_hex: "#..." }.  */
+function resolveBannerBg(meta: CosmeticMeta | undefined): string | null {
+  if (!meta) return null;
+  const imageUrl = typeof meta.image_url === "string" ? meta.image_url : null;
+  if (imageUrl) return `center/cover url("${imageUrl.replace(/"/g, "%22")}")`;
+  const gradient = typeof meta.gradient === "string" ? meta.gradient : null;
+  if (gradient) return gradient;
+  const hex = typeof meta.color_hex === "string" ? meta.color_hex : null;
+  if (hex && /^#[0-9a-fA-F]{3,8}$/.test(hex)) {
+    return `linear-gradient(135deg, ${hex}60, ${hex}10 70%, transparent)`;
+  }
+  return null;
+}
 
 function formatJoined(iso: string): string {
   try {
@@ -103,6 +123,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             last_message_at: null,
             streak_days: 0,
             claims_today: 0,
+            cosmetics: { banner: null, profile_design: null },
           });
       } finally {
         if (!cancelled) setLoading(false);
@@ -149,6 +170,22 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
 
         {/* Header */}
         <div className="relative overflow-hidden border-b border-white/[0.05]">
+          {/* Banner cosmético aplicado — se equipado, vira o background */}
+          {(() => {
+            const bg = resolveBannerBg(profile?.cosmetics?.banner?.metadata);
+            if (!bg) return null;
+            return (
+              <>
+                <div className="absolute inset-0 pointer-events-none opacity-60" style={{ background: bg }} />
+                <div className="absolute inset-0 pointer-events-none" style={{
+                  background: "linear-gradient(to bottom, rgba(20,20,23,0.3), rgba(20,20,23,0.8))",
+                }} />
+                <div className="absolute top-2 right-14 z-20 text-[8px] uppercase tracking-wider text-white/40 font-mono">
+                  banner: {profile?.cosmetics?.banner?.prize_slug}
+                </div>
+              </>
+            );
+          })()}
           <div className="absolute inset-0 pointer-events-none" style={{
             background: `radial-gradient(ellipse 60% 80% at 75% 30%, ${tierAccent}18, transparent 65%)`,
           }} />

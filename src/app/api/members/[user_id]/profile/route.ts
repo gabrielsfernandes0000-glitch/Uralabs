@@ -31,5 +31,6 @@ export async function GET(
     last_message_at: state.discord_activity?.last_message_at ?? null,
     streak_days: state.streak.days,
     claims_today: state.streak.claims_today,
+    cosmetics: state.cosmetics,
   });
 }

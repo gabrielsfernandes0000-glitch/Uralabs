@@ -1,28 +1,28 @@
 /* ────────────────────────────────────────────
-   Elite Progress — persistence layer
+   Elite Progress — server-authoritative + localStorage cache.
 
-   Uses localStorage now, ready for Supabase later.
-   All functions are client-side only.
+   Fluxo:
+   - Primeiro load: tenta GET /api/progress. Se vazio, faz migração
+     do localStorage (uma vez). Se offline, usa o cache local.
+   - Mutações: aplicam ao cache local imediatamente (UI responde),
+     depois POST /api/progress com patch. Se o servidor retornar
+     estado novo, sobrescreve o cache local.
+
+   O server-side fecha o cheat-gap das auto-distribute achievements:
+   useProgress não é mais spoofable por dev tools.
    ──────────────────────────────────────────── */
 
 const STORAGE_KEY = "elite_progress";
+const MIGRATION_FLAG_KEY = "elite_progress_migrated";
 
 export interface EliteProgress {
-  /** Lesson IDs the user has completed */
   completedLessons: string[];
-  /** Quiz scores: lessonId → percentage (0-100) */
   quizScores: Record<string, number>;
-  /** Checklist items checked per lesson: lessonId → item indices */
   checklists: Record<string, number[]>;
-  /** Prep sheets saved (date string → data) */
   preps: Record<string, PrepData>;
-  /** Trade journal entries */
   trades: TradeEntry[];
-  /** Current streak (consecutive days with activity) */
   streak: number;
-  /** Last activity date (ISO string, date only) */
   lastActivityDate: string | null;
-  /** Best streak ever */
   bestStreak: number;
 }
 
@@ -62,8 +62,7 @@ function getDefaultProgress(): EliteProgress {
   };
 }
 
-/** Load progress from localStorage */
-export function loadProgress(): EliteProgress {
+export function loadCachedProgress(): EliteProgress {
   if (typeof window === "undefined") return getDefaultProgress();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -74,116 +73,148 @@ export function loadProgress(): EliteProgress {
   }
 }
 
-/** Save progress to localStorage */
-export function saveProgress(progress: EliteProgress): void {
+function writeCache(progress: EliteProgress): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   } catch {
-    // Storage full or unavailable
+    /* quota */
   }
 }
 
-/** Get today's date string in BR timezone */
 function todayBR(): string {
   const now = new Date();
-  // Approximate BR time
   const brDate = new Date(now.getTime() - 3 * 60 * 60 * 1000);
   return brDate.toISOString().split("T")[0];
 }
 
-/** Update streak based on activity */
-function updateStreak(progress: EliteProgress): EliteProgress {
-  const today = todayBR();
-  const yesterday = new Date(new Date(today).getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+// ─── Server round-trips ──────────────────────────────────────────────────
 
-  if (progress.lastActivityDate === today) {
-    return progress; // already counted today
+async function fetchServerProgress(): Promise<EliteProgress | null> {
+  try {
+    const res = await fetch("/api/progress", { cache: "no-store" });
+    if (!res.ok) return null;
+    const { progress } = (await res.json()) as { progress: EliteProgress };
+    return { ...getDefaultProgress(), ...progress };
+  } catch {
+    return null;
+  }
+}
+
+async function pushPatch(patch: Partial<EliteProgress>): Promise<EliteProgress | null> {
+  try {
+    const res = await fetch("/api/progress", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ patch }),
+    });
+    if (!res.ok) return null;
+    const { progress } = (await res.json()) as { progress: EliteProgress };
+    return { ...getDefaultProgress(), ...progress };
+  } catch {
+    return null;
+  }
+}
+
+/** Load: migra localStorage → server (uma vez), depois usa server como fonte.
+ *  Cache local é atualizado pro próximo cold load sem flash. */
+export async function initialLoadProgress(): Promise<EliteProgress> {
+  if (typeof window === "undefined") return getDefaultProgress();
+
+  const cached = loadCachedProgress();
+  const server = await fetchServerProgress();
+  if (!server) return cached; // offline / erro — usa cache
+
+  const serverIsEmpty = server.completedLessons.length === 0 &&
+                        Object.keys(server.quizScores).length === 0 &&
+                        server.trades.length === 0;
+  const cacheHasData = cached.completedLessons.length > 0 ||
+                       Object.keys(cached.quizScores).length > 0 ||
+                       cached.trades.length > 0;
+  const alreadyMigrated = localStorage.getItem(MIGRATION_FLAG_KEY) === "1";
+
+  if (serverIsEmpty && cacheHasData && !alreadyMigrated) {
+    // migra o cache local pro servidor (one-shot)
+    const merged = await pushPatch({
+      completedLessons: cached.completedLessons,
+      quizScores: cached.quizScores,
+      checklists: cached.checklists,
+      preps: cached.preps,
+      trades: cached.trades,
+    });
+    localStorage.setItem(MIGRATION_FLAG_KEY, "1");
+    if (merged) {
+      writeCache(merged);
+      return merged;
+    }
   }
 
-  let newStreak: number;
-  if (progress.lastActivityDate === yesterday) {
-    newStreak = progress.streak + 1;
-  } else if (!progress.lastActivityDate) {
-    newStreak = 1;
-  } else {
-    newStreak = 1; // streak broken
-  }
+  writeCache(server);
+  return server;
+}
 
-  return {
-    ...progress,
-    streak: newStreak,
-    bestStreak: Math.max(progress.bestStreak, newStreak),
-    lastActivityDate: today,
+/** Completa uma lesson. Fire-and-forget pro server + cache otimista. */
+export async function completeLesson(lessonId: string): Promise<EliteProgress> {
+  const current = loadCachedProgress();
+  if (current.completedLessons.includes(lessonId)) return current;
+  const optimistic = {
+    ...current,
+    completedLessons: [...current.completedLessons, lessonId],
+    lastActivityDate: todayBR(),
   };
+  writeCache(optimistic);
+  const server = await pushPatch({ completedLessons: optimistic.completedLessons });
+  if (server) writeCache(server);
+  return server ?? optimistic;
 }
 
-/* ── Action helpers ── */
-
-export function completeLesson(lessonId: string): EliteProgress {
-  const p = loadProgress();
-  if (p.completedLessons.includes(lessonId)) return p;
-  const updated = updateStreak({
-    ...p,
-    completedLessons: [...p.completedLessons, lessonId],
-  });
-  saveProgress(updated);
-  return updated;
+export async function saveQuizScore(lessonId: string, score: number): Promise<EliteProgress> {
+  const current = loadCachedProgress();
+  const existing = current.quizScores[lessonId];
+  if (existing !== undefined && existing >= score) return current;
+  const nextScores = { ...current.quizScores, [lessonId]: score };
+  const optimistic = { ...current, quizScores: nextScores, lastActivityDate: todayBR() };
+  writeCache(optimistic);
+  const server = await pushPatch({ quizScores: nextScores });
+  if (server) writeCache(server);
+  return server ?? optimistic;
 }
 
-export function saveQuizScore(lessonId: string, score: number): EliteProgress {
-  const p = loadProgress();
-  const existing = p.quizScores[lessonId];
-  // Keep best score
-  if (existing !== undefined && existing >= score) return p;
-  const updated = updateStreak({
-    ...p,
-    quizScores: { ...p.quizScores, [lessonId]: score },
-  });
-  saveProgress(updated);
-  return updated;
+export async function saveChecklist(lessonId: string, checked: number[]): Promise<EliteProgress> {
+  const current = loadCachedProgress();
+  const nextChecklists = { ...current.checklists, [lessonId]: checked };
+  const optimistic = { ...current, checklists: nextChecklists };
+  writeCache(optimistic);
+  const server = await pushPatch({ checklists: nextChecklists });
+  if (server) writeCache(server);
+  return server ?? optimistic;
 }
 
-export function saveChecklist(lessonId: string, checked: number[]): EliteProgress {
-  const p = loadProgress();
-  const updated = {
-    ...p,
-    checklists: { ...p.checklists, [lessonId]: checked },
-  };
-  saveProgress(updated);
-  return updated;
-}
-
-export function savePrep(data: Omit<PrepData, "date">): EliteProgress {
-  const p = loadProgress();
+export async function savePrep(data: Omit<PrepData, "date">): Promise<EliteProgress> {
+  const current = loadCachedProgress();
   const today = todayBR();
-  const updated = updateStreak({
-    ...p,
-    preps: { ...p.preps, [today]: { ...data, date: today } },
-  });
-  saveProgress(updated);
-  return updated;
+  const nextPreps = { ...current.preps, [today]: { ...data, date: today } };
+  const optimistic = { ...current, preps: nextPreps, lastActivityDate: today };
+  writeCache(optimistic);
+  const server = await pushPatch({ preps: nextPreps });
+  if (server) writeCache(server);
+  return server ?? optimistic;
 }
 
-export function saveTrade(data: Omit<TradeEntry, "id" | "date">): EliteProgress {
-  const p = loadProgress();
-  const entry: TradeEntry = {
-    ...data,
-    id: `trade_${Date.now()}`,
-    date: todayBR(),
-  };
-  const updated = updateStreak({
-    ...p,
-    trades: [...p.trades, entry],
-  });
-  saveProgress(updated);
-  return updated;
+export async function saveTrade(data: Omit<TradeEntry, "id" | "date">): Promise<EliteProgress> {
+  const current = loadCachedProgress();
+  const entry: TradeEntry = { ...data, id: `trade_${Date.now()}`, date: todayBR() };
+  const nextTrades = [...current.trades, entry];
+  const optimistic = { ...current, trades: nextTrades, lastActivityDate: entry.date };
+  writeCache(optimistic);
+  const server = await pushPatch({ trades: nextTrades });
+  if (server) writeCache(server);
+  return server ?? optimistic;
 }
 
-/** Compute stats from progress */
 export function computeStats(progress: EliteProgress) {
   const totalTrades = progress.trades.length;
-  const wins = progress.trades.filter(t => t.result === "win").length;
+  const wins = progress.trades.filter((t) => t.result === "win").length;
   const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
 
   const prepsArray = Object.values(progress.preps);
@@ -191,7 +222,7 @@ export function computeStats(progress: EliteProgress) {
     ? prepsArray.reduce((sum, p) => sum + p.emotional, 0) / prepsArray.length
     : 0;
 
-  const followedPlanTrades = progress.trades.filter(t => t.followedPlan).length;
+  const followedPlanTrades = progress.trades.filter((t) => t.followedPlan).length;
   const disciplineRate = totalTrades > 0 ? Math.round((followedPlanTrades / totalTrades) * 100) : 0;
 
   return {
@@ -203,4 +234,10 @@ export function computeStats(progress: EliteProgress) {
     streak: progress.streak,
     bestStreak: progress.bestStreak,
   };
+}
+
+// ── Compat aliases pro import antigo ──
+export const loadProgress = loadCachedProgress;
+export function saveProgress(p: EliteProgress): void {
+  writeCache(p);
 }
