@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Flame, Menu, X, LogOut, Lock, Radio,
-  LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3,
+  LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift, Coins,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
@@ -17,14 +17,22 @@ type NavItem = { href: string; icon: typeof LayoutDashboard; label: string; exac
 const NAV_ITEMS: NavItem[] = [
   { href: "/elite",            icon: LayoutDashboard, label: "Dashboard",  exact: true },
   { href: "/elite/aulas",      icon: BookOpen,        label: "Aulas" },
+  { href: "/elite/turma",      icon: Newspaper,       label: "Mural" },
+  { href: "/elite/membros",    icon: Users,           label: "Membros" },
+  { href: "/elite/conquistas", icon: Trophy,          label: "Conquistas" },
+  { href: "/elite/loja",       icon: Gift,            label: "Loja" },
   { href: "/elite/calls",      icon: Radio,           label: "Calls",      eliteOnly: true },
   { href: "/elite/pratica",    icon: Crosshair,       label: "Prática",    eliteOnly: true },
   { href: "/elite/corretora",  icon: BarChart3,       label: "Corretora",  eliteOnly: true },
-  { href: "/elite/conquistas", icon: Trophy,          label: "Conquistas", eliteOnly: true },
-  { href: "/elite/turma",      icon: Users,           label: "Turma",      eliteOnly: true },
 ];
 
-export function EliteSidebar({ session }: { session: SessionPayload }) {
+export function EliteSidebar({
+  session,
+  coinBalance,
+}: {
+  session: SessionPayload;
+  coinBalance?: number;
+}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const avatar = avatarUrl(session.userId, session.avatar, 64);
@@ -129,6 +137,23 @@ export function EliteSidebar({ session }: { session: SessionPayload }) {
           </nav>
 
           <div className="mx-6 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+
+          {/* Coin balance pill */}
+          {typeof coinBalance === "number" && (
+            <Link
+              href="/elite/loja"
+              onClick={() => setMobileOpen(false)}
+              className="mx-4 mb-2 flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-500/[0.04] border border-amber-500/20 hover:bg-amber-500/[0.08] hover:border-amber-500/30 transition-all"
+            >
+              <Coins className="w-4 h-4 text-amber-400" />
+              <span className="text-[12px] font-semibold tabular-nums text-amber-200">
+                {coinBalance.toLocaleString("pt-BR")}
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.16em] text-white/30 ml-auto">
+                URA Coin
+              </span>
+            </Link>
+          )}
 
           {/* User */}
           <div className="p-4">

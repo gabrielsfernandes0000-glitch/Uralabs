@@ -89,15 +89,18 @@ export default async function DesbloquearPage() {
         </div>
         <div className="divide-y divide-white/[0.04]">
           {[
-            { label: "Aulas gravadas (currículo SMC completo)",  vip: true,  elite: true },
+            { label: "Aulas gravadas (currículo SMC completo)",    vip: true,  elite: true },
+            { label: "Quiz por aula + flashcards",                 vip: true,  elite: true },
             { label: "PDFs + materiais de apoio",                  vip: true,  elite: true },
-            { label: "Dashboard + progresso",                      vip: true,  elite: true },
-            { label: "Calls ao vivo diárias (operações)",          vip: false, elite: true },
-            { label: "Aulas de mesa prop",                         vip: false, elite: true },
-            { label: "Quiz + flashcards + treinos",                vip: false, elite: true },
-            { label: "Corretora conectada",                        vip: false, elite: true },
-            { label: "Mural, ranking, peer review da turma",       vip: false, elite: true },
-            { label: "Conquistas + badges físicas",                vip: false, elite: true },
+            { label: "Dashboard + progresso pessoal",              vip: true,  elite: true },
+            { label: "Mural, turma e ranking (visualizar)",        vip: true,  elite: true },
+            { label: "Conquistas + skill tree",                    vip: true,  elite: true },
+            { label: "Calls ao vivo diárias com o URA",            vip: false, elite: true },
+            { label: "Aulas de mesa prop (FundingPips, TopStep…)", vip: false, elite: true },
+            { label: "Treinos livres (121+ cenários)",             vip: false, elite: true },
+            { label: "Corretora conectada (PnL automático)",       vip: false, elite: true },
+            { label: "Peer review + publicar na turma",            vip: false, elite: true },
+            { label: "Submeter conquistas (payout, mesa)",         vip: false, elite: true },
             { label: "Suporte direto com URA",                     vip: false, elite: true },
           ].map((row, i) => (
             <div key={i} className="grid grid-cols-[1fr_80px_80px] items-center gap-3 px-5 py-2.5">

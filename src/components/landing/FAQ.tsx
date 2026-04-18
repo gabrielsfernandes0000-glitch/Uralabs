@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 
 const FAQS = [
-  { q: "Sou iniciante, consigo acompanhar?", a: "Sim! A didática começa do zero. No VIP você tem materiais introdutórios e tira dúvidas direto no chat. As lives são educativas e práticas." },
+  { q: "Sou iniciante, consigo acompanhar?", a: "Sim! A didática começa do zero. VIP já vem com a plataforma de aulas gravadas (14 aulas do básico ao avançado em SMC), quiz por aula, PDFs e tira-dúvidas no chat. Elite adiciona calls ao vivo, mesa prop e treinos interativos." },
   { q: "Preciso de quanto capital para começar?", a: "Não existe mínimo. Nossos alunos operam contas desde US$ 100 até mais de US$ 50.000. O foco inicial deve ser proteger o capital enquanto aprende." },
   { q: "O que é SMC e CRT?", a: "SMC (Smart Money Concepts) é a leitura dos movimentos de bancos e fundos. CRT (Candle Range Theory) identifica a intenção dentro de um único candle. Juntos, oferecem entradas de altíssima precisão." },
   { q: "As lives ficam gravadas?", a: "Sim! Todas as lives e aulas ficam gravadas na nossa plataforma exclusiva. Você pode assistir e reassistir no seu tempo, além do currículo estruturado com aulas gravadas." },

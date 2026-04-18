@@ -1,65 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { Lock, TrendingUp, Brain, Flame, Target, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { Lock, TrendingUp, Brain, Flame, Target, ChevronRight, ArrowUp, Sparkles } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import Link from "next/link";
+import {
+  ACHIEVEMENTS,
+  CATEGORY_META,
+  RARITY_META,
+  groupByCategory,
+  type Achievement,
+  type Category,
+} from "@/lib/achievements";
+import { AchievementBadge } from "@/components/elite/AchievementBadge";
 
 /* ────────────────────────────────────────────
-   Types & Data
+   Display order — OG em destaque primeiro, depois trading (manual),
+   depois as auto (learning, practice, milestone), por fim community.
    ──────────────────────────────────────────── */
 
-type Rarity = "legendary" | "rare" | "uncommon" | "common";
-
-type Badge = {
-  id: string;
-  name: string;
-  desc: string;
-  image: string;
-  unlocked: boolean;
-  hasPlaque?: boolean;
-  rarity: Rarity;
-};
-
-const BADGES = {
-  og: [
-    { id: "elite-member", name: "Elite Member", desc: "Entrou na mentoria Elite", image: "/badges/badge-elite-member.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
-    { id: "og-10", name: "OG 1.0", desc: "Fundador turma 1.0", image: "/badges/badge-og-10.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
-    { id: "og-20", name: "OG 2.0", desc: "Membro turma 2.0", image: "/badges/badge-og-20.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
-    { id: "og-30", name: "OG 3.0", desc: "Membro turma 3.0", image: "/badges/badge-og-30.png", unlocked: true, hasPlaque: true, rarity: "legendary" as Rarity },
-  ],
-  trading: [
-    { id: "first-payout", name: "First Payout", desc: "Primeiro saque de mesa funded", image: "/badges/badge-first-payout.png", unlocked: true, hasPlaque: true, rarity: "rare" as Rarity },
-    { id: "mesa-approved", name: "Mesa Aprovada", desc: "Aprovado em prop firm", image: "/badges/badge-mesa-approved.png", unlocked: true, rarity: "rare" as Rarity },
-    { id: "verde-7", name: "7 No Verde", desc: "7 dias consecutivos no verde", image: "/badges/badge-verde-7.png", unlocked: true, rarity: "uncommon" as Rarity },
-  ],
-  academic: [
-    { id: "first-lesson", name: "Primeira Aula", desc: "Completou a primeira aula", image: "/badges/badge-primeira-aula.png", unlocked: true, rarity: "common" as Rarity },
-    { id: "module-complete", name: "Módulo Completo", desc: "Completou um módulo inteiro", image: "/badges/badge-modulo-completo.png", unlocked: true, rarity: "uncommon" as Rarity },
-    { id: "quiz-master", name: "Quiz Master", desc: "Gabaritou um quiz", image: "/badges/badge-quiz-master.png", unlocked: true, rarity: "uncommon" as Rarity },
-    { id: "all-lessons", name: "Estudante Dedicado", desc: "Todas as aulas completas", image: "/badges/badge-estudante-dedicado.png", unlocked: true, rarity: "rare" as Rarity },
-  ],
-  community: [
-    { id: "presenca-ferro", name: "Presença de Ferro", desc: "90%+ presença nas calls", image: "/badges/badge-presenca-ferro.png", unlocked: true, rarity: "uncommon" as Rarity },
-    { id: "professor", name: "Professor", desc: "Ajudou 5+ membros", image: "/badges/badge-professor.png", unlocked: true, rarity: "rare" as Rarity },
-    { id: "check-in-30", name: "Check-in Master", desc: "30 check-ins consecutivos", image: "/badges/badge-checkin-master.png", unlocked: true, rarity: "rare" as Rarity },
-  ],
-};
-
-const RARITY = {
-  legendary: { label: "Lendária", color: "text-yellow-400", dot: "bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.6)]", border: "border-yellow-500/25", hoverBorder: "hover:border-yellow-500/50", glow: "shadow-[0_0_40px_rgba(250,204,21,0.08)]", hoverGlow: "hover:shadow-[0_0_60px_rgba(250,204,21,0.18)]" },
-  rare: { label: "Rara", color: "text-blue-400", dot: "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]", border: "border-blue-500/15", hoverBorder: "hover:border-blue-500/35", glow: "", hoverGlow: "hover:shadow-[0_0_30px_rgba(96,165,250,0.1)]" },
-  uncommon: { label: "Incomum", color: "text-emerald-400", dot: "bg-emerald-400/70", border: "border-white/[0.05]", hoverBorder: "hover:border-emerald-500/25", glow: "", hoverGlow: "" },
-  common: { label: "Comum", color: "text-white/40", dot: "bg-white/25", border: "border-white/[0.04]", hoverBorder: "hover:border-white/[0.1]", glow: "", hoverGlow: "" },
-};
-
-const SECTIONS = [
-  { key: "og" as const, title: "Edição Limitada", sub: "Exclusivas por turma — nunca mais emitidas", legendary: true },
-  { key: "trading" as const, title: "Trading", sub: "Resultados reais no mercado" },
-  { key: "academic" as const, title: "Acadêmicas", sub: "Progresso nas aulas" },
-  { key: "community" as const, title: "Comunidade", sub: "Engajamento e presença" },
-];
+const DISPLAY_ORDER: Category[] = ["og", "trading", "learning", "practice", "milestone", "community"];
 
 /* ────────────────────────────────────────────
    Skill Tree Data
@@ -116,62 +76,60 @@ const SKILL_TREE: SkillNode[][] = [
 
 type ViewTab = "badges" | "tree" | "insights";
 
-function BadgeCard({ badge, large }: { badge: Badge; large?: boolean }) {
-  const r = RARITY[badge.rarity];
-  const imgSize = large ? 200 : 150;
+/* ── Badge card (unlocked state) — large variant pra OG/legendary, small pra resto ── */
+function BadgeCard({ achievement, unlocked, large }: { achievement: Achievement; unlocked: boolean; large?: boolean }) {
+  const rarity = RARITY_META[achievement.rarity];
+  const size = large ? 140 : 88;
+  const isLegendary = achievement.rarity === "legendary";
+
+  const borderClass = unlocked
+    ? isLegendary
+      ? "border-[#FF5500]/20 hover:border-[#FF5500]/45 hover:shadow-[0_0_60px_rgba(255,85,0,0.18)]"
+      : achievement.rarity === "gold"
+        ? "border-[#F59E0B]/15 hover:border-[#F59E0B]/35 hover:shadow-[0_0_32px_rgba(245,158,11,0.10)]"
+        : "border-white/[0.06] hover:border-white/[0.18]"
+    : "border-white/[0.03]";
 
   const content = (
-    <div className={`group relative rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden ${
-      badge.unlocked
-        ? `${r.border} ${r.hoverBorder} ${r.glow} ${r.hoverGlow} hover:-translate-y-1.5`
-        : "border-white/[0.03]"
-    }`}>
-      {badge.rarity === "legendary" && badge.unlocked && (
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-yellow-400/40 to-transparent animate-pulse" />
+    <div className={`group relative rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden ${borderClass} ${unlocked ? "hover:-translate-y-1" : "opacity-55"}`}>
+      {isLegendary && unlocked && (
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
       )}
 
-      {badge.hasPlaque && badge.unlocked && (
-        <div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-500/15">
-          <span className="text-[8px] font-bold text-yellow-500/60 uppercase tracking-wider">Plaquinha</span>
+      {!achievement.autoDistribute && unlocked && (
+        <div className="absolute top-3 right-3 z-10 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.08]">
+          <span className="text-[8px] font-bold text-white/45 uppercase tracking-[0.15em]">Manual</span>
         </div>
       )}
 
-      <div className={`relative z-10 flex ${large ? "flex-row items-center gap-8 p-7" : "flex-col items-center p-5 pt-7"}`}>
-        <div className={`relative shrink-0 transition-transform duration-700 ease-out ${badge.unlocked ? "group-hover:scale-[1.08]" : ""}`}>
-          {badge.unlocked ? (
-            <Image src={badge.image} alt={badge.name} width={imgSize} height={imgSize} className="object-contain" style={{ width: imgSize, height: imgSize }} />
-          ) : (
-            <div className="relative" style={{ width: imgSize, height: imgSize }}>
-              <Image src={badge.image} alt={badge.name} width={imgSize} height={imgSize} className="object-contain opacity-[0.04] grayscale" style={{ width: imgSize, height: imgSize }} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Lock className="w-6 h-6 text-white/[0.08]" />
-              </div>
+      {/* All cards: centered vertical layout. Large só tem mais padding + badge maior. */}
+      <div className={`relative z-10 flex flex-col items-center text-center ${large ? "px-6 pt-8 pb-6" : "px-5 pt-6 pb-5"}`}>
+        <div className={`relative transition-transform duration-500 ease-out ${unlocked ? "group-hover:scale-[1.06] group-hover:-translate-y-0.5" : ""}`}>
+          <AchievementBadge achievement={achievement} size={size} locked={!unlocked} />
+          {!unlocked && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Lock className="w-5 h-5 text-white/25" />
             </div>
           )}
         </div>
 
-        <div className={large ? "flex-1" : "text-center mt-4"}>
-          <span className={`text-[9px] font-bold tracking-[0.2em] uppercase ${badge.unlocked ? r.color : "text-white/20"} block ${large ? "mb-1.5" : "mb-1"}`}>
-            {r.label}
+        <div className={`w-full ${large ? "mt-5" : "mt-4"}`}>
+          <span className={`block text-[9px] font-bold tracking-[0.22em] uppercase ${unlocked ? rarity.className : "text-white/20"} mb-1.5`}>
+            {rarity.label}
           </span>
-          <h4 className={`font-bold tracking-tight ${badge.unlocked ? "text-white" : "text-white/[0.08]"} ${large ? "text-[22px] mb-2" : "text-[14px] mb-1"}`}>
-            {badge.name}
+          <h4 className={`font-bold tracking-tight ${unlocked ? "text-white" : "text-white/20"} ${large ? "text-[18px] mb-1.5" : "text-[13.5px] mb-1"}`}>
+            {achievement.label}
           </h4>
-          <p className={`leading-relaxed ${badge.unlocked ? "text-white/50" : "text-white/[0.05]"} ${large ? "text-[13px]" : "text-[11px]"}`}>
-            {badge.desc}
+          <p className={`leading-relaxed ${unlocked ? "text-white/45" : "text-white/15"} ${large ? "text-[12px]" : "text-[10.5px]"}`}>
+            {achievement.detail}
           </p>
-          {badge.unlocked && large && (
-            <span className="inline-block mt-4 text-[11px] text-white/30 group-hover:text-white/50 transition-colors">
-              Ver detalhes →
-            </span>
-          )}
         </div>
       </div>
     </div>
   );
 
-  if (badge.unlocked) {
-    return <Link href={`/elite/conquistas/${badge.id}`} className="block">{content}</Link>;
+  if (unlocked) {
+    return <Link href={`/elite/conquistas/${achievement.id}`} className="block">{content}</Link>;
   }
   return content;
 }
@@ -445,49 +403,116 @@ export default function ConquistasPage() {
   const [view, setView] = useState<ViewTab>("badges");
   const { progress } = useProgress();
 
-  // Compute dynamic unlock state based on real progress
+  // Unlocks reais vindos do DB (grant admin ou trigger automático via URA Coin system)
+  const [unlockedIds, setUnlockedIds] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/achievements/me", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { unlocks: Array<{ achievement_id: string }> };
+        if (cancelled) return;
+        setUnlockedIds(new Set(data.unlocks.map((u) => u.achievement_id)));
+      } catch {
+        // fail silently — mostra tudo como locked
+        if (!cancelled) setUnlockedIds(new Set());
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Progresso local (localStorage) — ainda libera auto-distribuídas pra feedback
+  // imediato antes de o backend registrar. DB unlocks é o source of truth canônico.
   const lessonsCompleted = progress?.completedLessons ?? [];
   const quizScores = progress?.quizScores ?? {};
-  const hasPerfectQuiz = Object.values(quizScores).some((s) => s === 100);
-  const hasAnyModule = lessonsCompleted.length >= 3; // rough: 3 lessons = 1 module
+  const perfectQuizzes = Object.values(quizScores).filter((s) => s === 100).length;
   const allLessonsDone = lessonsCompleted.length >= 14;
   const trades = progress?.trades ?? [];
   const streak = progress?.streak ?? 0;
 
-  // Override unlock state for non-OG badges
-  function isUnlocked(badgeId: string): boolean {
-    // OG/limited badges are always shown as unlocked (they're edition badges)
-    if (["elite-member", "og-10", "og-20", "og-30"].includes(badgeId)) return true;
-    // Trading badges — not unlockable from platform alone
-    if (["first-payout", "mesa-approved"].includes(badgeId)) return false;
-    if (badgeId === "verde-7") return streak >= 7;
-    // Academic
-    if (badgeId === "first-lesson") return lessonsCompleted.length >= 1;
-    if (badgeId === "module-complete") return hasAnyModule;
-    if (badgeId === "quiz-master") return hasPerfectQuiz;
-    if (badgeId === "all-lessons") return allLessonsDone;
-    // Community
-    if (badgeId === "presenca-ferro") return false; // needs call tracking
-    if (badgeId === "professor") return false; // needs peer review count
-    if (badgeId === "check-in-30") return streak >= 30;
+  // Auto-grant: quando progresso local cumpre milestone e DB ainda não registrou,
+  // dispara POST /api/achievements/auto-grant. API valida tudo server-side
+  // (RPC só aceita auto_distribute=true). Idempotente: chamar 2x retorna already_unlocked.
+  useEffect(() => {
+    if (!unlockedIds) return; // ainda carregando DB state
+    if (!progress) return;     // sem progress local
+
+    function qualifies(id: string): boolean {
+      switch (id) {
+        case "first-lesson":  return lessonsCompleted.length >= 1;
+        case "module-base":   return lessonsCompleted.length >= 3;
+        case "module-smc":    return lessonsCompleted.length >= 7;
+        case "all-lessons":   return allLessonsDone;
+        case "first-quiz-a":  return perfectQuizzes >= 1;
+        case "quiz-master":   return perfectQuizzes >= 10;
+        case "trinity":       return perfectQuizzes >= 3;
+        case "streak-7":      return streak >= 7;
+        case "streak-30":     return streak >= 30;
+        case "streak-100":    return streak >= 100;
+        case "trades-100":    return trades.length >= 100;
+        default:              return false;
+      }
+    }
+
+    const autoIds = Object.values(ACHIEVEMENTS).filter((a) => a.autoDistribute).map((a) => a.id);
+    const toGrant = autoIds.filter((id) => qualifies(id) && !unlockedIds.has(id));
+    if (toGrant.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      for (const id of toGrant) {
+        try {
+          const res = await fetch("/api/achievements/auto-grant", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ achievement_id: id }),
+          });
+          if (!res.ok || cancelled) continue;
+          const data = (await res.json()) as { status?: string };
+          if (data.status === "granted" || data.status === "restored") {
+            setUnlockedIds((prev) => (prev ? new Set([...prev, id]) : new Set([id])));
+          }
+        } catch {
+          /* silencioso — tenta de novo no próximo render */
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [unlockedIds, lessonsCompleted.length, perfectQuizzes, allLessonsDone, trades.length, streak, progress]);
+
+  function isUnlocked(ach: Achievement): boolean {
+    // Fonte canônica: unlocks do banco (admin grant, trigger, self)
+    if (unlockedIds?.has(ach.id)) return true;
+    // Fallback local pra auto-distribuídas enquanto carrega
+    if (unlockedIds === null && ach.autoDistribute) {
+      switch (ach.id) {
+        case "first-lesson":   return lessonsCompleted.length >= 1;
+        case "module-base":    return lessonsCompleted.length >= 3;
+        case "module-smc":     return lessonsCompleted.length >= 7;
+        case "all-lessons":    return allLessonsDone;
+        case "first-quiz-a":   return perfectQuizzes >= 1;
+        case "quiz-master":    return perfectQuizzes >= 10;
+        case "trinity":        return perfectQuizzes >= 3;
+        case "streak-7":       return streak >= 7;
+        case "streak-30":      return streak >= 30;
+        case "streak-100":     return streak >= 100;
+        case "trades-100":     return trades.length >= 100;
+      }
+    }
     return false;
   }
 
-  // Build badges with dynamic unlock
-  const dynamicBadges = Object.fromEntries(
-    Object.entries(BADGES).map(([key, badges]) => [
-      key,
-      badges.map((b) => ({ ...b, unlocked: isUnlocked(b.id) })),
-    ])
-  ) as typeof BADGES;
-
-  const allBadges = Object.values(dynamicBadges).flat();
-  const unlocked = allBadges.filter((b) => b.unlocked).length;
-  const plaques = allBadges.filter((b) => b.unlocked && (b as Badge).hasPlaque).length;
+  const grouped = groupByCategory();
+  const allIds = Object.values(ACHIEVEMENTS);
+  const unlockedCount = allIds.filter((a) => isUnlocked(a)).length;
+  const legendaryUnlocked = allIds.filter((a) => isUnlocked(a) && a.rarity === "legendary").length;
 
   return (
     <div className="space-y-5">
-      {/* Compact header + inline stats + tabs */}
+      {/* Header + stats + tabs */}
       <div className="flex items-center justify-between flex-wrap gap-5">
         <div className="flex items-center gap-5">
           <div>
@@ -497,13 +522,13 @@ export default function ConquistasPage() {
           <div className="h-10 w-px bg-white/[0.06]" />
           <div className="flex items-center gap-5">
             <div>
-              <p className="text-[22px] font-bold text-white leading-none font-mono">{unlocked}<span className="text-white/30">/{allBadges.length}</span></p>
+              <p className="text-[22px] font-bold text-white leading-none font-mono">{unlockedCount}<span className="text-white/30">/{allIds.length}</span></p>
               <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">badges</p>
             </div>
             <div className="h-8 w-px bg-white/[0.06]" />
             <div>
-              <p className="text-[22px] font-bold text-yellow-400/90 leading-none font-mono">{plaques}</p>
-              <p className="text-[10px] text-yellow-500/45 mt-1 uppercase tracking-wider">plaquinhas</p>
+              <p className="text-[22px] font-bold text-[#FF5500]/90 leading-none font-mono">{legendaryUnlocked}</p>
+              <p className="text-[10px] text-[#FF5500]/50 mt-1 uppercase tracking-wider">lendárias</p>
             </div>
           </div>
         </div>
@@ -531,41 +556,57 @@ export default function ConquistasPage() {
         </div>
       </div>
 
-      {/* Rarity legend — compact bar */}
+      {/* Rarity legend */}
       <div className="flex flex-wrap items-center gap-4 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.02]">
         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Raridade</span>
-        {(["legendary", "rare", "uncommon", "common"] as Rarity[]).map((r) => (
+        {(["bronze", "silver", "gold", "legendary"] as const).map((r) => (
           <div key={r} className="flex items-center gap-1.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${RARITY[r].dot}`} />
-            <span className={`text-[11px] font-medium ${RARITY[r].color}`}>{RARITY[r].label}</span>
+            <span className={`w-1.5 h-1.5 rounded-full`} style={{
+              backgroundColor: r === "bronze" ? "#C4833F" : r === "silver" ? "#CBD5E1" : r === "gold" ? "#F59E0B" : "#FF5500",
+              boxShadow: r === "legendary" ? "0 0 8px #FF5500aa" : r === "gold" ? "0 0 6px #F59E0B80" : "none",
+            }} />
+            <span className={`text-[11px] font-medium ${RARITY_META[r].className}`}>{RARITY_META[r].label}</span>
           </div>
         ))}
+        <div className="ml-auto flex items-center gap-1.5">
+          <Sparkles className="w-3 h-3 text-white/30" />
+          <span className="text-[10px] text-white/35">Badges manuais são validadas pelo URA</span>
+        </div>
       </div>
 
-      {/* ── Tab Content ── */}
+      {/* Tab Content */}
       {view === "badges" && (
         <div className="space-y-10">
-          {SECTIONS.map((section) => {
-            const badges = dynamicBadges[section.key];
-            const isLegendary = "legendary" in section && section.legendary;
+          {DISPLAY_ORDER.map((category) => {
+            const items = grouped[category];
+            if (items.length === 0) return null;
+            const meta = CATEGORY_META[category];
+            const isOG = category === "og";
+            const isTrading = category === "trading";
+            const useLarge = isOG;
 
             return (
-              <div key={section.key}>
-                <div className="mb-5">
-                  <h2 className="text-[18px] font-bold text-white/90">{section.title}</h2>
-                  <p className="text-[12px] text-white/30 mt-0.5">{section.sub}</p>
+              <section key={category}>
+                <div className="mb-5 flex items-baseline gap-3 flex-wrap">
+                  <h2 className="text-[18px] font-bold text-white/90">{meta.label}</h2>
+                  <span className="text-[12px] text-white/35">{meta.sub}</span>
+                  {(isOG || isTrading) && (
+                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/30 px-2 py-0.5 rounded border border-white/[0.08] bg-white/[0.02]">
+                      Manual
+                    </span>
+                  )}
                 </div>
 
                 <div className={
-                  isLegendary
-                    ? "grid grid-cols-2 lg:grid-cols-4 gap-3"
-                    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
+                  useLarge
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
                 }>
-                  {badges.map((badge) => (
-                    <BadgeCard key={badge.id} badge={badge} large={isLegendary} />
+                  {items.map((a) => (
+                    <BadgeCard key={a.id} achievement={a} unlocked={isUnlocked(a)} large={useLarge} />
                   ))}
                 </div>
-              </div>
+              </section>
             );
           })}
         </div>

@@ -6,6 +6,7 @@ import {
   ThumbsUp, Send, Clock, Star, Eye, Target, Award, Zap, Plus, X, Upload, Image as ImageIcon, Shield,
 } from "lucide-react";
 import { fetchDiscordMembers, memberColor, memberInitials, type DiscordMember } from "@/lib/discord-members";
+import { useTier } from "@/hooks/useTier";
 
 /* ────────────────────────────────────────────
    Mock Data — Elite 1.0 members (the OG class)
@@ -319,10 +320,9 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
    Mural View — achievement feed
    ──────────────────────────────────────────── */
 
-function MuralView() {
+function MuralView({ isElite }: { isElite: boolean }) {
   const [pending, setPending] = useState<PendingAchievement[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [discordMembers, setDiscordMembers] = useState<DiscordMember[]>([]);
   const [discordCount, setDiscordCount] = useState({ total: 0, elite: 0, vip: 0 });
 
   // Load pending from localStorage
@@ -333,18 +333,12 @@ function MuralView() {
     } catch {}
   }, []);
 
-  // Fetch real Discord members (Elite + VIP)
+  // Fetch member counts (for stats row)
   useEffect(() => {
     fetchDiscordMembers()
-      .then((data) => {
-        setDiscordMembers(data.members);
-        setDiscordCount({ total: data.total, elite: data.elite, vip: data.vip });
-      })
+      .then((data) => setDiscordCount({ total: data.total, elite: data.elite, vip: data.vip }))
       .catch((err) => console.warn("[turma] discord members fallback:", err));
   }, []);
-
-  const eliteMembers = discordMembers.filter((m) => m.tier === "elite");
-  const vipMembers = discordMembers.filter((m) => m.tier === "vip");
 
   const handleSubmit = (p: PendingAchievement) => {
     const next = [p, ...pending];
@@ -372,19 +366,25 @@ function MuralView() {
         ))}
       </div>
 
-      {/* Achievement feed + sidebar (2 col) */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Main feed — 2 cols wide */}
-        <div className="lg:col-span-2 rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
+      {/* Achievement feed — full width (member roster lives in the Membros tab) */}
+      <div>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
           <div className="px-5 py-3.5 border-b border-white/[0.04] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-yellow-500/70" />
               <h2 className="text-[13px] font-bold text-white/85">Mural de Conquistas</h2>
               <span className="text-[10px] text-white/30 font-mono">{ACHIEVEMENTS.length + pending.filter(p => p.status === "pending").length}</span>
             </div>
-            <button onClick={() => setModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all">
-              <Plus className="w-3 h-3" /> Submeter
-            </button>
+            {isElite ? (
+              <button onClick={() => setModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all">
+                <Plus className="w-3 h-3" /> Submeter
+              </button>
+            ) : (
+              <a href="/elite/desbloquear" title="Upgrade pra Elite pra submeter conquistas"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-[11px] font-bold text-white/40 hover:text-white/70 hover:border-white/[0.18] transition-all">
+                <Shield className="w-3 h-3" /> Só Elite
+              </a>
+            )}
           </div>
           <div className="divide-y divide-white/[0.04]">
             {/* Pending submissions from current user */}
@@ -452,53 +452,6 @@ function MuralView() {
           </div>
         </div>
 
-        {/* Sidebar: real Elite + VIP members from Discord */}
-        <div className="space-y-4">
-          {/* Elite roster */}
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
-            <div className="px-4 py-3 border-b border-white/[0.04] flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5 text-brand-500" />
-              <h3 className="text-[12px] font-bold text-white/85">Elite</h3>
-              <span className="ml-auto text-[10px] text-white/30 font-mono">{eliteMembers.length || "…"}</span>
-            </div>
-            <div className="divide-y divide-white/[0.04] max-h-[280px] overflow-y-auto">
-              {eliteMembers.length === 0 ? (
-                <div className="px-4 py-6 text-center">
-                  <p className="text-[11px] text-white/30">Carregando membros...</p>
-                </div>
-              ) : eliteMembers.slice(0, 8).map((m) => (
-                <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
-                  <DiscordAvatar member={m} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white/85 truncate leading-tight">{m.globalName}</p>
-                    <p className="text-[10px] text-white/30 truncate">@{m.username}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* VIP roster preview */}
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
-            <div className="px-4 py-3 border-b border-white/[0.04] flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-blue-500" />
-              <h3 className="text-[12px] font-bold text-white/85">VIP</h3>
-              <span className="ml-auto text-[10px] text-white/30 font-mono">{vipMembers.length || "…"}</span>
-            </div>
-            <div className="p-3">
-              <div className="flex flex-wrap gap-1.5">
-                {vipMembers.slice(0, 12).map((m) => (
-                  <DiscordAvatar key={m.id} member={m} size="sm" title={m.globalName} />
-                ))}
-                {vipMembers.length > 12 && (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white/40 bg-white/[0.04] border border-white/[0.06]">
-                    +{vipMembers.length - 12}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -527,7 +480,7 @@ function DiscordAvatar({ member, size = "md", title }: { member: DiscordMember; 
    Peer Review View — post + feed
    ──────────────────────────────────────────── */
 
-function PeerReviewView() {
+function PeerReviewView({ isElite }: { isElite: boolean }) {
   const [activeType, setActiveType] = useState<"trade" | "analysis" | "question" | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -595,7 +548,21 @@ function PeerReviewView() {
       {/* Right sidebar — compose + tags */}
       <div className="space-y-4">
         <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4 sticky top-4">
-          {submitted ? (
+          {!isElite ? (
+            <div className="flex flex-col items-center py-6 text-center">
+              <div className="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-3">
+                <Shield className="w-5 h-5 text-brand-500" />
+              </div>
+              <h3 className="text-[14px] font-bold text-white mb-1">Postar é Elite</h3>
+              <p className="text-[11px] text-white/40 max-w-xs mb-4">
+                VIPs leem tudo. Pra publicar trade, análise ou dúvida, upgrade pra Elite.
+              </p>
+              <a href="/elite/desbloquear"
+                className="text-[11px] font-bold text-brand-500 hover:text-brand-500/80 transition-colors">
+                Ver Elite →
+              </a>
+            </div>
+          ) : submitted ? (
             <div className="flex flex-col items-center py-6 text-center">
               <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-3">
                 <Send className="w-5 h-5 text-green-400" />
@@ -751,12 +718,16 @@ function RankingView() {
   );
 }
 
+/* MembersView foi extraído pra src/components/elite/MembersView.tsx e virou
+   rota própria em /elite/membros. */
+
 /* ────────────────────────────────────────────
    Main Page
    ──────────────────────────────────────────── */
 
 export default function TurmaPage() {
   const [view, setView] = useState<ViewTab>("mural");
+  const { isElite } = useTier();
 
   return (
     <div className="space-y-5">
@@ -770,14 +741,18 @@ export default function TurmaPage() {
             </div>
             <span className="text-[10px] text-red-400 font-bold tracking-[0.2em] uppercase">Ao vivo</span>
           </div>
-          <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">Turma Elite</h1>
-          <p className="text-[12px] text-white/40 mt-0.5">Resultados reais de traders reais · Turmas 1.0 → 4.0</p>
+          <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">Mural da Turma</h1>
+          <p className="text-[12px] text-white/40 mt-0.5">
+            {isElite
+              ? "Conquistas, peer review e ranking · Turmas 1.0 → 4.0"
+              : "Você vê tudo. Pra publicar e submeter conquistas, upgrade pra Elite."}
+          </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1.5">
+        {/* Tabs — só Mural/Review/Ranking (membros virou rota própria) */}
+        <div className="flex gap-1.5 flex-wrap">
           {([
-            { id: "mural" as ViewTab,   label: "Mural",        icon: Trophy },
+            { id: "mural" as ViewTab,   label: "Conquistas",   icon: Trophy },
             { id: "review" as ViewTab,  label: "Peer Review",  icon: MessageCircle },
             { id: "ranking" as ViewTab, label: "Ranking",      icon: Activity },
           ]).map((tab) => {
@@ -798,8 +773,8 @@ export default function TurmaPage() {
       </div>
 
       {/* Content */}
-      {view === "mural"   && <MuralView />}
-      {view === "review"  && <PeerReviewView />}
+      {view === "mural"   && <MuralView isElite={isElite} />}
+      {view === "review"  && <PeerReviewView isElite={isElite} />}
       {view === "ranking" && <RankingView />}
     </div>
   );

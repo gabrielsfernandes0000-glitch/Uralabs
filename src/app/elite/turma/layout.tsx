@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { getSession, canAccessEliteOnly } from "@/lib/session";
+import { getSession, canAccessPlatform } from "@/lib/session";
 
-export default async function EliteOnlyLayout({ children }: { children: React.ReactNode }) {
+export default async function TurmaLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
-  if (!canAccessEliteOnly(session)) redirect("/elite/desbloquear");
+  if (!canAccessPlatform(session)) redirect("/login");
   return <>{children}</>;
 }

@@ -277,10 +277,10 @@ export function ElitePreview() {
           <Reveal width="100%">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 mb-4">
               <Flame className="w-3.5 h-3.5 text-brand-500" />
-              <span className="text-xs font-bold text-brand-500 tracking-wide uppercase">Plataforma Elite 4.0</span>
+              <span className="text-xs font-bold text-brand-500 tracking-wide uppercase">Plataforma URA Labs</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-4">Olha por Dentro</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Currículo estruturado do zero ao avançado, com aulas gravadas, exercícios práticos e treinos interativos. Tudo na mesma plataforma.</p>
+            <p className="text-gray-400 max-w-2xl mx-auto">Currículo estruturado do zero ao avançado, com aulas gravadas, exercícios práticos e treinos interativos. Incluso no VIP e Elite.</p>
           </Reveal>
         </div>
 

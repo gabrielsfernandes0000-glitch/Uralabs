@@ -215,7 +215,7 @@ export default async function EliteDashboard() {
       )}
 
       {/* ── Quick access grid ── */}
-      <div className={`grid gap-3 ${isElite ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2 lg:grid-cols-3"}`}>
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         {(isElite ? [
           { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
           { href: "/elite/calls",       icon: Radio,    value: "Live",                                                label: "Calls ao vivo" },
@@ -223,8 +223,9 @@ export default async function EliteDashboard() {
           { href: "/elite/turma",       icon: Users,    value: "Turma",                                               label: "Comunidade" },
         ] : [
           { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
-          { href: "/elite/aulas",       icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Progresso" },
-          { href: "/elite/desbloquear", icon: Zap,      value: "Elite",                                               label: "Destravar mais" },
+          { href: "/elite/turma",       icon: Users,    value: "Turma",                                               label: "Ver comunidade" },
+          { href: "/elite/conquistas",  icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Conquistas" },
+          { href: "/elite/desbloquear", icon: Zap,      value: "Elite",                                               label: "Destravar calls" },
         ]).map((item, i) => (
           <Link key={item.href} href={item.href} className={`animate-in-up delay-${5 + i} group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-4 hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300`}>
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
@@ -316,7 +317,7 @@ export default async function EliteDashboard() {
                 Calls ao vivo + mesa prop
               </h3>
               <p className="text-[12px] text-white/45 leading-relaxed mb-4">
-                Elite destrava calls diárias com o URA, aulas sobre mesas proprietárias, treinos e a comunidade da turma.
+                Você já tem as aulas gravadas. Elite destrava calls diárias com o URA, aulas de mesa prop, treinos e publicar na turma.
               </p>
               <div className="flex items-center gap-2 text-[12px] font-bold text-brand-500 group-hover:translate-x-0.5 transition-transform">
                 Ver o que destrava

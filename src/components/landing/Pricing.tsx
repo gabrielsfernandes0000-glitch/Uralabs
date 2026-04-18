@@ -14,14 +14,17 @@ const FEATURES = [
   { name: "Calls diários (entrada/stop/alvo)", free: false, vip: true, elite: true },
   { name: "Chat VIP exclusivo", free: false, vip: true, elite: true },
   { name: "Análises exclusivas", free: false, vip: true, elite: true },
-  { name: "Calls ao vivo operando junto", free: false, vip: false, elite: true },
-  { name: "Plataforma de aulas (14 aulas)", free: false, vip: false, elite: true },
-  { name: "Treinos interativos", free: false, vip: false, elite: true },
+  { name: "Plataforma de aulas gravadas (14 aulas SMC)", free: false, vip: true, elite: true },
+  { name: "Quiz por aula + PDFs + flashcards", free: false, vip: true, elite: true },
+  { name: "Turma, ranking e conquistas (ver)", free: false, vip: true, elite: true },
+  { name: "Calls ao vivo operando junto com o URA", free: false, vip: false, elite: true },
+  { name: "Aulas de mesa prop (FundingPips, TopStep…)", free: false, vip: false, elite: true },
+  { name: "Treinos interativos (121+ cenários)", free: false, vip: false, elite: true },
+  { name: "Corretora conectada (PnL automático)", free: false, vip: false, elite: true },
   { name: "Mentoria ao vivo por turma", free: false, vip: false, elite: true },
-  { name: "Revisão de operações", free: false, vip: false, elite: true },
-  { name: "Badges + ranking", free: false, vip: false, elite: true },
-  { name: "WhatsApp exclusivo", free: false, vip: false, elite: true },
-  { name: "Sorteio de mesas + gift cards", free: false, vip: false, elite: true },
+  { name: "Revisão das suas operações", free: false, vip: false, elite: true },
+  { name: "Publicar + submeter conquistas (mural)", free: false, vip: false, elite: true },
+  { name: "WhatsApp exclusivo + sorteios", free: false, vip: false, elite: true },
 ];
 
 function FeatureCheck({ v }: { v: boolean }) {
@@ -127,9 +130,9 @@ export function Pricing() {
             {/* VIP */}
             <div className="rounded-2xl border border-white/10 bg-dark-950 p-6 flex flex-col relative">
               <div className="mb-4">
-                <span className="text-xs font-bold text-brand-500 uppercase tracking-wider">Sinais VIP</span>
+                <span className="text-xs font-bold text-brand-500 uppercase tracking-wider">Sinais VIP + Plataforma</span>
                 <h3 className="text-2xl font-bold text-white mt-1">VIP</h3>
-                <p className="text-gray-500 text-sm mt-1">Copie os trades e lucre junto.</p>
+                <p className="text-gray-500 text-sm mt-1">Calls diários + aulas gravadas pra aprender.</p>
               </div>
               <div className="mb-6">
                 <span className="text-3xl font-bold text-white">R$ 120</span>
@@ -140,7 +143,14 @@ export function Pricing() {
                 </div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
-                {["Tudo do Grátis", "Calls diários com entrada, stop e alvo", "Chat VIP exclusivo", "Análises exclusivas", "Operações ao vivo (viewer)"].map((f, i) => (
+                {[
+                  "Tudo do Grátis",
+                  "Calls diários com entrada, stop e alvo",
+                  "Plataforma com 14 aulas gravadas (SMC completo)",
+                  "Quiz por aula + PDFs + flashcards",
+                  "Chat VIP exclusivo",
+                  "Turma, ranking e conquistas (ver)",
+                ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Zap className={`w-4 h-4 mt-0.5 shrink-0 ${i === 0 ? "text-gray-500" : "text-brand-500"}`} />
                     <span className="text-gray-300 text-sm">{f}</span>
@@ -192,13 +202,13 @@ export function Pricing() {
               <ul className="space-y-3 mb-6 flex-1">
                 {[
                   "Tudo do VIP (6 meses inclusos)",
-                  "Opera JUNTO com o mentor (não só viewer)",
-                  "14 aulas gravadas + treinos interativos",
-                  "Mentoria ao vivo semanal por turma",
+                  "Calls ao vivo diárias operando JUNTO com o URA",
+                  "Aulas de mesa prop (FundingPips, TopStep, 5%ers)",
+                  "Treinos interativos (121+ cenários)",
+                  "Corretora conectada · PnL automático",
+                  "Publicar + submeter conquistas no mural",
                   "Revisão das suas operações",
-                  "Badges, ranking e conquistas",
-                  "WhatsApp exclusivo da turma",
-                  "Sorteio de mesas + gift cards",
+                  "WhatsApp exclusivo + sorteio de mesas",
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Check className={`w-4 h-4 mt-0.5 shrink-0 ${i === 0 ? "text-gray-500" : "text-brand-500"}`} />
