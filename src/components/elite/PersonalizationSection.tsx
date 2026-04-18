@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Palette, Check, Loader2, Lock } from "lucide-react";
 import { CosmeticBanner, isBannerSlug } from "./CosmeticBanner";
+import { AvatarWithCosmetics, normalizeFrameSlug, normalizeAuraSlug } from "./AvatarCosmetics";
 
 interface OwnedCosmetic {
   cosmetic_id: string;
@@ -26,9 +27,11 @@ const RARITY_META: Record<OwnedCosmetic["prize_rarity"], { label: string; classN
 
 const TYPE_META: Record<OwnedCosmetic["cosmetic_type"], { label: string; description: string }> = {
   banner:         { label: "Banners",          description: "Fundo animado do seu perfil. Aparece no modal, sidebar e cards dos membros." },
-  avatar_frame:   { label: "Molduras de avatar", description: "Decoração ao redor do avatar. (em breve)" },
-  avatar_effect:  { label: "Auras de avatar",   description: "Efeito luminoso pulsando no avatar. (em breve)" },
+  avatar_frame:   { label: "Molduras de avatar", description: "Decoração SVG acima/ao redor do avatar — chifres, coroa, asas, halo." },
+  avatar_effect:  { label: "Auras de avatar",   description: "Efeito luminoso pulsando atrás do avatar — fogo, raios, cosmos." },
 };
+
+const SAMPLE_AVATAR = "/favicon.ico";
 
 export function PersonalizationSection() {
   const [items, setItems] = useState<OwnedCosmetic[] | null>(null);
@@ -152,7 +155,11 @@ function CosmeticCard({
   pending: boolean;
 }) {
   const rarity = RARITY_META[cosmetic.prize_rarity];
-  const canPreviewBanner = type === "banner" && isBannerSlug(cosmetic.prize_slug);
+
+  // Decide preview content based on type
+  const bannerOK = type === "banner" && isBannerSlug(cosmetic.prize_slug);
+  const frameSlug = type === "avatar_frame" ? normalizeFrameSlug(cosmetic.prize_slug) : null;
+  const auraSlug = type === "avatar_effect" ? normalizeAuraSlug(cosmetic.prize_slug) : null;
 
   return (
     <div
@@ -161,14 +168,26 @@ function CosmeticCard({
       }`}
     >
       {/* Preview area */}
-      <div className="relative h-[90px] overflow-hidden" style={{
-        background: canPreviewBanner ? "transparent" : "#141417",
+      <div className="relative h-[110px] overflow-hidden flex items-center justify-center" style={{
+        background: bannerOK ? "transparent" : "#141417",
       }}>
-        {canPreviewBanner && (
+        {bannerOK && (
           <CosmeticBanner slug={cosmetic.prize_slug} variant="card" interactive={true} />
         )}
-        {!canPreviewBanner && (
-          <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">preview em breve</div>
+        {(frameSlug || auraSlug) && (
+          <div className="relative">
+            <AvatarWithCosmetics
+              src={SAMPLE_AVATAR}
+              name={cosmetic.prize_name}
+              size={54}
+              frameSlug={frameSlug ? `frame-${frameSlug}` : null}
+              auraSlug={auraSlug ? `effect-${auraSlug}` : null}
+              interactive={true}
+            />
+          </div>
+        )}
+        {!bannerOK && !frameSlug && !auraSlug && (
+          <div className="text-white/20 text-[10px] uppercase tracking-widest">preview em breve</div>
         )}
         {cosmetic.equipped && (
           <div className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-brand-500/90 text-[9px] font-bold uppercase tracking-wider text-white">

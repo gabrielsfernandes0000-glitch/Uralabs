@@ -83,7 +83,7 @@ export type UserAchievementUnlock = {
 };
 
 export type CosmeticEquipped = {
-  cosmetic_type: "banner" | "profile_design";
+  cosmetic_type: "banner" | "profile_design" | "avatar_frame" | "avatar_effect";
   prize_id: string;
   prize_slug: string;
   prize_name: string;
@@ -110,6 +110,8 @@ export type UserState = {
   cosmetics: {
     banner: CosmeticEquipped;
     profile_design: CosmeticEquipped;
+    avatar_frame: CosmeticEquipped;
+    avatar_effect: CosmeticEquipped;
   };
 };
 
@@ -181,7 +183,7 @@ export async function getUserState(userId: string, recentLimit = 10): Promise<Us
     achievements: [],
     discord_activity: null,
     streak: { days: 0, claims_today: 0 },
-    cosmetics: { banner: null, profile_design: null },
+    cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
   };
   const res = await callEdgeFunction<UserState>("ura-coin-user-state", {
     user_id: userId,

@@ -12,6 +12,7 @@ import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Avatar } from "@/components/elite/Avatar";
 import { CosmeticBanner, isBannerSlug } from "@/components/elite/CosmeticBanner";
+import { AvatarWithCosmetics } from "@/components/elite/AvatarCosmetics";
 
 type NavItem = { href: string; icon: typeof LayoutDashboard; label: string; exact?: boolean; eliteOnly?: boolean };
 
@@ -31,10 +32,14 @@ export function EliteSidebar({
   session,
   coinBalance,
   bannerSlug,
+  frameSlug,
+  effectSlug,
 }: {
   session: SessionPayload;
   coinBalance?: number;
   bannerSlug?: string | null;
+  frameSlug?: string | null;
+  effectSlug?: string | null;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -171,8 +176,15 @@ export function EliteSidebar({
           <div className="p-4">
             <div className="flex items-center gap-3 px-3.5 py-3.5 rounded-xl bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.05] hover:border-white/[0.08] transition-all">
               <div className="relative">
-                <Avatar src={avatar} name={displayName} size={36} className="rounded-lg" />
-                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0a0a0c]" />
+                {frameSlug || effectSlug ? (
+                  <AvatarWithCosmetics
+                    src={avatar} name={displayName} size={36}
+                    frameSlug={frameSlug} auraSlug={effectSlug}
+                  />
+                ) : (
+                  <Avatar src={avatar} name={displayName} size={36} className="rounded-lg" />
+                )}
+                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0a0a0c] z-10" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold text-white/80 truncate">{displayName}</p>

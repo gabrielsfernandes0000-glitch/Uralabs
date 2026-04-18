@@ -20,13 +20,19 @@ export default async function EliteLayout({ children }: { children: React.ReactN
   // se DB não responder — sidebar esconde a pill e não aplica banner, plataforma continua navegável.
   let coinBalance: number | undefined;
   let bannerSlug: string | null = null;
+  let frameSlug: string | null = null;
+  let effectSlug: string | null = null;
   try {
     const state = await getUserState(session.userId, 0);
     coinBalance = state.balance.balance;
     bannerSlug = state.cosmetics.banner?.prize_slug ?? null;
+    frameSlug = state.cosmetics.avatar_frame?.prize_slug ?? null;
+    effectSlug = state.cosmetics.avatar_effect?.prize_slug ?? null;
   } catch {
     coinBalance = undefined;
     bannerSlug = null;
+    frameSlug = null;
+    effectSlug = null;
   }
 
   return (
@@ -36,7 +42,7 @@ export default async function EliteLayout({ children }: { children: React.ReactN
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:60px_60px] opacity-40" />
       </div>
 
-      <EliteSidebar session={session} coinBalance={coinBalance} bannerSlug={bannerSlug} />
+      <EliteSidebar session={session} coinBalance={coinBalance} bannerSlug={bannerSlug} frameSlug={frameSlug} effectSlug={effectSlug} />
 
       <main className="relative z-10 flex-1 ml-0 lg:ml-[272px] min-h-screen">
         <div className="px-5 py-6 lg:px-10 lg:py-8">

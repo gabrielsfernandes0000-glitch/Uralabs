@@ -11,6 +11,7 @@ import {
 } from "@/lib/achievements";
 import { AchievementBadge } from "./AchievementBadge";
 import { CosmeticBanner, bannerAccent, isBannerSlug } from "./CosmeticBanner";
+import { AvatarWithCosmetics } from "./AvatarCosmetics";
 
 /**
  * MemberProfileModal — puxa estado real via /api/members/[id]/profile:
@@ -21,6 +22,7 @@ import { CosmeticBanner, bannerAccent, isBannerSlug } from "./CosmeticBanner";
  */
 
 type CosmeticMeta = Record<string, unknown>;
+type EquippedCosmetic = { prize_slug: string; prize_name: string; metadata: CosmeticMeta; acquired_at: string } | null;
 type ProfileResponse = {
   user_id: string;
   balance: { balance: number; lifetime_earned: number; lifetime_spent: number };
@@ -31,8 +33,10 @@ type ProfileResponse = {
   streak_days: number;
   claims_today: number;
   cosmetics?: {
-    banner: { prize_slug: string; prize_name: string; metadata: CosmeticMeta; acquired_at: string } | null;
-    profile_design: { prize_slug: string; prize_name: string; metadata: CosmeticMeta; acquired_at: string } | null;
+    banner: EquippedCosmetic;
+    profile_design: EquippedCosmetic;
+    avatar_frame: EquippedCosmetic;
+    avatar_effect: EquippedCosmetic;
   };
 };
 
@@ -110,7 +114,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             last_message_at: null,
             streak_days: 0,
             claims_today: 0,
-            cosmetics: { banner: null, profile_design: null },
+            cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
           });
       } finally {
         if (!cancelled) setLoading(false);
@@ -180,16 +184,15 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           }} />
 
           <div className="relative z-10 p-6 pr-14 pt-24 flex items-end gap-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={member.avatarUrl}
-              alt={member.globalName}
-              className="w-20 h-20 rounded-2xl object-cover shrink-0"
-              style={{
-                border: `2px solid ${tierAccent}40`,
-                boxShadow: `0 8px 32px ${tierAccent}25`,
-              }}
-            />
+            <div className="shrink-0" style={{ filter: `drop-shadow(0 8px 32px ${tierAccent}25)` }}>
+              <AvatarWithCosmetics
+                src={member.avatarUrl}
+                name={member.globalName}
+                size={80}
+                frameSlug={profile?.cosmetics?.avatar_frame?.prize_slug ?? null}
+                auraSlug={profile?.cosmetics?.avatar_effect?.prize_slug ?? null}
+              />
+            </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-[20px] font-bold text-white tracking-tight leading-tight truncate">
                 {member.globalName || member.username}

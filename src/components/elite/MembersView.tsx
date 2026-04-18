@@ -5,6 +5,7 @@ import { Users, Zap, Flame, Search } from "lucide-react";
 import { fetchDiscordMembers, type DiscordMember } from "@/lib/discord-members";
 import { MemberProfileModal } from "./MemberProfileModal";
 import { CosmeticBanner, isBannerSlug, bannerAccent } from "./CosmeticBanner";
+import { AvatarWithCosmetics } from "./AvatarCosmetics";
 
 /* ────────────────────────────────────────────
    MembersView — grid completo com busca, filtro por tier e perfil clicável.
@@ -123,12 +124,20 @@ export function MembersView() {
                   background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
                 }} />
 
-                <div className="relative z-10 px-4 pb-4 -mt-5 flex-1 flex flex-col">
+                <div className="relative z-10 px-4 pb-4 -mt-8 flex-1 flex flex-col">
                   <div className="flex items-end justify-between mb-2.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={m.avatarUrl} alt={m.globalName}
-                      className="w-12 h-12 rounded-full object-cover relative"
-                      style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50, 0 4px 12px rgba(0,0,0,0.4)` }} />
+                    {m.frameSlug || m.effectSlug ? (
+                      <AvatarWithCosmetics
+                        src={m.avatarUrl} name={m.globalName} size={48}
+                        frameSlug={m.frameSlug} auraSlug={m.effectSlug}
+                        interactive={false}
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={m.avatarUrl} alt={m.globalName}
+                        className="w-12 h-12 rounded-full object-cover relative"
+                        style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50, 0 4px 12px rgba(0,0,0,0.4)` }} />
+                    )}
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
                       style={{ backgroundColor: accent + "18", color: accent, border: `1px solid ${accent}30` }}>
                       {m.tier === "elite" ? <Flame className="w-2.5 h-2.5 fill-current" /> : <Zap className="w-2.5 h-2.5" />}
