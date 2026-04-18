@@ -16,30 +16,27 @@ import { Avatar } from "./Avatar";
    ──────────────────────────────────────────────────────────── */
 
 export type FrameSlug =
-  | "touro-chifres"
-  | "urso-garras"
-  | "cartola-wall"
-  | "halo-hodler"
-  | "laurel-mesa"
-  | "coroa-diamante"
-  | "asas-touro"
-  | "pix-ring";
+  | "touro-chifres" | "urso-garras" | "cartola-wall" | "halo-hodler"
+  | "laurel-mesa" | "coroa-diamante" | "asas-touro" | "pix-ring"
+  // Tarot v3
+  | "arcano-solar" | "arcano-lunar" | "arcano-estelar"
+  | "runas-traders" | "pentagrama" | "sigilo-mago";
 
 export type AuraSlug =
-  | "fogo-btc"
-  | "verde-lucro"
-  | "vermelho-rekt"
-  | "matrix-rain"
-  | "neon-ring"
-  | "dourada-payout"
-  | "relampago"
-  | "cosmos";
+  | "fogo-btc" | "verde-lucro" | "vermelho-rekt" | "matrix-rain"
+  | "neon-ring" | "dourada-payout" | "relampago" | "cosmos"
+  // Tarot v3
+  | "nevoa-mistica" | "runas-orbital" | "energia-arcana"
+  | "sombras" | "luz-divina" | "portal-etereo";
 
 const FRAME_ACCENT: Record<FrameSlug, string> = {
   "touro-chifres": "#10B981", "urso-garras": "#EF4444",
   "cartola-wall": "#F59E0B", "halo-hodler": "#FFD700",
   "laurel-mesa": "#10B981", "coroa-diamante": "#06B6D4",
   "asas-touro": "#FFD700", "pix-ring": "#00D4FF",
+  // Tarot
+  "arcano-solar": "#F59E0B", "arcano-lunar": "#06B6D4", "arcano-estelar": "#8B5CF6",
+  "runas-traders": "#EC4899", "pentagrama": "#DC2626", "sigilo-mago": "#A855F7",
 };
 
 const AURA_ACCENT: Record<AuraSlug, string> = {
@@ -47,6 +44,9 @@ const AURA_ACCENT: Record<AuraSlug, string> = {
   "vermelho-rekt": "#EF4444", "matrix-rain": "#06B6D4",
   "neon-ring": "#EC4899", "dourada-payout": "#F59E0B",
   "relampago": "#FCD34D", "cosmos": "#A855F7",
+  // Tarot
+  "nevoa-mistica": "#A855F7", "runas-orbital": "#06B6D4", "energia-arcana": "#EC4899",
+  "sombras": "#7F1D1D", "luz-divina": "#FBBF24", "portal-etereo": "#8B5CF6",
 };
 
 /** Normaliza slug vindo do DB — remove prefixo "frame-"/"effect-" pra casar com enum */
@@ -136,6 +136,13 @@ function FrameVariant({ slug, size }: { slug: FrameSlug; size: number }) {
     case "coroa-diamante": return <FrameCoroaDiamante {...props} />;
     case "asas-touro":     return <FrameAsasTouro     {...props} />;
     case "pix-ring":       return <FramePixRing       {...props} />;
+    // Tarot v3
+    case "arcano-solar":   return <FrameArcanoSolar   {...props} />;
+    case "arcano-lunar":   return <FrameArcanoLunar   {...props} />;
+    case "arcano-estelar": return <FrameArcanoEstelar {...props} />;
+    case "runas-traders":  return <FrameRunasTraders  {...props} />;
+    case "pentagrama":     return <FramePentagrama    {...props} />;
+    case "sigilo-mago":    return <FrameSigiloMago    {...props} />;
   }
 }
 
@@ -294,6 +301,13 @@ function AuraVariant({ slug, size }: { slug: AuraSlug; size: number }) {
     case "dourada-payout":  return <AuraDouradaPayout {...props} />;
     case "relampago":       return <AuraRelampago     {...props} />;
     case "cosmos":          return <AuraCosmos        {...props} />;
+    // Tarot v3
+    case "nevoa-mistica":    return <AuraNevoa         {...props} />;
+    case "runas-orbital":    return <AuraRunasOrbital  {...props} />;
+    case "energia-arcana":   return <AuraEnergiaArcana {...props} />;
+    case "sombras":          return <AuraSombras       {...props} />;
+    case "luz-divina":       return <AuraLuzDivina     {...props} />;
+    case "portal-etereo":    return <AuraPortalEtereo  {...props} />;
   }
 }
 
@@ -428,6 +442,207 @@ function AuraCosmos({ size, accent }: { size: number; accent: string }) {
         ))}
       </svg>
       <style>{`.cosmos-orbit { animation: cosmosSpin 20s linear infinite; transform-origin: center; transform-box: fill-box; } .cosmos-star { animation: cosmosTwinkle 2.5s ease-in-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .cosmos-orbit, .av-cos-wrap[data-anim="hover"]:hover .cosmos-orbit { animation-duration: 5s; } @keyframes cosmosSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } } @keyframes cosmosTwinkle { 0%, 100% { opacity: 0.4; transform: scale(0.5) } 50% { opacity: 1; transform: scale(1.2) } }`}</style>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAROT v3 — 6 frames arcanos
+   ═════════════════════════════════════════════════════════════════════ */
+
+function FrameArcanoSolar({ size, accent }: { size: number; accent: string }) {
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="frame-solar">
+      <circle cx="50" cy="50" r="47" fill="none" stroke={accent} strokeWidth="1.2" opacity="0.9" style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
+      <circle cx="50" cy="50" r="42" fill="none" stroke={accent} strokeWidth="0.5" opacity="0.4" strokeDasharray="2 3" />
+      {[0, 90, 180, 270].map((angle, i) => (
+        <g key={i} transform={`rotate(${angle}, 50, 50) translate(50, 3)`}>
+          <polygon points="0,-4 3,2 -3,2" fill={accent} style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
+        </g>
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .frame-solar { animation: solarSpin 12s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .frame-solar, .av-cos-wrap[data-anim="hover"]:hover .frame-solar { animation: solarSpin 3s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes solarSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+    </svg>
+  );
+}
+
+function FrameArcanoLunar({ size, accent }: { size: number; accent: string }) {
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="frame-lunar">
+      <circle cx="50" cy="50" r="46" fill="none" stroke={accent} strokeWidth="0.6" opacity="0.3" strokeDasharray="4 3" />
+      {Array.from({ length: 8 }, (_, i) => i * 45).map((angle, i) => (
+        <g key={i} transform={`rotate(${angle}, 50, 50) translate(50, 2)`}>
+          <circle cx="0" cy="0" r="3" fill={i % 2 === 0 ? accent : "none"} stroke={accent} strokeWidth="0.8" style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
+        </g>
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .frame-lunar { animation: lunarSpin 15s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .frame-lunar, .av-cos-wrap[data-anim="hover"]:hover .frame-lunar { animation: lunarSpin 4s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes lunarSpin { from { transform: rotate(0) } to { transform: rotate(-360deg) } }`}</style>
+    </svg>
+  );
+}
+
+function FrameArcanoEstelar({ size, accent }: { size: number; accent: string }) {
+  const stars = [
+    { x: 50, y: 5 }, { x: 78, y: 22 }, { x: 90, y: 50 },
+    { x: 78, y: 78 }, { x: 50, y: 95 }, { x: 10, y: 50 },
+  ];
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
+      <polygon points="50,5 78,22 90,50 78,78 50,95 10,50" fill="none" stroke={accent} strokeWidth="0.4" strokeDasharray="2 2" opacity="0.3" />
+      {stars.map((s, i) => (
+        <g key={i} className="estelar-star" style={{ ["--i" as string]: i }}>
+          <circle cx={s.x} cy={s.y} r="2" fill="#ffffff" style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
+          <circle cx={s.x} cy={s.y} r="4" fill="none" stroke={accent} strokeWidth="0.5" opacity="0.5" />
+        </g>
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .estelar-star { animation: estelarTwinkle 3s ease-in-out calc(var(--i) * 0.3s) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .estelar-star, .av-cos-wrap[data-anim="hover"]:hover .estelar-star { animation: estelarTwinkle 0.8s ease-in-out calc(var(--i) * 0.1s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes estelarTwinkle { 0%, 100% { opacity: 0.5; transform: scale(0.8) } 50% { opacity: 1; transform: scale(1.3) } }`}</style>
+    </svg>
+  );
+}
+
+function FrameRunasTraders({ size, accent }: { size: number; accent: string }) {
+  const runes = [
+    { x: 50, y: 5, label: "OB" }, { x: 90, y: 50, label: "FVG" },
+    { x: 50, y: 95, label: "LIQ" }, { x: 10, y: 50, label: "$$" },
+  ];
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
+      {runes.map((r, i) => (
+        <g key={i} className="rune-hex" style={{ ["--i" as string]: i }}>
+          <polygon
+            points={`${r.x},${r.y - 5} ${r.x + 4.3},${r.y - 2.5} ${r.x + 4.3},${r.y + 2.5} ${r.x},${r.y + 5} ${r.x - 4.3},${r.y + 2.5} ${r.x - 4.3},${r.y - 2.5}`}
+            fill={`${accent}20`} stroke={accent} strokeWidth="0.8" style={{ filter: `drop-shadow(0 0 4px ${accent})` }}
+          />
+          <text x={r.x} y={r.y + 1.5} textAnchor="middle" fontSize="3.5" fontFamily="monospace" fontWeight="bold" fill={accent}>{r.label}</text>
+        </g>
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .rune-hex { animation: runeGlow 4s ease-in-out calc(var(--i) * 0.4s) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .rune-hex, .av-cos-wrap[data-anim="hover"]:hover .rune-hex { animation: runeGlow 1s ease-in-out calc(var(--i) * 0.15s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes runeGlow { 0%, 100% { opacity: 0.5 } 50% { opacity: 1; filter: brightness(1.4) } }`}</style>
+    </svg>
+  );
+}
+
+function FramePentagrama({ size, accent }: { size: number; accent: string }) {
+  const tips = [{ x: 50, y: 10 }, { x: 90, y: 50 }, { x: 78, y: 92 }, { x: 22, y: 92 }, { x: 10, y: 50 }];
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="frame-penta">
+      <polygon points="50,10 65,50 90,50 70,68 78,92 50,75 22,92 30,68 10,50 35,50"
+        fill="none" stroke={accent} strokeWidth="1" opacity="0.8" style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
+      {tips.map((t, i) => (
+        <rect key={i} x={t.x - 1.2} y={t.y - 1.5} width="2.4" height="3" fill={accent} opacity="0.9" rx="0.3"
+          style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .frame-penta { animation: pentaSpin 20s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .frame-penta, .av-cos-wrap[data-anim="hover"]:hover .frame-penta { animation: pentaSpin 4s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes pentaSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+    </svg>
+  );
+}
+
+function FrameSigiloMago({ size, accent }: { size: number; accent: string }) {
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="frame-sigilo">
+      <circle cx="50" cy="50" r="47" fill="none" stroke={accent} strokeWidth="0.8" opacity="0.6" />
+      <circle cx="50" cy="50" r="43" fill="none" stroke={accent} strokeWidth="0.4" opacity="0.3" strokeDasharray="3 3" />
+      {Array.from({ length: 12 }, (_, i) => i * 30).map((angle, i) => (
+        <g key={i} transform={`rotate(${angle}, 50, 50)`}>
+          <line x1="50" y1="4" x2="50" y2="8" stroke={accent} strokeWidth="1.2" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 2px ${accent})` }} />
+        </g>
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .frame-sigilo { animation: sigiloSpin 20s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .frame-sigilo, .av-cos-wrap[data-anim="hover"]:hover .frame-sigilo { animation: sigiloSpin 5s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes sigiloSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+    </svg>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAROT v3 — 6 auras arcanas
+   ═════════════════════════════════════════════════════════════════════ */
+
+function AuraNevoa({ size, accent }: { size: number; accent: string }) {
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <div className="nevoa-layer" style={{
+        position: "absolute", inset: 0, borderRadius: "50%",
+        background: `radial-gradient(ellipse 40% 30% at 20% 50%, ${accent}50, transparent 60%), radial-gradient(ellipse 40% 30% at 80% 50%, ${accent}30, transparent 60%)`,
+      }} />
+      <style>{`.av-cos-wrap[data-anim="always"] .nevoa-layer { animation: nevoaDrift 4s ease-in-out infinite; } .av-cos-wrap[data-anim="always"]:hover .nevoa-layer, .av-cos-wrap[data-anim="hover"]:hover .nevoa-layer { animation: nevoaDrift 1.5s ease-in-out infinite; } @keyframes nevoaDrift { 0%, 100% { transform: translateX(-4px); opacity: 0.7 } 50% { transform: translateX(4px); opacity: 1 } }`}</style>
+    </div>
+  );
+}
+
+function AuraRunasOrbital({ size, accent }: { size: number; accent: string }) {
+  const runes = [
+    { angle: 0, glyph: "Ω" }, { angle: 72, glyph: "△" }, { angle: 144, glyph: "✦" },
+    { angle: 216, glyph: "⧖" }, { angle: 288, glyph: "⚝" },
+  ];
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="runas-orbit">
+      {runes.map((r, i) => (
+        <text key={i}
+          x={50 + Math.cos(r.angle * Math.PI / 180) * 42}
+          y={50 + Math.sin(r.angle * Math.PI / 180) * 42 + 2}
+          textAnchor="middle" fontSize="6" fontFamily="serif" fill={accent}
+          style={{ filter: `drop-shadow(0 0 3px ${accent})` }}>{r.glyph}</text>
+      ))}
+      <style>{`.av-cos-wrap[data-anim="always"] .runas-orbit { animation: runasRotate 12s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .runas-orbit, .av-cos-wrap[data-anim="hover"]:hover .runas-orbit { animation: runasRotate 3s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes runasRotate { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+    </svg>
+  );
+}
+
+function AuraEnergiaArcana({ size, accent }: { size: number; accent: string }) {
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <div className="arcana-pulse" style={{
+        position: "absolute", inset: 0, borderRadius: "50%",
+        background: `radial-gradient(circle, ${accent}55 25%, transparent 65%)`,
+      }} />
+      <div className="arcana-wave" style={{
+        position: "absolute", inset: 0, borderRadius: "50%",
+        border: `2px solid ${accent}`,
+      }} />
+      <style>{`.av-cos-wrap[data-anim="always"] .arcana-pulse { animation: arcanaPulse 2s ease-in-out infinite; } .av-cos-wrap[data-anim="always"] .arcana-wave { animation: arcanaWave 2s ease-out infinite; } .av-cos-wrap[data-anim="always"]:hover .arcana-pulse, .av-cos-wrap[data-anim="hover"]:hover .arcana-pulse { animation: arcanaPulse 0.6s ease-in-out infinite; } .av-cos-wrap[data-anim="always"]:hover .arcana-wave, .av-cos-wrap[data-anim="hover"]:hover .arcana-wave { animation: arcanaWave 0.8s ease-out infinite; } @keyframes arcanaPulse { 0%, 100% { opacity: 0.6; transform: scale(1) } 50% { opacity: 1; transform: scale(1.05) } } @keyframes arcanaWave { 0% { opacity: 0.9; transform: scale(0.6) } 100% { opacity: 0; transform: scale(1.4) } }`}</style>
+    </div>
+  );
+}
+
+function AuraSombras({ size, accent }: { size: number; accent: string }) {
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
+      <g className="sombras-group">
+        {[0, 120, 240].map((angle, i) => (
+          <ellipse key={i} cx="50" cy="50" rx="40" ry="12" fill={accent} opacity="0.5"
+            transform={`rotate(${angle}, 50, 50)`}
+            style={{ filter: "blur(6px)" }} />
+        ))}
+      </g>
+      <style>{`.av-cos-wrap[data-anim="always"] .sombras-group { animation: sombrasSpin 8s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .sombras-group, .av-cos-wrap[data-anim="hover"]:hover .sombras-group { animation: sombrasSpin 2s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes sombrasSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+    </svg>
+  );
+}
+
+function AuraLuzDivina({ size, accent }: { size: number; accent: string }) {
+  const beams = Array.from({ length: 6 }, (_, i) => ({ x: 20 + i * 12, delay: (i * 0.25) % 1.5 }));
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
+      <defs>
+        <linearGradient id="luzGradAura" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={accent} stopOpacity="0" />
+          <stop offset="40%" stopColor={accent} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {beams.map((b, i) => (
+        <rect key={i} className="luz-beam" x={b.x} y="0" width="2" height="100" fill="url(#luzGradAura)"
+          style={{ ["--delay" as string]: `${b.delay}s`, filter: `drop-shadow(0 0 3px ${accent})` }} />
+      ))}
+      <style>{`.luz-beam { opacity: 0; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"] .luz-beam { animation: luzBeam 2s ease-in-out var(--delay) infinite; } .av-cos-wrap[data-anim="always"]:hover .luz-beam, .av-cos-wrap[data-anim="hover"]:hover .luz-beam { animation: luzBeam 0.8s ease-in-out var(--delay) infinite; } @keyframes luzBeam { 0%, 100% { opacity: 0; transform: scaleY(0.3) } 50% { opacity: 0.8; transform: scaleY(1) } }`}</style>
+    </svg>
+  );
+}
+
+function AuraPortalEtereo({ size, accent }: { size: number; accent: string }) {
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <div className="portal-swirl" style={{
+        position: "absolute", inset: 0, borderRadius: "50%",
+        background: `conic-gradient(from 0deg, ${accent}00, ${accent}70, ${accent}00, ${accent}50, ${accent}00, ${accent}80, ${accent}00)`,
+      }} />
+      <style>{`.av-cos-wrap[data-anim="always"] .portal-swirl { animation: portalSpin 4s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .portal-swirl, .av-cos-wrap[data-anim="hover"]:hover .portal-swirl { animation: portalSpin 1.2s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes portalSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
     </div>
   );
 }

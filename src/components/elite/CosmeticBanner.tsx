@@ -25,7 +25,14 @@ export type BannerSlug =
   | "liquidity-hunter"
   | "btc-fire"
   | "judas-swing"
-  | "degen-nights";
+  | "degen-nights"
+  // Tarot-trading v3
+  | "o-mago-smc"
+  | "a-torre-flash"
+  | "o-sol-bull"
+  | "a-morte-liq"
+  | "o-diabo-fomo"
+  | "a-temperanca-rr";
 
 export type BannerVariant = "full" | "sidebar" | "card" | "strip";
 
@@ -54,6 +61,13 @@ const BANNER_ACCENT: Record<BannerSlug, string> = {
   "btc-fire": "#F7931A",
   "judas-swing": "#A855F7",
   "degen-nights": "#EC4899",
+  // Tarot v3
+  "o-mago-smc": "#A855F7",
+  "a-torre-flash": "#3B82F6",
+  "o-sol-bull": "#F59E0B",
+  "a-morte-liq": "#EF4444",
+  "o-diabo-fomo": "#7C3AED",
+  "a-temperanca-rr": "#10B981",
 };
 
 const ALL_SLUGS: BannerSlug[] = Object.keys(BANNER_ACCENT) as BannerSlug[];
@@ -84,6 +98,13 @@ export function CosmeticBanner({ slug, variant = "full", animated, interactive, 
     case "btc-fire":         return <BtcFire       {...commonProps} className={className} />;
     case "judas-swing":      return <JudasSwing    {...commonProps} className={className} />;
     case "degen-nights":     return <DegenNights   {...commonProps} className={className} />;
+    // Tarot v3
+    case "o-mago-smc":       return <OMagoSmc       {...commonProps} className={className} />;
+    case "a-torre-flash":    return <ATorreFlash    {...commonProps} className={className} />;
+    case "o-sol-bull":       return <OSolBull       {...commonProps} className={className} />;
+    case "a-morte-liq":      return <AMorteLiq      {...commonProps} className={className} />;
+    case "o-diabo-fomo":     return <ODiaboFomo     {...commonProps} className={className} />;
+    case "a-temperanca-rr":  return <ATemperancaRr  {...commonProps} className={className} />;
   }
 }
 
@@ -535,6 +556,226 @@ function DegenNights({ variant, animated, accent, className }: BannerChildProps)
         .banner-degen-nights:hover .degen-node-ring { animation-duration: 1s; }
         @keyframes degenPulse { 0%, 100% { opacity: 0.3 } 50% { opacity: 0.9; filter: brightness(1.3) drop-shadow(0 0 6px var(--banner-accent, ${accent})); } }
         @keyframes degenRing { 0% { transform: scale(1); opacity: 0.8 } 100% { transform: scale(2.5); opacity: 0 } }
+      `}</style>
+    </Frame>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAROT v3 — 6 banners arcanos adaptados pro nicho trade/crypto
+   ═════════════════════════════════════════════════════════════════════ */
+
+function OMagoSmc({ variant, animated, accent, className }: BannerChildProps) {
+  if (variant === "strip") return <StripAccent accent={accent} pattern="mago" className={className} />;
+  return (
+    <Frame animName="o-mago-smc" variant={variant} animated={animated} accent={accent} className={className}>
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${accent}30, transparent 65%), linear-gradient(135deg, ${accent}18 0%, transparent 60%)` }} />
+      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        {/* Cajado diagonal */}
+        <line x1="80" y1="160" x2="180" y2="40" stroke="#8B4513" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="80" cy="160" r="6" fill={accent} opacity="0.6" />
+        {/* Orb no topo do cajado */}
+        <g className="mago-orb" transform="translate(180, 40)">
+          <circle r="28" fill={accent} opacity="0.25" style={{ filter: `drop-shadow(0 0 12px ${accent})` }} />
+          <circle r="22" fill="none" stroke={accent} strokeWidth="1.5" opacity="0.8" />
+          {/* Velas dentro do orb */}
+          <g className="mago-orb-candles">
+            {[-12, -4, 4, 12].map((x, i) => (
+              <rect key={i} x={x - 1.5} y={i % 2 === 0 ? -8 : 0} width="3" height="12" fill={accent} opacity="0.9" rx="0.5" />
+            ))}
+          </g>
+        </g>
+        {/* Runas flutuando */}
+        {["Ω", "△", "✦", "⧖"].map((r, i) => (
+          <text key={i} className="mago-rune" x={40 + i * 90} y={110} fontSize="16" fontFamily="serif" fill={accent} opacity="0.6" style={{ ["--i" as string]: i }}>{r}</text>
+        ))}
+        <text x="200" y="165" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="4" fill={`${accent}90`}>I · O MAGO</text>
+      </svg>
+      <style>{`
+        .banner-o-mago-smc .mago-orb-candles { animation: magoOrb 8s linear infinite; transform-origin: center; transform-box: fill-box; }
+        .banner-o-mago-smc .mago-rune { animation: magoRune 3s ease-in-out calc(var(--i) * 0.5s) infinite; }
+        .banner-o-mago-smc[data-anim="always"] .mago-orb-candles { animation: magoOrb 4s linear infinite; }
+        .banner-o-mago-smc[data-anim="always"]:hover .mago-orb-candles, .banner-o-mago-smc[data-anim="hover"]:hover .mago-orb-candles { animation: magoOrb 1s linear infinite; }
+        @keyframes magoOrb { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        @keyframes magoRune { 0%, 100% { opacity: 0.4 } 50% { opacity: 1 } }
+      `}</style>
+    </Frame>
+  );
+}
+
+function ATorreFlash({ variant, animated, accent, className }: BannerChildProps) {
+  if (variant === "strip") return <StripAccent accent={accent} pattern="torre" className={className} />;
+  return (
+    <Frame animName="a-torre-flash" variant={variant} animated={animated} accent={accent} className={className}>
+      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, ${accent}15 0%, #1a0a0a 100%)` }} />
+      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        {/* Torre quebrando */}
+        <g transform="translate(180, 20) rotate(15)">
+          <rect x="-18" y="0" width="36" height="80" fill="#1f2937" stroke={accent} strokeWidth="0.8" />
+          <rect x="-18" y="0" width="36" height="10" fill={accent} opacity="0.3" />
+          <line x1="-18" y1="25" x2="18" y2="40" stroke={accent} strokeWidth="1" opacity="0.5" />
+          <line x1="18" y1="25" x2="-18" y2="50" stroke={accent} strokeWidth="1" opacity="0.5" />
+          {/* Rachaduras */}
+          <path d="M -5 10 L 3 30 L -3 50 L 5 80" stroke="#fbbf24" strokeWidth="0.8" fill="none" opacity="0.7" />
+        </g>
+        {/* Raios */}
+        {[0, 1, 2, 3].map((i) => (
+          <path key={i} className="torre-bolt" d={`M ${80 + i * 90} 10 L ${72 + i * 90} 40 L ${82 + i * 90} 45 L ${70 + i * 90} 80`}
+            stroke={accent} strokeWidth="2" fill="none" strokeLinecap="round"
+            style={{ ["--i" as string]: i, filter: `drop-shadow(0 0 6px ${accent})` }} />
+        ))}
+        {/* Velas vermelhas caindo */}
+        {[30, 80, 240, 310, 350].map((x, i) => (
+          <g key={i} className="torre-candle" style={{ ["--i" as string]: i }}>
+            <rect x={x - 4} y={130} width="8" height="28" fill="#EF4444" opacity="0.7" rx="1" />
+            <line x1={x} y1={125} x2={x} y2={160} stroke="#EF4444" strokeWidth="1" opacity="0.5" />
+          </g>
+        ))}
+        <text x="200" y="172" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}90`}>XVI · A TORRE</text>
+      </svg>
+      <style>{`
+        .banner-a-torre-flash .torre-bolt { animation: torreBolt 2.5s ease-in-out calc(var(--i) * 0.3s) infinite; }
+        .banner-a-torre-flash .torre-candle { animation: torreFall 0.8s ease-in calc(var(--i) * 0.15s) backwards; }
+        .banner-a-torre-flash[data-anim="always"] .torre-bolt { animation: torreBolt 1.2s ease-in-out calc(var(--i) * 0.15s) infinite; }
+        .banner-a-torre-flash[data-anim="always"]:hover .torre-bolt, .banner-a-torre-flash[data-anim="hover"]:hover .torre-bolt { animation: torreBolt 0.4s ease-in-out calc(var(--i) * 0.05s) infinite; }
+        @keyframes torreBolt { 0%, 40%, 100% { opacity: 0 } 45%, 55% { opacity: 1 } }
+        @keyframes torreFall { from { transform: translateY(-40px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+      `}</style>
+    </Frame>
+  );
+}
+
+function OSolBull({ variant, animated, accent, className }: BannerChildProps) {
+  if (variant === "strip") return <StripAccent accent={accent} pattern="sol" className={className} />;
+  const rays = Array.from({ length: 16 }, (_, i) => ({ angle: i * (360 / 16) }));
+  return (
+    <Frame animName="o-sol-bull" variant={variant} animated={animated} accent={accent} className={className}>
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 80% at 50% 50%, ${accent}35, transparent 70%), linear-gradient(180deg, ${accent}08 0%, transparent 70%)` }} />
+      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        <g className="sol-rays" transform="translate(200, 85)">
+          {rays.map((r, i) => (
+            <line key={i} x1="0" y1="-40" x2="0" y2="-68" stroke={accent} strokeWidth="2" strokeLinecap="round" transform={`rotate(${r.angle})`} opacity="0.7"
+              style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
+          ))}
+        </g>
+        <circle cx="200" cy="85" r="30" fill={accent} opacity="0.85" style={{ filter: `drop-shadow(0 0 18px ${accent})` }} />
+        <circle cx="200" cy="85" r="28" fill="none" stroke="#ffffff" strokeWidth="0.8" strokeOpacity="0.4" />
+        {/* Números verdes subindo */}
+        {["+2.4%", "+0.8%", "+5.1%", "+1.7%"].map((n, i) => (
+          <text key={i} className="sol-price" x={30 + i * 110} y={155} fontSize="11" fontFamily="monospace" fontWeight="bold" fill="#10B981"
+            style={{ ["--i" as string]: i, filter: "drop-shadow(0 0 4px #10B98180)" }}>{n}</text>
+        ))}
+        <text x="200" y="172" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}a0`}>XIX · O SOL</text>
+      </svg>
+      <style>{`
+        .banner-o-sol-bull .sol-rays { transform-origin: center; transform-box: fill-box; }
+        .banner-o-sol-bull .sol-price { animation: solPrice 2.5s ease-out calc(var(--i) * 0.3s) infinite; }
+        .banner-o-sol-bull[data-anim="always"] .sol-rays { animation: solSpin 20s linear infinite; }
+        .banner-o-sol-bull[data-anim="always"]:hover .sol-rays, .banner-o-sol-bull[data-anim="hover"]:hover .sol-rays { animation: solSpin 4s linear infinite; }
+        @keyframes solSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        @keyframes solPrice { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(-20px); opacity: 0 } }
+      `}</style>
+    </Frame>
+  );
+}
+
+function AMorteLiq({ variant, animated, accent, className }: BannerChildProps) {
+  if (variant === "strip") return <StripAccent accent={accent} pattern="morte" className={className} />;
+  return (
+    <Frame animName="a-morte-liq" variant={variant} animated={animated} accent={accent} className={className}>
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 40% 80% at 50% 100%, ${accent}35, transparent 60%), linear-gradient(180deg, #0a0a0c 0%, ${accent}10 100%)` }} />
+      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        {/* Silhueta ceifadora */}
+        <g transform="translate(100, 20)" opacity="0.8">
+          <path d="M 0 20 Q 10 0 25 10 L 30 30 L 25 80 L 35 160 L 15 160 L 5 80 Z" fill="#1a1a1a" stroke={accent} strokeWidth="0.8" />
+          <ellipse cx="15" cy="18" rx="8" ry="10" fill="#0a0a0a" />
+          {/* Foice */}
+          <path d="M 30 25 L 55 20 Q 50 5 30 10" stroke={accent} strokeWidth="2" fill="none" strokeLinecap="round" />
+          <line x1="30" y1="25" x2="30" y2="140" stroke="#8B4513" strokeWidth="2" />
+        </g>
+        {/* "LIQ" enorme */}
+        <text className="morte-liq" x="280" y="100" textAnchor="middle" fontSize="56" fontFamily="serif" fontWeight="bold" fill={accent}
+          style={{ filter: `drop-shadow(0 0 12px ${accent})` }}>LIQ</text>
+        {/* Velas vermelhas caindo no fundo */}
+        {[180, 230, 330, 370].map((x, i) => (
+          <rect key={i} x={x - 3} y={130 + (i % 2) * 10} width="6" height={25 + (i % 3) * 5} fill={accent} opacity="0.5" rx="1" />
+        ))}
+        <text x="200" y="170" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}90`}>XIII · A MORTE</text>
+      </svg>
+      <style>{`
+        .banner-a-morte-liq .morte-liq { animation: morteLiqFade 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+        .banner-a-morte-liq[data-anim="always"] .morte-liq { animation: morteLiqPulse 1.2s ease-in-out infinite; }
+        .banner-a-morte-liq[data-anim="always"]:hover .morte-liq, .banner-a-morte-liq[data-anim="hover"]:hover .morte-liq { animation: morteLiqShake 0.3s linear infinite; }
+        @keyframes morteLiqFade { 0%, 100% { opacity: 0.7 } 50% { opacity: 1 } }
+        @keyframes morteLiqPulse { 0%, 100% { opacity: 0.8; transform: scale(1) } 50% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 20px currentColor) } }
+        @keyframes morteLiqShake { 0%, 100% { transform: translateX(0) } 25% { transform: translateX(-2px) } 75% { transform: translateX(2px) } }
+      `}</style>
+    </Frame>
+  );
+}
+
+function ODiaboFomo({ variant, animated, accent, className }: BannerChildProps) {
+  if (variant === "strip") return <StripAccent accent={accent} pattern="diabo" className={className} />;
+  return (
+    <Frame animName="o-diabo-fomo" variant={variant} animated={animated} accent={accent} className={className}>
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 50% 70% at 50% 50%, ${accent}30, transparent 65%), #0a0a0c` }} />
+      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        {/* Chifres centrais */}
+        <g transform="translate(200, 100)">
+          <path d="M -22 0 Q -32 -30 -40 -55 Q -20 -35 -12 -15" fill={accent} opacity="0.9" stroke="#000" strokeWidth="0.5"
+            style={{ filter: `drop-shadow(0 0 8px ${accent})` }} />
+          <path d="M 22 0 Q 32 -30 40 -55 Q 20 -35 12 -15" fill={accent} opacity="0.9" stroke="#000" strokeWidth="0.5"
+            style={{ filter: `drop-shadow(0 0 8px ${accent})` }} />
+          {/* Olho central */}
+          <circle cx="0" cy="0" r="10" fill={accent} style={{ filter: `drop-shadow(0 0 10px ${accent})` }} />
+          <circle cx="0" cy="0" r="5" fill="#000" />
+        </g>
+        {/* Preços fugindo (da direita pra esquerda) */}
+        {["HYPE", "NOW!", "MOON", "+300%", "BUY", "FOMO"].map((t, i) => (
+          <text key={i} className="diabo-price" x={380} y={30 + (i % 4) * 35} fontSize="12" fontFamily="monospace" fontWeight="bold" fill={accent}
+            opacity="0.8" style={{ ["--i" as string]: i, filter: `drop-shadow(0 0 4px ${accent})` }}>{t}</text>
+        ))}
+        <text x="200" y="172" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}a0`}>XV · O DIABO</text>
+      </svg>
+      <style>{`
+        .banner-o-diabo-fomo .diabo-price { animation: diaboFlee 4s linear calc(var(--i) * 0.6s) infinite; }
+        .banner-o-diabo-fomo[data-anim="always"] .diabo-price { animation: diaboFlee 3s linear calc(var(--i) * 0.4s) infinite; }
+        .banner-o-diabo-fomo[data-anim="always"]:hover .diabo-price, .banner-o-diabo-fomo[data-anim="hover"]:hover .diabo-price { animation: diaboFlee 1s linear calc(var(--i) * 0.1s) infinite; }
+        @keyframes diaboFlee { 0% { transform: translateX(0); opacity: 0 } 10% { opacity: 1 } 100% { transform: translateX(-450px); opacity: 0 } }
+      `}</style>
+    </Frame>
+  );
+}
+
+function ATemperancaRr({ variant, animated, accent, className }: BannerChildProps) {
+  if (variant === "strip") return <StripAccent accent={accent} pattern="balanca" className={className} />;
+  return (
+    <Frame animName="a-temperanca-rr" variant={variant} animated={animated} accent={accent} className={className}>
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 80% at 50% 50%, ${accent}25, transparent 65%), linear-gradient(135deg, ${accent}10 0%, transparent 60%)` }} />
+      <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        {/* Pedestal vertical */}
+        <line x1="200" y1="40" x2="200" y2="140" stroke={accent} strokeWidth="3" strokeLinecap="round" />
+        <circle cx="200" cy="40" r="5" fill={accent} style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
+        {/* Barra da balança */}
+        <g className="balanca-bar" transform="translate(200, 50)">
+          <line x1="-90" y1="0" x2="90" y2="0" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+          {/* Lado esquerdo: 1R (pequeno) */}
+          <line x1="-90" y1="0" x2="-90" y2="30" stroke={accent} strokeWidth="1" strokeDasharray="2 2" />
+          <rect x="-108" y="30" width="36" height="18" fill="#EF4444" opacity="0.6" stroke="#EF4444" strokeWidth="1" rx="2" />
+          <text x="-90" y="42" textAnchor="middle" fontSize="10" fontFamily="monospace" fontWeight="bold" fill="#ffffff">1R</text>
+          {/* Lado direito: 3R (grande) */}
+          <line x1="90" y1="0" x2="90" y2="50" stroke={accent} strokeWidth="1" strokeDasharray="2 2" />
+          <rect x="65" y="50" width="50" height="34" fill="#10B981" opacity="0.7" stroke="#10B981" strokeWidth="1" rx="2"
+            style={{ filter: "drop-shadow(0 0 6px #10B98180)" }} />
+          <text x="90" y="70" textAnchor="middle" fontSize="14" fontFamily="monospace" fontWeight="bold" fill="#ffffff">3R</text>
+        </g>
+        <text x="200" y="170" textAnchor="middle" fontSize="8" fontFamily="serif" letterSpacing="3" fill={`${accent}a0`}>XIV · A TEMPERANÇA</text>
+      </svg>
+      <style>{`
+        .banner-a-temperanca-rr .balanca-bar { transform-origin: 200px 50px; transform-box: view-box; }
+        .banner-a-temperanca-rr[data-anim="always"] .balanca-bar { animation: balancaTilt 5s ease-in-out infinite; }
+        .banner-a-temperanca-rr[data-anim="always"]:hover .balanca-bar, .banner-a-temperanca-rr[data-anim="hover"]:hover .balanca-bar { animation: balancaTilt 1.5s ease-in-out infinite; }
+        @keyframes balancaTilt { 0%, 100% { transform: rotate(-2deg) } 50% { transform: rotate(3deg) } }
       `}</style>
     </Frame>
   );
