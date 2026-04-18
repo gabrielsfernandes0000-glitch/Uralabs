@@ -29,5 +29,7 @@ export async function GET(
     posts_count: state.discord_activity?.posts_count ?? 0,
     first_message_at: state.discord_activity?.first_message_at ?? null,
     last_message_at: state.discord_activity?.last_message_at ?? null,
+    voice_streak: state.voice.streak_days,
+    voice_seconds_today: state.voice.seconds_today,
   });
 }

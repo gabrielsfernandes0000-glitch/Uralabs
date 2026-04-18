@@ -403,17 +403,22 @@ export default function ConquistasPage() {
   const [view, setView] = useState<ViewTab>("badges");
   const { progress } = useProgress();
 
-  // Unlocks reais vindos do DB (grant admin ou trigger automático via URA Coin system)
+  // Unlocks reais vindos do DB + voice streak do bot tracking
   const [unlockedIds, setUnlockedIds] = useState<Set<string> | null>(null);
+  const [serverStreak, setServerStreak] = useState(0);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/api/achievements/me", { cache: "no-store" });
         if (!res.ok) return;
-        const data = (await res.json()) as { unlocks: Array<{ achievement_id: string }> };
+        const data = (await res.json()) as {
+          unlocks: Array<{ achievement_id: string }>;
+          voice_streak: number;
+        };
         if (cancelled) return;
         setUnlockedIds(new Set(data.unlocks.map((u) => u.achievement_id)));
+        setServerStreak(data.voice_streak ?? 0);
       } catch {
         // fail silently — mostra tudo como locked
         if (!cancelled) setUnlockedIds(new Set());
@@ -449,9 +454,11 @@ export default function ConquistasPage() {
         case "first-quiz-a":  return perfectQuizzes >= 1;
         case "quiz-master":   return perfectQuizzes >= 10;
         case "trinity":       return perfectQuizzes >= 3;
-        case "streak-7":      return streak >= 7;
-        case "streak-30":     return streak >= 30;
-        case "streak-100":    return streak >= 100;
+        // Streaks usam DADO SERVER (voice tracking do bot), não localStorage.
+        // Anti-fraude: user não consegue inflar via dev-tools.
+        case "streak-7":      return serverStreak >= 7;
+        case "streak-30":     return serverStreak >= 30;
+        case "streak-100":    return serverStreak >= 100;
         case "trades-100":    return trades.length >= 100;
         default:              return false;
       }
@@ -481,7 +488,7 @@ export default function ConquistasPage() {
       }
     })();
     return () => { cancelled = true; };
-  }, [unlockedIds, lessonsCompleted.length, perfectQuizzes, allLessonsDone, trades.length, streak, progress]);
+  }, [unlockedIds, lessonsCompleted.length, perfectQuizzes, allLessonsDone, trades.length, streak, serverStreak, progress]);
 
   function isUnlocked(ach: Achievement): boolean {
     // Fonte canônica: unlocks do banco (admin grant, trigger, self)

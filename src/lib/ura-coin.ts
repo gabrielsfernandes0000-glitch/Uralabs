@@ -94,6 +94,10 @@ export type UserState = {
     global_name: string | null;
     username: string | null;
   } | null;
+  voice: {
+    streak_days: number;
+    seconds_today: number;
+  };
 };
 
 // ─── Helpers de edge function ────────────────────────────────────────────
@@ -163,6 +167,7 @@ export async function getUserState(userId: string, recentLimit = 10): Promise<Us
     recent_openings: [],
     achievements: [],
     discord_activity: null,
+    voice: { streak_days: 0, seconds_today: 0 },
   };
   const res = await callEdgeFunction<UserState>("ura-coin-user-state", {
     user_id: userId,

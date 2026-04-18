@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Flame, Zap, Calendar, ExternalLink, Trophy, Coins, Loader2 } from "lucide-react";
+import { X, Flame, Zap, Calendar, ExternalLink, Trophy, Coins, Loader2, Mic } from "lucide-react";
 import type { DiscordMember } from "@/lib/discord-members";
 import {
   resolveAchievements,
@@ -25,6 +25,8 @@ type ProfileResponse = {
   posts_count: number;
   first_message_at: string | null;
   last_message_at: string | null;
+  voice_streak: number;
+  voice_seconds_today: number;
 };
 
 function formatJoined(iso: string): string {
@@ -99,6 +101,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             posts_count: 0,
             first_message_at: null,
             last_message_at: null,
+            voice_streak: 0,
+            voice_seconds_today: 0,
           });
       } finally {
         if (!cancelled) setLoading(false);
@@ -121,6 +125,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
 
   const lifetimeCoin = profile?.balance.lifetime_earned ?? 0;
   const postsCount = profile?.posts_count ?? 0;
+  const voiceStreak = profile?.voice_streak ?? 0;
+  const voiceMinutesToday = Math.round((profile?.voice_seconds_today ?? 0) / 60);
   const daysSinceLastMsg = daysSince(profile?.last_message_at ?? null);
 
   return (
@@ -186,36 +192,53 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 divide-x divide-white/[0.05] border-b border-white/[0.05]">
+        <div className="grid grid-cols-4 divide-x divide-white/[0.05] border-b border-white/[0.05]">
           <div className="p-4 text-center">
-            <p className="text-[20px] font-bold text-white font-mono leading-none">
+            <p className="text-[18px] font-bold text-white font-mono leading-none">
               {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : achievements.length}
             </p>
-            <p className="text-[10px] text-white/40 mt-1.5 uppercase tracking-wider">Conquistas</p>
-          </div>
-          <div className="p-4 text-center">
-            <p className="text-[20px] font-bold text-white font-mono leading-none">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : postsCount.toLocaleString("pt-BR")}
-            </p>
-            <p className="text-[10px] text-white/40 mt-1.5 uppercase tracking-wider">Posts</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Conquistas</p>
           </div>
           <div className="p-4 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Coins className="w-3.5 h-3.5 text-amber-400/70" />
-              <p className="text-[20px] font-bold font-mono leading-none" style={{ color: lifetimeCoin > 0 ? tierAccent : "rgba(255,255,255,0.85)" }}>
+              <Flame className={`w-3 h-3 ${voiceStreak > 0 ? "text-brand-500" : "text-white/20"} ${voiceStreak > 0 ? "fill-brand-500/30" : ""}`} />
+              <p className="text-[18px] font-bold font-mono leading-none" style={{ color: voiceStreak > 0 ? tierAccent : "rgba(255,255,255,0.85)" }}>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : `${voiceStreak}d`}
+              </p>
+            </div>
+            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Streak</p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-[18px] font-bold text-white font-mono leading-none">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : postsCount.toLocaleString("pt-BR")}
+            </p>
+            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Posts</p>
+          </div>
+          <div className="p-4 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Coins className="w-3 h-3 text-amber-400/70" />
+              <p className="text-[18px] font-bold font-mono leading-none" style={{ color: lifetimeCoin > 0 ? "#F59E0B" : "rgba(255,255,255,0.85)" }}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : lifetimeCoin.toLocaleString("pt-BR")}
               </p>
             </div>
-            <p className="text-[10px] text-white/40 mt-1.5 uppercase tracking-wider">URA Coin</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Coins</p>
           </div>
         </div>
 
-        {/* Última atividade sutil */}
-        {daysSinceLastMsg != null && (
-          <div className="px-5 py-2 border-b border-white/[0.04] bg-white/[0.01]">
-            <p className="text-[10px] text-white/30 text-center">
-              Última mensagem {daysSinceLastMsg === 0 ? "hoje" : daysSinceLastMsg === 1 ? "ontem" : `há ${daysSinceLastMsg} dias`}
-            </p>
+        {/* Voz hoje + última mensagem sutil */}
+        {(voiceMinutesToday > 0 || daysSinceLastMsg != null) && (
+          <div className="px-5 py-2 border-b border-white/[0.04] bg-white/[0.01] flex items-center justify-center gap-4 flex-wrap">
+            {voiceMinutesToday > 0 && (
+              <p className="text-[10px] text-white/40 flex items-center gap-1">
+                <Mic className="w-3 h-3" />
+                {voiceMinutesToday}min em voz hoje
+              </p>
+            )}
+            {daysSinceLastMsg != null && (
+              <p className="text-[10px] text-white/30">
+                Última mensagem {daysSinceLastMsg === 0 ? "hoje" : daysSinceLastMsg === 1 ? "ontem" : `há ${daysSinceLastMsg} dias`}
+              </p>
+            )}
           </div>
         )}
 
