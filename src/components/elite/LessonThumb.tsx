@@ -187,10 +187,10 @@ function Thumb_OBBounce() {
     <svg className="absolute inset-0 w-full h-full" viewBox={VB} preserveAspectRatio="xMidYMid slice">
       {/* OB zone */}
       <rect x="30" y="65" width="360" height="22" fill={C.blue} opacity="0.18" stroke={C.blue} strokeWidth="1" rx="2" />
-      {/* OB label */}
-      <rect x="30" y="48" width="34" height="14" fill={C.blue} rx="2" />
-      <text x="47" y="58" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">OB</text>
       {candles.map((c, i) => <Candle key={i} {...c} />)}
+      {/* OB label — rendered last, positioned in top-left safe zone */}
+      <rect x="20" y="18" width="38" height="16" fill={C.blue} rx="2" />
+      <text x="39" y="29" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700" fontFamily="monospace">OB</text>
     </svg>
   );
 }
@@ -216,10 +216,10 @@ function Thumb_FVGFill() {
       <rect x="130" y="100" width="260" height="50" fill={C.purple} opacity="0.18" stroke={C.purple} strokeWidth="1" strokeDasharray="5 3" rx="2" />
       {/* CE (50%) line */}
       <line x1="130" y1="125" x2="390" y2="125" stroke={C.purple} strokeWidth="1" strokeDasharray="3 3" opacity="0.9" />
-      {/* FVG label */}
-      <rect x="130" y="83" width="40" height="14" fill={C.purple} rx="2" />
-      <text x="150" y="93" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">FVG</text>
       {candles.map((c, i) => <Candle key={i} {...c} />)}
+      {/* FVG label — rendered last so candles never cover it */}
+      <rect x="20" y="18" width="42" height="16" fill={C.purple} rx="2" />
+      <text x="41" y="29" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700" fontFamily="monospace">FVG</text>
     </svg>
   );
 }
@@ -246,12 +246,13 @@ function Thumb_Premium() {
       <rect x="0" y="110" width="400" height="110" fill={C.green} opacity="0.07" />
       {/* EQ line at 50% */}
       <line x1="0" y1="110" x2="400" y2="110" stroke={C.brand} strokeWidth="1.5" strokeDasharray="6 4" opacity="0.9" />
-      <rect x="340" y="102" width="50" height="16" fill={C.brand} rx="2" />
-      <text x="365" y="113" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">50%</text>
       {candles.map((c, i) => <Candle key={i} {...c} />)}
-      {/* Labels */}
-      <text x="20" y="30" fill={C.red} opacity="0.7" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.12em">PREMIUM</text>
-      <text x="20" y="200" fill={C.green} opacity="0.7" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.12em">DISCOUNT</text>
+      {/* Labels — rendered last so candles never cover them */}
+      <text x="20" y="32" fill={C.red} opacity="0.85" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.12em">PREMIUM</text>
+      <text x="20" y="198" fill={C.green} opacity="0.85" fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.12em">DISCOUNT</text>
+      {/* 50% badge — left side to avoid candles on the right */}
+      <rect x="10" y="102" width="44" height="16" fill={C.brand} rx="2" />
+      <text x="32" y="113" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">50%</text>
     </svg>
   );
 }
@@ -284,9 +285,9 @@ function Thumb_Liquidity() {
       {/* Sweep low marker */}
       <line x1="20" y1="175" x2="280" y2="175" stroke={C.red} strokeWidth="1" strokeDasharray="2 3" opacity="0.5" />
       {candles.map((c, i) => <Candle key={i} {...c} />)}
-      {/* SSL label */}
-      <rect x="20" y="105" width="34" height="13" fill={C.red} rx="2" />
-      <text x="37" y="114" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700" fontFamily="monospace">SSL</text>
+      {/* SSL label — rendered last, top-left safe zone */}
+      <rect x="20" y="18" width="38" height="16" fill={C.red} rx="2" />
+      <text x="39" y="29" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700" fontFamily="monospace">SSL</text>
     </svg>
   );
 }
@@ -409,21 +410,22 @@ function Thumb_Judas() {
       <path d="M 115 170 Q 165 205 195 150 T 340 18"
         stroke={C.red + "30"} strokeWidth="6" fill="none" strokeLinecap="round" />
 
-      {/* Warning X on Judas */}
-      <g transform="translate(130, 175)">
-        <circle r="9" fill={C.red} opacity="0.95" />
-        <path d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-      </g>
-      <text x="150" y="180" fill={C.red} fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.1em">JUDAS</text>
-
-      {/* Checkmark on real move */}
-      <g transform="translate(320, 40)">
-        <circle r="10" fill={C.green} opacity="0.95" />
-        <path d="M -4 0 L -1 3 L 4 -3" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </g>
-      <text x="275" y="45" textAnchor="end" fill={C.green} fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.1em">REAL</text>
-
       {candles.map((c, i) => <Candle key={i} {...c} />)}
+
+      {/* Markers + labels — rendered last so candles never cover them */}
+      {/* Warning X on Judas (top-left, safe zone) */}
+      <g transform="translate(40, 40)">
+        <circle r="11" fill={C.red} opacity="0.95" stroke="#0e0e10" strokeWidth="2" />
+        <path d="M -4.5 -4.5 L 4.5 4.5 M 4.5 -4.5 L -4.5 4.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+      </g>
+      <text x="58" y="45" fill={C.red} fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.1em">JUDAS</text>
+
+      {/* Checkmark on real move (top-right) */}
+      <g transform="translate(360, 40)">
+        <circle r="11" fill={C.green} opacity="0.95" stroke="#0e0e10" strokeWidth="2" />
+        <path d="M -4.5 0 L -1 3.5 L 4.5 -3.5" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      <text x="345" y="45" textAnchor="end" fill={C.green} fontSize="10" fontWeight="700" fontFamily="monospace" letterSpacing="0.1em">REAL</text>
     </svg>
   );
 }
@@ -483,18 +485,19 @@ function Thumb_EntrySetup() {
     <svg className="absolute inset-0 w-full h-full" viewBox={VB} preserveAspectRatio="xMidYMid slice">
       {/* OB + FVG zone */}
       <rect x="50" y="128" width="200" height="28" fill={C.blue} opacity="0.18" stroke={C.blue} strokeWidth="1" rx="2" />
-      <rect x="50" y="110" width="60" height="14" fill={C.blue} rx="2" />
-      <text x="80" y="120" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">OB+FVG</text>
       {/* Lines */}
       <line x1="20" y1="140" x2="380" y2="140" stroke={C.blue} strokeWidth="1.2" />
       <line x1="20" y1="175" x2="380" y2="175" stroke={C.red}  strokeWidth="1" strokeDasharray="4 3" />
       <line x1="20" y1="20"  x2="380" y2="20"  stroke={C.green} strokeWidth="1" strokeDasharray="4 3" />
-      {/* Tags */}
-      <rect x="330" y="13" width="50" height="14" fill={C.green} rx="2" />
-      <text x="355" y="23" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">TP +3R</text>
-      <rect x="330" y="168" width="50" height="14" fill={C.red} rx="2" />
-      <text x="355" y="178" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">SL -1R</text>
       {candles.map((c, i) => <Candle key={i} {...c} />)}
+      {/* Tags — rendered last (left side to avoid overlapping with the rising candles on the right) */}
+      <rect x="10" y="13" width="60" height="14" fill={C.green} rx="2" />
+      <text x="40" y="23" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">TP +3R</text>
+      <rect x="10" y="168" width="60" height="14" fill={C.red} rx="2" />
+      <text x="40" y="178" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">SL -1R</text>
+      {/* OB+FVG badge — above the zone, left side away from candles */}
+      <rect x="10" y="108" width="62" height="14" fill={C.blue} rx="2" />
+      <text x="41" y="118" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="monospace">OB+FVG</text>
     </svg>
   );
 }
