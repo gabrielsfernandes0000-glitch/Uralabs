@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Palette, Check, Loader2, Lock, AlertCircle } from "lucide-react";
 import { CosmeticBanner, isBannerSlug } from "./CosmeticBanner";
 import { AvatarWithCosmetics, normalizeFrameSlug, normalizeAuraSlug } from "./AvatarCosmetics";
@@ -34,6 +35,7 @@ const TYPE_META: Record<OwnedCosmetic["cosmetic_type"], { label: string; descrip
 const SAMPLE_AVATAR = "/favicon.ico";
 
 export function PersonalizationSection() {
+  const router = useRouter();
   const [items, setItems] = useState<OwnedCosmetic[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [equipError, setEquipError] = useState<string | null>(null);
@@ -69,9 +71,11 @@ export function PersonalizationSection() {
         const payload = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(payload.error ?? `HTTP ${res.status}`);
         const equipped = items?.find((i) => i.cosmetic_id === cosmeticId);
-        setEquipSuccess(`${equipped?.prize_name ?? "Cosmético"} equipado — recarrega a página pra ver no sidebar`);
-        setTimeout(() => setEquipSuccess(null), 4000);
+        setEquipSuccess(`${equipped?.prize_name ?? "Cosmético"} equipado`);
+        setTimeout(() => setEquipSuccess(null), 3000);
         await refetch();
+        // Força re-render do layout (server component) pro sidebar pegar o novo cosmético equipado
+        router.refresh();
       } catch (e) {
         setEquipError(e instanceof Error ? e.message : "erro ao equipar");
         setTimeout(() => setEquipError(null), 5000);
@@ -119,6 +123,7 @@ export function PersonalizationSection() {
         <div className="flex items-center gap-3">
           <Palette className="w-4 h-4 text-brand-500/60" />
           <h2 className="text-[14px] font-semibold text-white/80">Personalização</h2>
+          <span className="text-[10px] text-white/30 italic hidden md:inline">passe o mouse no card pra ver a animação</span>
         </div>
         <span className="text-[10px] text-white/35 font-mono">{items.length} owned</span>
       </div>
@@ -196,7 +201,8 @@ function CosmeticCard({
         background: bannerOK ? "transparent" : "#141417",
       }}>
         {bannerOK && (
-          <CosmeticBanner slug={cosmetic.prize_slug} variant="card" animated="always" />
+          /* hover-only pra não explodir a página com 33 animações concorrentes */
+          <CosmeticBanner slug={cosmetic.prize_slug} variant="card" animated="hover" />
         )}
         {(frameSlug || auraSlug) && (
           <div className="relative">
@@ -206,7 +212,7 @@ function CosmeticCard({
               size={54}
               frameSlug={frameSlug ? `frame-${frameSlug}` : null}
               auraSlug={auraSlug ? `effect-${auraSlug}` : null}
-              animated="always"
+              animated="hover"
             />
           </div>
         )}
