@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Play, Check, Lock, Clock, BookOpen, FileText, Calendar, Target, ChevronRight } from "lucide-react";
+import { Play, Check, Lock, Clock, BookOpen, FileText, Calendar } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 
 /* ────────────────────────────────────────────
@@ -731,39 +730,6 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
    Module Section — grid layout, no horizontal scroll
    ──────────────────────────────────────────── */
 
-/* ────────────────────────────────────────────
-   Treinos vinculados por módulo
-   ──────────────────────────────────────────── */
-
-interface ModuleTreino {
-  id: string;
-  title: string;
-  desc: string;
-  requiredLesson: string;
-  difficulty: string;
-}
-
-const MODULE_TREINOS: Record<string, ModuleTreino[]> = {
-  base: [
-    { id: "t-candles", title: "Leitura de Candle", desc: "Identifique o que cada candle diz sobre compradores vs vendedores.", requiredLesson: "leitura-candle", difficulty: "Iniciante" },
-    { id: "t-risco", title: "Calcule o Risco", desc: "Posicione stop e alvo. Qual o tamanho do lote?", requiredLesson: "risco", difficulty: "Iniciante" },
-  ],
-  "leitura-smc": [
-    { id: "t-obs", title: "Marque os Order Blocks", desc: "Encontre as zonas onde os institucionais se posicionaram.", requiredLesson: "order-blocks", difficulty: "Intermediário" },
-    { id: "t-fvg", title: "Identifique FVGs", desc: "Marque os Fair Value Gaps e diga quais serão preenchidos.", requiredLesson: "fvg-breaker", difficulty: "Intermediário" },
-    { id: "t-premium", title: "Premium ou Discount?", desc: "Defina as zonas usando Fibonacci 50%.", requiredLesson: "premium-discount", difficulty: "Intermediário" },
-    { id: "t-liquidez", title: "Onde Está a Liquidez?", desc: "Mapeie os pools que os big players vão buscar.", requiredLesson: "liquidez", difficulty: "Intermediário" },
-  ],
-  estrategia: [
-    { id: "t-sessoes", title: "Qual Sessão Operar?", desc: "Identifique a sessão e o comportamento esperado.", requiredLesson: "sessoes", difficulty: "Avançado" },
-    { id: "t-amd", title: "Leitura AMD Completa", desc: "Identifique Acumulação, Manipulação e Distribuição.", requiredLesson: "amd", difficulty: "Avançado" },
-    { id: "t-bias", title: "Monte o Viés do Dia", desc: "Defina se o dia é bullish ou bearish.", requiredLesson: "daily-bias", difficulty: "Avançado" },
-  ],
-  execucao: [
-    { id: "t-entrada", title: "Execute o Trade", desc: "Cenário completo: zona, entrada, stop e alvo.", requiredLesson: "entrada-saida", difficulty: "Avançado" },
-  ],
-};
-
 function ModuleSection({ mod }: { mod: Module }) {
   const completed = mod.lessons.filter((l) => l.completed).length;
   const total = mod.lessons.length;
@@ -837,38 +803,6 @@ function ModuleSection({ mod }: { mod: Module }) {
         ))}
       </div>
 
-      {/* Treinos deste módulo */}
-      {MODULE_TREINOS[mod.id] && MODULE_TREINOS[mod.id].length > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center gap-2.5 mb-3 px-1">
-            <Target className="w-4 h-4" style={{ color: mod.accentHex + "80" }} />
-            <span className="text-[13px] font-semibold text-white/50">Treinos</span>
-            <span className="text-[11px] text-white/20">· {MODULE_TREINOS[mod.id].length} cenários</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {MODULE_TREINOS[mod.id].map((treino) => (
-              <Link
-                key={treino.id}
-                href={`/elite/treino/${treino.id}`}
-                className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-4 text-left hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300"
-              >
-                <div className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(90deg, transparent, ${mod.accentHex}50, transparent)` }} />
-
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: mod.accentHex + "12" }}>
-                    <Target className="w-3.5 h-3.5" style={{ color: mod.accentHex + "BB" }} />
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover:text-white/30 transition-colors mt-1" />
-                </div>
-
-                <h4 className="text-[13px] font-bold text-white/80 mb-0.5">{treino.title}</h4>
-                <p className="text-[11px] text-white/30 leading-relaxed line-clamp-2">{treino.desc}</p>
-                <span className="text-[10px] text-white/20 mt-2 block">· {treino.difficulty}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   );
 }
