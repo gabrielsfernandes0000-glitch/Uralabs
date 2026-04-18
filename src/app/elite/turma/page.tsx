@@ -5,6 +5,7 @@ import {
   Users, Trophy, TrendingUp, Activity, MessageCircle, Flame,
   ThumbsUp, Send, Clock, Star, Eye, Target, Award, Zap, Plus, X, Upload, Image as ImageIcon, Shield,
 } from "lucide-react";
+import { fetchDiscordMembers, memberColor, memberInitials, type DiscordMember } from "@/lib/discord-members";
 
 /* ────────────────────────────────────────────
    Mock Data — Elite 1.0 members (the OG class)
@@ -321,6 +322,8 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
 function MuralView() {
   const [pending, setPending] = useState<PendingAchievement[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [discordMembers, setDiscordMembers] = useState<DiscordMember[]>([]);
+  const [discordCount, setDiscordCount] = useState({ total: 0, elite: 0, vip: 0 });
 
   // Load pending from localStorage
   useEffect(() => {
@@ -329,6 +332,19 @@ function MuralView() {
       if (saved) setPending(JSON.parse(saved));
     } catch {}
   }, []);
+
+  // Fetch real Discord members (Elite + VIP)
+  useEffect(() => {
+    fetchDiscordMembers()
+      .then((data) => {
+        setDiscordMembers(data.members);
+        setDiscordCount({ total: data.total, elite: data.elite, vip: data.vip });
+      })
+      .catch((err) => console.warn("[turma] discord members fallback:", err));
+  }, []);
+
+  const eliteMembers = discordMembers.filter((m) => m.tier === "elite");
+  const vipMembers = discordMembers.filter((m) => m.tier === "vip");
 
   const handleSubmit = (p: PendingAchievement) => {
     const next = [p, ...pending];
@@ -343,10 +359,10 @@ function MuralView() {
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { icon: Users,      value: "44",     label: "Membros Elite",    color: "#ffffff" },
+          { icon: Users,      value: discordCount.elite > 0 ? String(discordCount.elite) : "—", label: "Membros Elite",    color: "#FF5500" },
+          { icon: Zap,        value: discordCount.vip > 0 ? String(discordCount.vip) : "—",     label: "Membros VIP",      color: "#3B82F6" },
           { icon: Trophy,     value: "12",     label: "Mesas Aprovadas",  color: "#F59E0B" },
           { icon: TrendingUp, value: "$47.3k", label: "Payouts acum.",    color: "#10B981" },
-          { icon: Flame,      value: "8",      label: "Em streak hoje",   color: "#FF5500" },
         ].map((s, i) => (
           <div key={i} className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4">
             <s.icon className="w-4 h-4 mb-2" style={{ color: s.color + "80" }} />
@@ -436,45 +452,74 @@ function MuralView() {
           </div>
         </div>
 
-        {/* Sidebar: Top members Elite 1.0 + active today */}
+        {/* Sidebar: real Elite + VIP members from Discord */}
         <div className="space-y-4">
+          {/* Elite roster */}
           <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
             <div className="px-4 py-3 border-b border-white/[0.04] flex items-center gap-2">
               <Zap className="w-3.5 h-3.5 text-brand-500" />
-              <h3 className="text-[12px] font-bold text-white/85">Turma 1.0 · OGs</h3>
+              <h3 className="text-[12px] font-bold text-white/85">Elite</h3>
+              <span className="ml-auto text-[10px] text-white/30 font-mono">{eliteMembers.length || "…"}</span>
             </div>
-            <div className="divide-y divide-white/[0.04]">
-              {Object.values(MEMBERS).filter(m => m.turma === "1.0").map((m) => (
-                <div key={m.handle} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
-                  <Avatar member={m} size="sm" />
+            <div className="divide-y divide-white/[0.04] max-h-[280px] overflow-y-auto">
+              {eliteMembers.length === 0 ? (
+                <div className="px-4 py-6 text-center">
+                  <p className="text-[11px] text-white/30">Carregando membros...</p>
+                </div>
+              ) : eliteMembers.slice(0, 8).map((m) => (
+                <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
+                  <DiscordAvatar member={m} size="sm" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white/85 truncate leading-tight">{m.name}</p>
-                    <p className="text-[10px] text-white/30">{m.handle}</p>
+                    <p className="text-[12px] font-semibold text-white/85 truncate leading-tight">{m.globalName}</p>
+                    <p className="text-[10px] text-white/30 truncate">@{m.username}</p>
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-500/18 text-brand-500">OG</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-3.5 h-3.5 text-green-500" />
-              <h3 className="text-[12px] font-bold text-white/85">Ativos agora</h3>
-              <span className="ml-auto text-[10px] text-white/30 font-mono">8</span>
+          {/* VIP roster preview */}
+          <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/[0.04] flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-blue-500" />
+              <h3 className="text-[12px] font-bold text-white/85">VIP</h3>
+              <span className="ml-auto text-[10px] text-white/30 font-mono">{vipMembers.length || "…"}</span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {Object.values(MEMBERS).slice(0, 8).map((m) => (
-                <div key={m.handle} className="relative">
-                  <Avatar member={m} size="sm" />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[#0e0e10]" />
-                </div>
-              ))}
+            <div className="p-3">
+              <div className="flex flex-wrap gap-1.5">
+                {vipMembers.slice(0, 12).map((m) => (
+                  <DiscordAvatar key={m.id} member={m} size="sm" title={m.globalName} />
+                ))}
+                {vipMembers.length > 12 && (
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white/40 bg-white/[0.04] border border-white/[0.06]">
+                    +{vipMembers.length - 12}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ────────────────────────────────────────────
+   DiscordAvatar — renders a real Discord user avatar
+   ──────────────────────────────────────────── */
+function DiscordAvatar({ member, size = "md", title }: { member: DiscordMember; size?: "sm" | "md" | "lg"; title?: string }) {
+  const sizes = { sm: "w-7 h-7 text-[10px]", md: "w-9 h-9 text-[11px]", lg: "w-12 h-12 text-[13px]" };
+  const color = memberColor(member.id);
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={member.avatarUrl}
+      alt={member.globalName}
+      title={title}
+      loading="lazy"
+      className={`${sizes[size]} rounded-full object-cover shrink-0`}
+      style={{ border: `1px solid ${color}40`, background: `linear-gradient(135deg, ${color}25, ${color}08)` }}
+    />
   );
 }
 
