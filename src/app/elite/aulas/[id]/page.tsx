@@ -809,6 +809,8 @@ export default function LessonPage() {
 
   const [quizPassed, setQuizPassed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  type Resource = "quiz" | "flashcards" | "checklist" | "treino";
+  const [activeResource, setActiveResource] = useState<Resource | null>(null);
 
   // Track completion of all sections
   const [sections, setSections] = useState({ quiz: false, checklist: false, chart: false, flashcards: false });
@@ -844,9 +846,13 @@ export default function LessonPage() {
   const hasChecklist = Boolean(lesson.checklist && lesson.checklist.length > 0);
   const hasTreinos = treinosDaAula.length > 0;
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const activateResource = (resource: Resource) => {
+    setActiveResource(resource);
+    // Smooth scroll down to the opened content so it's visible
+    setTimeout(() => {
+      const el = document.getElementById("active-resource-panel");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   return (
@@ -926,9 +932,15 @@ export default function LessonPage() {
           )}
 
           {lesson.hasQuiz && lesson.quiz && lesson.quiz.length > 0 && (
-            <button onClick={() => scrollTo("section-quiz")} className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02] transition-all text-left">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "14" }}>
-                <BookOpen className="w-4 h-4" style={{ color: accent + "CC" }} />
+            <button onClick={() => activateResource("quiz")}
+              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all text-left ${
+                activeResource === "quiz"
+                  ? "shadow-lg"
+                  : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02]"
+              }`}
+              style={activeResource === "quiz" ? { borderColor: accent + "55", backgroundColor: accent + "10", boxShadow: `0 4px 16px ${accent}15` } : undefined}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + (activeResource === "quiz" ? "22" : "14") }}>
+                <BookOpen className="w-4 h-4" style={{ color: activeResource === "quiz" ? accent : accent + "CC" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Quiz</p>
@@ -936,6 +948,8 @@ export default function LessonPage() {
               </div>
               {quizPassed ? (
                 <CheckCircle className="w-4 h-4 text-green-400/80 shrink-0" />
+              ) : activeResource === "quiz" ? (
+                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
               ) : (
                 <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 shrink-0" />
               )}
@@ -943,35 +957,59 @@ export default function LessonPage() {
           )}
 
           {hasFlashcards && (
-            <button onClick={() => scrollTo("section-flashcards")} className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02] transition-all text-left">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "14" }}>
-                <Sparkles className="w-4 h-4" style={{ color: accent + "CC" }} />
+            <button onClick={() => activateResource("flashcards")}
+              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all text-left ${
+                activeResource === "flashcards"
+                  ? "shadow-lg"
+                  : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02]"
+              }`}
+              style={activeResource === "flashcards" ? { borderColor: accent + "55", backgroundColor: accent + "10", boxShadow: `0 4px 16px ${accent}15` } : undefined}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + (activeResource === "flashcards" ? "22" : "14") }}>
+                <Sparkles className="w-4 h-4" style={{ color: activeResource === "flashcards" ? accent : accent + "CC" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Flashcards</p>
                 <p className="text-[10.5px] text-white/35 mt-0.5">{flashcards!.length} conceitos</p>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 shrink-0" />
+              {activeResource === "flashcards" ? (
+                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+              ) : (
+                <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 shrink-0" />
+              )}
             </button>
           )}
 
           {hasChecklist && (
-            <button onClick={() => scrollTo("section-checklist")} className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02] transition-all text-left">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "14" }}>
-                <CheckCircle className="w-4 h-4" style={{ color: accent + "CC" }} />
+            <button onClick={() => activateResource("checklist")}
+              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all text-left ${
+                activeResource === "checklist"
+                  ? "shadow-lg"
+                  : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02]"
+              }`}
+              style={activeResource === "checklist" ? { borderColor: accent + "55", backgroundColor: accent + "10", boxShadow: `0 4px 16px ${accent}15` } : undefined}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + (activeResource === "checklist" ? "22" : "14") }}>
+                <CheckCircle className="w-4 h-4" style={{ color: activeResource === "checklist" ? accent : accent + "CC" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Exercício Prático</p>
                 <p className="text-[10.5px] text-white/35 mt-0.5">{lesson.checklist!.length} items</p>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 shrink-0" />
+              {activeResource === "checklist" ? (
+                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+              ) : (
+                <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 shrink-0" />
+              )}
             </button>
           )}
 
           {hasTreinos && (
-            <button onClick={() => scrollTo("section-treino")}
+            <button onClick={() => activateResource("treino")}
               className="group relative overflow-hidden w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-all hover:-translate-y-0.5"
-              style={{ borderColor: accent + "40", backgroundColor: accent + "0C" }}>
+              style={{
+                borderColor: activeResource === "treino" ? accent + "70" : accent + "40",
+                backgroundColor: activeResource === "treino" ? accent + "18" : accent + "0C",
+                boxShadow: activeResource === "treino" ? `0 4px 16px ${accent}25` : undefined,
+              }}>
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{
                 background: `linear-gradient(90deg, transparent, ${accent}70, transparent)`
               }} />
@@ -984,106 +1022,106 @@ export default function LessonPage() {
                   {treinosDaAula.length === 1 ? "1 treino" : `${treinosDaAula.length} treinos`}
                 </p>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 group-hover:translate-x-0.5 transition-all" style={{ color: accent + "99" }} />
+              {activeResource === "treino" ? (
+                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+              ) : (
+                <ArrowRight className="w-3.5 h-3.5 shrink-0 group-hover:translate-x-0.5 transition-all" style={{ color: accent + "99" }} />
+              )}
             </button>
           )}
+
+          {/* Progress summary — fills empty sidebar space */}
+          <div className="mt-auto pt-4">
+            <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0c] p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Progresso</p>
+                <span className="text-[11px] font-bold text-white/60 font-mono">
+                  {[quizPassed].filter(Boolean).length}/{[lesson.hasQuiz, hasFlashcards, hasChecklist, hasTreinos].filter(Boolean).length}
+                </span>
+              </div>
+              <div className="h-[4px] bg-white/[0.04] rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{
+                  width: `${([quizPassed].filter(Boolean).length / Math.max(1, [lesson.hasQuiz, hasFlashcards, hasChecklist, hasTreinos].filter(Boolean).length)) * 100}%`,
+                  backgroundColor: accent,
+                }} />
+              </div>
+              <p className="text-[10.5px] text-white/30 mt-2 leading-relaxed">
+                {quizPassed ? "Mandou bem! Continue pra próxima aula." : "Complete os recursos pra dominar o conteúdo."}
+              </p>
+            </div>
+          </div>
         </aside>
       </div>
 
-      {/* Quiz — one at a time */}
-      {lesson.hasQuiz && lesson.quiz && lesson.quiz.length > 0 && (
-        <div id="section-quiz" className="scroll-mt-6">
-          <Section title={`Quiz — ${lesson.quiz.length} perguntas`} icon={BookOpen} accent={accent}>
-            <QuizSection questions={lesson.quiz} accent={accent} onComplete={handleQuizComplete} />
-          </Section>
-        </div>
-      )}
-
-      {/* Flashcards */}
-      {flashcards && (
-        <div id="section-flashcards" className="scroll-mt-6">
-          <Section title={`Flashcards — ${flashcards.length} conceitos`} icon={Sparkles} accent={accent}>
-            <FlashcardsSection cards={flashcards} accent={accent} />
-          </Section>
-        </div>
-      )}
-
-      {/* Checklist */}
-      {lesson.checklist && lesson.checklist.length > 0 && (
-        <div id="section-checklist" className="scroll-mt-6">
-          <Section title="Exercício Prático" icon={CheckCircle} accent={accent}>
-            <ChecklistSection items={lesson.checklist} accent={accent} />
-          </Section>
-        </div>
-      )}
-
-      {/* Pratique — treinos vinculados a esta aula (capstone do aprendizado) */}
-      {(() => {
-        const treinos = treinosDaAula;
-        if (treinos.length === 0) return null;
-        return (
-          <section id="section-treino" className="scroll-mt-6 relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#141417] to-[#0e0e10]">
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
-              background: `linear-gradient(90deg, transparent, ${accent}70 30%, ${accent}50 70%, transparent)`
-            }} />
-            <div className="absolute inset-0 pointer-events-none" style={{
-              background: `radial-gradient(ellipse 60% 60% at 85% 20%, ${accent}12, transparent 60%)`
-            }} />
-
-            <div className="relative z-10 p-6 md:p-7">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: accent + "18" }}>
-                  <Target className="w-4 h-4" style={{ color: accent }} />
-                </div>
-                <div>
-                  <h2 className="text-[17px] font-bold text-white tracking-tight">Agora pratique</h2>
-                  <p className="text-[12px] text-white/45 mt-0.5">
-                    {treinos.length === 1 ? "1 treino" : `${treinos.length} treinos`} pra fixar o que você aprendeu nesta aula
-                  </p>
-                </div>
+      {/* Active resource panel — renders only the selected resource */}
+      {activeResource && (
+        <div id="active-resource-panel" className="scroll-mt-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6 md:p-8 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
+            background: `linear-gradient(90deg, transparent, ${accent}70 30%, ${accent}50 70%, transparent)`
+          }} />
+          {/* Header with close */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: accent + "18" }}>
+                {activeResource === "quiz" && <BookOpen className="w-4 h-4" style={{ color: accent }} />}
+                {activeResource === "flashcards" && <Sparkles className="w-4 h-4" style={{ color: accent }} />}
+                {activeResource === "checklist" && <CheckCircle className="w-4 h-4" style={{ color: accent }} />}
+                {activeResource === "treino" && <Target className="w-4 h-4" style={{ color: accent }} />}
               </div>
-
-              <div className={`grid gap-3 mt-5 ${treinos.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-2"}`}>
-                {treinos.map((treino) => (
-                  <Link
-                    key={treino.id}
-                    href={`/elite/treino/${treino.id}`}
-                    className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e0e10] p-5 hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-300"
-                    style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.02) inset" }}
-                  >
-                    <div className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity" style={{
-                      background: `linear-gradient(90deg, transparent, ${accent}80, transparent)`
-                    }} />
-
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded" style={{
-                          backgroundColor: accent + "15",
-                          color: accent + "DD",
-                        }}>
-                          Treino
-                        </span>
-                        <span className="text-[10px] text-white/30 font-semibold uppercase tracking-wider">
-                          {treino.difficulty}
-                        </span>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
-                    </div>
-
-                    <h4 className="text-[15px] font-bold text-white/95 mb-1.5 tracking-tight">{treino.title}</h4>
-                    <p className="text-[12px] text-white/45 leading-relaxed">{treino.desc}</p>
-
-                    <div className="flex items-center gap-1.5 mt-4 text-white/30">
-                      <Play className="w-3 h-3 fill-current" />
-                      <span className="text-[11px] font-semibold">Começar treino</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              <h2 className="text-[16px] font-bold text-white tracking-tight">
+                {activeResource === "quiz" && `Quiz — ${lesson.quiz?.length ?? 0} perguntas`}
+                {activeResource === "flashcards" && `Flashcards — ${flashcards?.length ?? 0} conceitos`}
+                {activeResource === "checklist" && "Exercício Prático"}
+                {activeResource === "treino" && "Agora pratique"}
+              </h2>
             </div>
-          </section>
-        );
-      })()}
+            <button onClick={() => setActiveResource(null)}
+              className="text-[11px] text-white/30 hover:text-white/70 transition-colors font-medium">
+              Fechar
+            </button>
+          </div>
+
+          {/* Content */}
+          {activeResource === "quiz" && lesson.quiz && (
+            <QuizSection questions={lesson.quiz} accent={accent} onComplete={handleQuizComplete} />
+          )}
+          {activeResource === "flashcards" && flashcards && (
+            <FlashcardsSection cards={flashcards} accent={accent} />
+          )}
+          {activeResource === "checklist" && lesson.checklist && (
+            <ChecklistSection items={lesson.checklist} accent={accent} />
+          )}
+          {activeResource === "treino" && treinosDaAula.length > 0 && (
+            <div className={`grid gap-3 ${treinosDaAula.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-2"}`}>
+              {treinosDaAula.map((treino) => (
+                <Link
+                  key={treino.id}
+                  href={`/elite/treino/${treino.id}`}
+                  className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e0e10] p-5 hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <div className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity" style={{
+                    background: `linear-gradient(90deg, transparent, ${accent}80, transparent)`
+                  }} />
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded" style={{ backgroundColor: accent + "15", color: accent + "DD" }}>Treino</span>
+                      <span className="text-[10px] text-white/30 font-semibold uppercase tracking-wider">{treino.difficulty}</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <h4 className="text-[15px] font-bold text-white/95 mb-1.5 tracking-tight">{treino.title}</h4>
+                  <p className="text-[12px] text-white/45 leading-relaxed">{treino.desc}</p>
+                  <div className="flex items-center gap-1.5 mt-4 text-white/30">
+                    <Play className="w-3 h-3 fill-current" />
+                    <span className="text-[11px] font-semibold">Começar treino</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
 
       {/* Navigation — prev/next */}
       <div className="flex items-center justify-between pt-6 border-t border-white/[0.04]">
