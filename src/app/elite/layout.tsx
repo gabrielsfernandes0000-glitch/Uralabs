@@ -19,14 +19,14 @@ export default async function EliteLayout({ children }: { children: React.ReactN
   // Saldo URA Coin + banner cosmético pra mostrar no sidebar. Falha silenciosa
   // se DB não responder — sidebar esconde a pill e não aplica banner, plataforma continua navegável.
   let coinBalance: number | undefined;
-  let bannerMeta: Record<string, unknown> | undefined;
+  let bannerSlug: string | null = null;
   try {
     const state = await getUserState(session.userId, 0);
     coinBalance = state.balance.balance;
-    bannerMeta = state.cosmetics.banner?.metadata ?? undefined;
+    bannerSlug = state.cosmetics.banner?.prize_slug ?? null;
   } catch {
     coinBalance = undefined;
-    bannerMeta = undefined;
+    bannerSlug = null;
   }
 
   return (
@@ -36,7 +36,7 @@ export default async function EliteLayout({ children }: { children: React.ReactN
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:60px_60px] opacity-40" />
       </div>
 
-      <EliteSidebar session={session} coinBalance={coinBalance} bannerMeta={bannerMeta} />
+      <EliteSidebar session={session} coinBalance={coinBalance} bannerSlug={bannerSlug} />
 
       <main className="relative z-10 flex-1 ml-0 lg:ml-[272px] min-h-screen">
         <div className="px-5 py-6 lg:px-10 lg:py-8">

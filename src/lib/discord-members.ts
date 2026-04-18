@@ -17,6 +17,10 @@ export interface DiscordMember {
   tier: "elite" | "vip";
   joinedAt: string;
   avatarUrl: string;
+  /** Cosméticos equipados — vindos do bulk join em list-discord-members */
+  bannerSlug?: string | null;
+  frameSlug?: string | null;
+  effectSlug?: string | null;
 }
 
 export interface MembersResponse {

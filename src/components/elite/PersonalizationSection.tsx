@@ -1,0 +1,198 @@
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+import { Palette, Check, Loader2, Lock } from "lucide-react";
+import { CosmeticBanner, isBannerSlug } from "./CosmeticBanner";
+
+interface OwnedCosmetic {
+  cosmetic_id: string;
+  cosmetic_type: "banner" | "avatar_frame" | "avatar_effect";
+  prize_id: string;
+  prize_slug: string;
+  prize_name: string;
+  prize_rarity: "common" | "uncommon" | "rare" | "epic" | "legendary";
+  metadata: Record<string, unknown>;
+  acquired_at: string;
+  equipped: boolean;
+}
+
+const RARITY_META: Record<OwnedCosmetic["prize_rarity"], { label: string; className: string; ring: string }> = {
+  common:    { label: "Comum",    className: "text-white/50",    ring: "#52525b" },
+  uncommon:  { label: "Incomum",  className: "text-emerald-400", ring: "#10b981" },
+  rare:      { label: "Raro",     className: "text-sky-400",     ring: "#38bdf8" },
+  epic:      { label: "Épico",    className: "text-purple-400",  ring: "#a855f7" },
+  legendary: { label: "Lendário", className: "text-amber-400",   ring: "#f59e0b" },
+};
+
+const TYPE_META: Record<OwnedCosmetic["cosmetic_type"], { label: string; description: string }> = {
+  banner:         { label: "Banners",          description: "Fundo animado do seu perfil. Aparece no modal, sidebar e cards dos membros." },
+  avatar_frame:   { label: "Molduras de avatar", description: "Decoração ao redor do avatar. (em breve)" },
+  avatar_effect:  { label: "Auras de avatar",   description: "Efeito luminoso pulsando no avatar. (em breve)" },
+};
+
+export function PersonalizationSection() {
+  const [items, setItems] = useState<OwnedCosmetic[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  useEffect(() => { refetch(); }, []);
+
+  async function refetch() {
+    try {
+      const res = await fetch("/api/cosmetics", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as { cosmetics: OwnedCosmetic[] };
+      setItems(data.cosmetics);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "erro ao carregar");
+    }
+  }
+
+  function equip(cosmeticId: string) {
+    setPendingId(cosmeticId);
+    startTransition(async () => {
+      try {
+        const res = await fetch("/api/cosmetics", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ cosmetic_id: cosmeticId }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        await refetch();
+      } finally {
+        setPendingId(null);
+      }
+    });
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Palette className="w-4 h-4 text-brand-500/60" />
+          <h2 className="text-[14px] font-semibold text-white/80">Personalização</h2>
+        </div>
+        <p className="text-[12px] text-white/40">Erro ao carregar: {error}</p>
+      </div>
+    );
+  }
+
+  if (!items) {
+    return (
+      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Palette className="w-4 h-4 text-brand-500/60" />
+          <h2 className="text-[14px] font-semibold text-white/80">Personalização</h2>
+        </div>
+        <div className="flex items-center gap-2 text-white/30">
+          <Loader2 className="w-4 h-4 animate-spin" /> <span className="text-[12px]">Carregando cosméticos…</span>
+        </div>
+      </div>
+    );
+  }
+
+  const byType: Record<OwnedCosmetic["cosmetic_type"], OwnedCosmetic[]> = {
+    banner: items.filter((i) => i.cosmetic_type === "banner"),
+    avatar_frame: items.filter((i) => i.cosmetic_type === "avatar_frame"),
+    avatar_effect: items.filter((i) => i.cosmetic_type === "avatar_effect"),
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-7 space-y-7">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Palette className="w-4 h-4 text-brand-500/60" />
+          <h2 className="text-[14px] font-semibold text-white/80">Personalização</h2>
+        </div>
+        <span className="text-[10px] text-white/35 font-mono">{items.length} owned</span>
+      </div>
+
+      {(["banner", "avatar_frame", "avatar_effect"] as const).map((type) => {
+        const meta = TYPE_META[type];
+        const list = byType[type];
+        return (
+          <div key={type} className="space-y-3">
+            <div>
+              <h3 className="text-[13px] font-bold text-white/85">{meta.label}</h3>
+              <p className="text-[11px] text-white/35 mt-0.5">{meta.description}</p>
+            </div>
+            {list.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] py-8 text-center">
+                <Lock className="w-4 h-4 text-white/20 mx-auto mb-2" />
+                <p className="text-[11px] text-white/30">Nenhum ainda. Abre caixas na <a className="text-brand-500/70 hover:text-brand-500" href="/elite/loja">Loja</a> pra conseguir.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {list.map((c) => (
+                  <CosmeticCard
+                    key={c.cosmetic_id}
+                    cosmetic={c}
+                    type={type}
+                    onEquip={() => equip(c.cosmetic_id)}
+                    pending={pending && pendingId === c.cosmetic_id}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CosmeticCard({
+  cosmetic, type, onEquip, pending,
+}: {
+  cosmetic: OwnedCosmetic;
+  type: OwnedCosmetic["cosmetic_type"];
+  onEquip: () => void;
+  pending: boolean;
+}) {
+  const rarity = RARITY_META[cosmetic.prize_rarity];
+  const canPreviewBanner = type === "banner" && isBannerSlug(cosmetic.prize_slug);
+
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-xl border bg-[#0e0e10] transition-all duration-200 ${
+        cosmetic.equipped ? "border-brand-500/40 ring-1 ring-brand-500/20" : "border-white/[0.06] hover:border-white/[0.15] hover:-translate-y-0.5"
+      }`}
+    >
+      {/* Preview area */}
+      <div className="relative h-[90px] overflow-hidden" style={{
+        background: canPreviewBanner ? "transparent" : "#141417",
+      }}>
+        {canPreviewBanner && (
+          <CosmeticBanner slug={cosmetic.prize_slug} variant="card" interactive={true} />
+        )}
+        {!canPreviewBanner && (
+          <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">preview em breve</div>
+        )}
+        {cosmetic.equipped && (
+          <div className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-brand-500/90 text-[9px] font-bold uppercase tracking-wider text-white">
+            <Check className="w-2.5 h-2.5" /> Equipado
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="px-3 py-2.5 border-t border-white/[0.04]">
+        <p className="text-[12px] font-bold text-white/90 leading-tight truncate">{cosmetic.prize_name}</p>
+        <div className="flex items-center justify-between mt-1">
+          <span className={`text-[9px] font-bold tracking-[0.15em] uppercase ${rarity.className}`}>{rarity.label}</span>
+          {!cosmetic.equipped && (
+            <button
+              onClick={onEquip}
+              disabled={pending}
+              className="text-[10px] text-white/40 hover:text-brand-500 transition-colors disabled:opacity-50"
+            >
+              {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Equipar"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

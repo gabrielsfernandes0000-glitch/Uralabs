@@ -2,6 +2,7 @@ import { getSession } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Calendar, Trophy, Flame, Target, BookOpen, Zap, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { PersonalizationSection } from "@/components/elite/PersonalizationSection";
 
 export default async function PerfilPage() {
   const session = (await getSession())!;
@@ -91,6 +92,9 @@ export default async function PerfilPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Personalização (cosméticos) ── */}
+      <PersonalizationSection />
 
       {/* ── Badges showcase ── */}
       <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">

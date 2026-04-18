@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Users, Zap, Flame, Search } from "lucide-react";
 import { fetchDiscordMembers, type DiscordMember } from "@/lib/discord-members";
 import { MemberProfileModal } from "./MemberProfileModal";
+import { CosmeticBanner, isBannerSlug, bannerAccent } from "./CosmeticBanner";
 
 /* ────────────────────────────────────────────
    MembersView — grid completo com busca, filtro por tier e perfil clicável.
@@ -100,25 +101,36 @@ export function MembersView() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {sorted.map((m) => {
-            const accent = m.tier === "elite" ? "#FF5500" : "#3B82F6";
+            const hasBanner = isBannerSlug(m.bannerSlug);
+            const accent = hasBanner ? bannerAccent(m.bannerSlug) : (m.tier === "elite" ? "#FF5500" : "#3B82F6");
             return (
               <button key={m.id} onClick={() => setProfileMember(m)}
-                className="group text-left relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4 hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-200">
+                className="group text-left relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-200 min-h-[160px] flex flex-col">
+                {/* Banner thumb card-variant (~55px de altura) */}
+                <div className="relative h-[55px] overflow-hidden">
+                  {hasBanner ? (
+                    <CosmeticBanner slug={m.bannerSlug} variant="card" interactive={false} />
+                  ) : (
+                    <div className="absolute inset-0" style={{
+                      background: `linear-gradient(135deg, ${accent}20 0%, transparent 70%)`,
+                    }} />
+                  )}
+                  <div className="absolute inset-0 pointer-events-none" style={{
+                    background: "linear-gradient(to bottom, transparent 0%, rgba(14,14,16,0.4) 70%, #0e0e10 100%)",
+                  }} />
+                </div>
                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
-                  background: `linear-gradient(90deg, transparent, ${accent}50, transparent)`,
-                }} />
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{
-                  background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${accent}12, transparent 65%)`,
+                  background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
                 }} />
 
-                <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-3">
+                <div className="relative z-10 px-4 pb-4 -mt-5 flex-1 flex flex-col">
+                  <div className="flex items-end justify-between mb-2.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={m.avatarUrl} alt={m.globalName}
-                      className="w-12 h-12 rounded-full object-cover"
-                      style={{ border: `1.5px solid ${accent}30` }} />
+                      className="w-12 h-12 rounded-full object-cover relative"
+                      style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50, 0 4px 12px rgba(0,0,0,0.4)` }} />
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-                      style={{ backgroundColor: accent + "15", color: accent }}>
+                      style={{ backgroundColor: accent + "18", color: accent, border: `1px solid ${accent}30` }}>
                       {m.tier === "elite" ? <Flame className="w-2.5 h-2.5 fill-current" /> : <Zap className="w-2.5 h-2.5" />}
                       {m.tier === "elite" ? "Elite" : "VIP"}
                     </span>

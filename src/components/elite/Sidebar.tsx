@@ -11,6 +11,7 @@ import {
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Avatar } from "@/components/elite/Avatar";
+import { CosmeticBanner, isBannerSlug } from "@/components/elite/CosmeticBanner";
 
 type NavItem = { href: string; icon: typeof LayoutDashboard; label: string; exact?: boolean; eliteOnly?: boolean };
 
@@ -26,33 +27,20 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/elite/corretora",  icon: BarChart3,       label: "Corretora",  eliteOnly: true },
 ];
 
-function resolveBannerBg(meta: Record<string, unknown> | undefined): string | null {
-  if (!meta) return null;
-  const imageUrl = typeof meta.image_url === "string" ? meta.image_url : null;
-  if (imageUrl) return `center/cover url("${imageUrl.replace(/"/g, "%22")}")`;
-  const gradient = typeof meta.gradient === "string" ? meta.gradient : null;
-  if (gradient) return gradient;
-  const hex = typeof meta.color_hex === "string" ? meta.color_hex : null;
-  if (hex && /^#[0-9a-fA-F]{3,8}$/.test(hex)) {
-    return `linear-gradient(135deg, ${hex}50, ${hex}10 70%, transparent)`;
-  }
-  return null;
-}
-
 export function EliteSidebar({
   session,
   coinBalance,
-  bannerMeta,
+  bannerSlug,
 }: {
   session: SessionPayload;
   coinBalance?: number;
-  bannerMeta?: Record<string, unknown>;
+  bannerSlug?: string | null;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const avatar = avatarUrl(session.userId, session.avatar, 64);
   const displayName = session.globalName || session.username;
-  const bannerBg = resolveBannerBg(bannerMeta);
+  const hasBanner = isBannerSlug(bannerSlug);
 
   return (
     <>
@@ -74,11 +62,13 @@ export function EliteSidebar({
         {/* Background */}
         <div className="absolute inset-0 bg-[#0a0a0c] border-r border-white/[0.04]" />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-500/[0.03] via-transparent to-transparent" />
-        {bannerBg && (
+        {hasBanner && (
           <div
-            className="absolute top-0 left-0 right-0 h-[200px] pointer-events-none opacity-40"
-            style={{ background: bannerBg, maskImage: "linear-gradient(to bottom, black, transparent)", WebkitMaskImage: "linear-gradient(to bottom, black, transparent)" }}
-          />
+            className="absolute top-0 left-0 right-0 h-[220px] pointer-events-none opacity-50"
+            style={{ maskImage: "linear-gradient(to bottom, black 30%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)" }}
+          >
+            <CosmeticBanner slug={bannerSlug} variant="sidebar" interactive={false} />
+          </div>
         )}
 
         <div className="relative z-10 flex flex-col h-full">

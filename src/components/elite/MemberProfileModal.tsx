@@ -10,12 +10,14 @@ import {
   type Achievement,
 } from "@/lib/achievements";
 import { AchievementBadge } from "./AchievementBadge";
+import { CosmeticBanner, bannerAccent, isBannerSlug } from "./CosmeticBanner";
 
 /**
  * MemberProfileModal — puxa estado real via /api/members/[id]/profile:
  *   - achievements unlockados do DB (user_achievements, filtrados não-revogados)
  *   - saldo URA Coin (lifetime earned, usado como medidor de engajamento)
  *   - posts count do Discord (discord_activity.total_messages)
+ *   - banner cosmético equipado (via slug + CosmeticBanner component)
  */
 
 type CosmeticMeta = Record<string, unknown>;
@@ -33,21 +35,6 @@ type ProfileResponse = {
     profile_design: { prize_slug: string; prize_name: string; metadata: CosmeticMeta; acquired_at: string } | null;
   };
 };
-
-/** Pega um `background` aplicável pro header baseado na metadata do banner.
- *  Suporta: { image_url }, { gradient: "..." }, { color_hex: "#..." }.  */
-function resolveBannerBg(meta: CosmeticMeta | undefined): string | null {
-  if (!meta) return null;
-  const imageUrl = typeof meta.image_url === "string" ? meta.image_url : null;
-  if (imageUrl) return `center/cover url("${imageUrl.replace(/"/g, "%22")}")`;
-  const gradient = typeof meta.gradient === "string" ? meta.gradient : null;
-  if (gradient) return gradient;
-  const hex = typeof meta.color_hex === "string" ? meta.color_hex : null;
-  if (hex && /^#[0-9a-fA-F]{3,8}$/.test(hex)) {
-    return `linear-gradient(135deg, ${hex}60, ${hex}10 70%, transparent)`;
-  }
-  return null;
-}
 
 function formatJoined(iso: string): string {
   try {
@@ -136,7 +123,9 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
 
   if (!member) return null;
 
-  const tierAccent = member.tier === "elite" ? "#FF5500" : "#3B82F6";
+  const bannerSlug = profile?.cosmetics?.banner?.prize_slug;
+  const hasBanner = isBannerSlug(bannerSlug);
+  const tierAccent = hasBanner ? bannerAccent(bannerSlug) : (member.tier === "elite" ? "#FF5500" : "#3B82F6");
   const tierLabel = member.tier === "elite" ? "Elite 4.0" : "VIP";
 
   const achievementsIds = profile?.achievements.map((a) => a.achievement_id) ?? [];
@@ -168,32 +157,29 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           <X className="w-4 h-4" />
         </button>
 
-        {/* Header */}
-        <div className="relative overflow-hidden border-b border-white/[0.05]">
-          {/* Banner cosmético aplicado — se equipado, vira o background */}
-          {(() => {
-            const bg = resolveBannerBg(profile?.cosmetics?.banner?.metadata);
-            if (!bg) return null;
-            return (
-              <>
-                <div className="absolute inset-0 pointer-events-none opacity-60" style={{ background: bg }} />
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  background: "linear-gradient(to bottom, rgba(20,20,23,0.3), rgba(20,20,23,0.8))",
-                }} />
-                <div className="absolute top-2 right-14 z-20 text-[8px] uppercase tracking-wider text-white/40 font-mono">
-                  banner: {profile?.cosmetics?.banner?.prize_slug}
-                </div>
-              </>
-            );
-          })()}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: `radial-gradient(ellipse 60% 80% at 75% 30%, ${tierAccent}18, transparent 65%)`,
-          }} />
+        {/* Header — 200px alto pra banner respirar */}
+        <div className="relative overflow-hidden border-b border-white/[0.05] min-h-[200px]">
+          {/* Banner cosmético animado (CosmeticBanner component) */}
+          {hasBanner && (
+            <>
+              <CosmeticBanner slug={bannerSlug} variant="full" />
+              {/* Overlay gradient pra garantir legibilidade do texto */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: "linear-gradient(to bottom, rgba(20,20,23,0.15) 0%, rgba(20,20,23,0.55) 60%, rgba(20,20,23,0.85) 100%)",
+              }} />
+            </>
+          )}
+          {/* Accent fallback (ambient glow se não tem banner) */}
+          {!hasBanner && (
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: `radial-gradient(ellipse 60% 80% at 75% 30%, ${tierAccent}18, transparent 65%)`,
+            }} />
+          )}
           <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none" style={{
             background: `linear-gradient(90deg, transparent, ${tierAccent}80, transparent)`,
           }} />
 
-          <div className="relative z-10 p-6 pr-14 flex items-center gap-4">
+          <div className="relative z-10 p-6 pr-14 pt-24 flex items-end gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={member.avatarUrl}
