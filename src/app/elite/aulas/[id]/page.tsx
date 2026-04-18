@@ -993,7 +993,7 @@ export default function LessonPage() {
       {/* Quiz — one at a time */}
       {lesson.hasQuiz && lesson.quiz && lesson.quiz.length > 0 && (
         <div id="section-quiz" className="scroll-mt-6">
-          <Section title={`Quiz — ${lesson.quiz.length} perguntas`} icon={BookOpen} defaultOpen accent={accent}>
+          <Section title={`Quiz — ${lesson.quiz.length} perguntas`} icon={BookOpen} accent={accent}>
             <QuizSection questions={lesson.quiz} accent={accent} onComplete={handleQuizComplete} />
           </Section>
         </div>
