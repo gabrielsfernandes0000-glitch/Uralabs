@@ -184,15 +184,15 @@ export function InvitationCard({
                     {turmaNova ? "Turma aberta" : quaseCheia ? "Últimas vagas" : "Ocupação"}
                   </div>
                   {turmaNova ? (
-                    <div className="text-sm" style={{ color: "rgba(250,250,250,0.9)" }}>
-                      <span className="font-mono font-medium" style={{ color: "#C9A461" }}>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-base font-medium" style={{ color: "#C9A461" }}>
                         {invite.vagasTotais}
                       </span>
                       <span
-                        className="text-xs ml-1"
+                        className="text-xs"
                         style={{ color: "rgba(255,255,255,0.45)" }}
                       >
-                        vagas, ninguém fechou ainda
+                        vagas
                       </span>
                     </div>
                   ) : (
