@@ -4,45 +4,23 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, Check, X, ChevronRight, Target, BookOpen, Sparkles, Flame, Trophy,
+  Zap, Check, X, ChevronRight, Target, Sparkles, Flame, Trophy, Layers,
 } from "lucide-react";
-import { useProgress } from "@/hooks/useProgress";
 import {
   SCENARIOS,
   TREINO_CATEGORIES,
-  countByCategory,
   getDailyTheme,
   getDailyScenarios,
   todayKey,
   getCategoryMeta,
   type Scenario,
 } from "@/lib/treino-scenarios";
+import { GUIDED_TREINOS } from "@/lib/pratica-treinos";
 
 /* ────────────────────────────────────────────
-   Prática — hub de treinos. Hero · Diário c/ streak · Livre · Por Tema · Skills.
+   Prática — hub enxuto: Hero · Missão do dia · Streak · 3 atalhos.
+   Temas e Skills moraram nas sub-rotas /temas e /skills.
    ──────────────────────────────────────────── */
-
-interface GuidedTreino {
-  id: string; title: string; desc: string;
-  requiredLesson: string; requiredLessonTitle: string;
-  module: string; moduleColor: string;
-  difficulty: "iniciante" | "intermediário" | "avançado";
-  type: "identificar" | "decisão" | "execução";
-  steps: number;
-}
-
-const GUIDED_TREINOS: GuidedTreino[] = [
-  { id: "t-candles",  title: "Leitura de Candle",      desc: "Identifique o que cada candle está dizendo sobre compradores vs vendedores.", requiredLesson: "leitura-candle",   requiredLessonTitle: "Leitura de Candle",       module: "Base",          moduleColor: "#FF5500", difficulty: "iniciante",     type: "identificar", steps: 3 },
-  { id: "t-risco",    title: "Calcule o Risco",        desc: "Posicione stop e alvo corretamente. Qual o tamanho do lote?",                 requiredLesson: "risco",            requiredLessonTitle: "Gerenciamento de Risco",  module: "Base",          moduleColor: "#FF5500", difficulty: "iniciante",     type: "decisão",     steps: 3 },
-  { id: "t-obs",      title: "Marque os Order Blocks", desc: "Encontre as zonas onde os institucionais se posicionaram.",                   requiredLesson: "order-blocks",     requiredLessonTitle: "Order Blocks",            module: "Leitura SMC",   moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar", steps: 3 },
-  { id: "t-fvg",      title: "Identifique FVGs",       desc: "Marque os Fair Value Gaps e diga quais serão preenchidos.",                   requiredLesson: "fvg-breaker",      requiredLessonTitle: "FVG & Breaker Blocks",    module: "Leitura SMC",   moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar", steps: 3 },
-  { id: "t-premium",  title: "Premium ou Discount?",   desc: "Defina as zonas de desconto e premium usando Fibonacci 50%.",                 requiredLesson: "premium-discount", requiredLessonTitle: "Premium & Discount",      module: "Leitura SMC",   moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar", steps: 3 },
-  { id: "t-liquidez", title: "Onde Está a Liquidez?",  desc: "Mapeie os pools de liquidez que os big players vão buscar.",                  requiredLesson: "liquidez",         requiredLessonTitle: "Liquidez",                module: "Leitura SMC",   moduleColor: "#3B82F6", difficulty: "intermediário", type: "identificar", steps: 3 },
-  { id: "t-sessoes",  title: "Qual Sessão Operar?",    desc: "Identifique a sessão e o comportamento esperado do mercado.",                 requiredLesson: "sessoes",          requiredLessonTitle: "Sessões de Mercado",      module: "Estratégia",    moduleColor: "#A855F7", difficulty: "avançado",      type: "decisão",     steps: 3 },
-  { id: "t-amd",      title: "Leitura AMD Completa",   desc: "Identifique Acumulação, Manipulação e Distribuição em tempo real.",           requiredLesson: "amd",              requiredLessonTitle: "AMD",                     module: "Estratégia",    moduleColor: "#A855F7", difficulty: "avançado",      type: "decisão",     steps: 3 },
-  { id: "t-bias",     title: "Monte o Viés do Dia",    desc: "Com base na estrutura, defina se o dia é bullish ou bearish.",                requiredLesson: "daily-bias",       requiredLessonTitle: "Daily Bias & Judas Swing", module: "Estratégia",   moduleColor: "#A855F7", difficulty: "avançado",      type: "decisão",     steps: 3 },
-  { id: "t-entrada",  title: "Execute o Trade",        desc: "Cenário completo: identifique a zona, defina entrada, stop e alvo.",          requiredLesson: "entrada-saida",    requiredLessonTitle: "Entrada & Saída",         module: "Execução",      moduleColor: "#10B981", difficulty: "avançado",      type: "execução",    steps: 3 },
-];
 
 /* ────────────────────────────────────────────
    Helpers de streak — localStorage
@@ -436,85 +414,15 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
 }
 
 /* ────────────────────────────────────────────
-   Card "Por Tema" — editorial com mini-arte custom
-   ──────────────────────────────────────────── */
-
-function ThemeCard({ category }: { category: { key: string; accent: string; tagline: string; keyTerms: string[] } }) {
-  const count = useMemo(() => SCENARIOS.filter((s) => s.category === category.key).length, [category.key]);
-  const a = category.accent;
-
-  return (
-    <Link
-      href={`/elite/treino/livre?category=${encodeURIComponent(category.key)}`}
-      className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors min-h-[180px] flex flex-col"
-    >
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-100 transition-opacity"
-        style={{ background: `linear-gradient(90deg, transparent, ${a}80 50%, transparent)` }}
-      />
-      {/* Ambient glow */}
-      <div className="absolute top-[-30%] right-[-20%] w-[200px] h-[140px] pointer-events-none opacity-40 group-hover:opacity-70 transition-opacity"
-        style={{ background: `radial-gradient(ellipse, ${a}22, transparent 70%)` }}
-      />
-      {/* Watermark category name */}
-      <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
-        <span className="font-black tracking-tighter whitespace-nowrap select-none pr-4"
-          style={{ fontSize: "90px", color: a, opacity: 0.035, letterSpacing: "-0.05em", lineHeight: 1 }}
-        >
-          {category.key.toUpperCase()}
-        </span>
-      </div>
-
-      <div className="relative z-10 p-5 flex-1 flex flex-col">
-        {/* Header row — side accent bar + tagline caps */}
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-0.5 h-5 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: a }} />
-          <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase" style={{ color: a }}>{category.tagline}</p>
-        </div>
-
-        {/* Category name — hero typography */}
-        <h3 className="text-[22px] font-bold text-white tracking-tight leading-[1.05] mb-3">{category.key}</h3>
-
-        {/* Key terms preview */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-4">
-          {category.keyTerms.slice(0, 3).map((term, i) => (
-            <span key={term} className="text-[10.5px] text-white/40 font-mono">
-              {term}{i < Math.min(category.keyTerms.length, 3) - 1 && <span className="text-white/15 ml-2">·</span>}
-            </span>
-          ))}
-        </div>
-
-        {/* Footer — count + chevron */}
-        <div className="mt-auto flex items-center justify-between">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[20px] font-bold font-mono" style={{ color: a }}>{count}</span>
-            <span className="text-[11px] text-white/35">cenários</span>
-          </div>
-          <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/* ────────────────────────────────────────────
    Página
    ──────────────────────────────────────────── */
 
 export default function PraticaPage() {
-  const { completedLessons } = useProgress();
-  const isCompleted = (lessonId: string) => completedLessons.includes(lessonId);
   const [streakVersion, setStreakVersion] = useState(0);
 
-  const counts = countByCategory();
   const totalScenarios = SCENARIOS.length;
   const totalGuided = GUIDED_TREINOS.length;
   const totalThemes = TREINO_CATEGORIES.length;
-
-  const grouped = GUIDED_TREINOS.reduce<Record<string, GuidedTreino[]>>((acc, t) => {
-    (acc[t.module] ??= []).push(t);
-    return acc;
-  }, {});
 
   return (
     <div className="space-y-10">
@@ -577,105 +485,95 @@ export default function PraticaPage() {
         </div>
       </div>
 
-      {/* ───── Treino Livre — card único destacado ───── */}
-      <Link href="/elite/treino/livre" className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 transition-colors block">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-        <div className="absolute top-[-30%] right-[10%] w-[400px] h-[240px] bg-brand-500/[0.04] blur-[120px] pointer-events-none" />
-        <div className="relative z-10 p-6 flex items-center gap-5">
-          <Zap className="w-10 h-10 text-brand-500 shrink-0" strokeWidth={1.5} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-[17px] font-bold text-white tracking-tight">Treino Livre</h3>
-              <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/35">· Infinito</span>
-            </div>
-            <p className="text-[12px] text-white/45 leading-relaxed">
-              <span className="font-mono text-white/70">{totalScenarios}</span> cenários embaralhados · todos os temas · responde e avança sem fim
-            </p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-brand-500/70 transition-colors" />
-        </div>
-      </Link>
-
-      {/* ───── Por Tema ───── */}
+      {/* ───── Modos de treino — 3 atalhos ───── */}
       <div className="space-y-4">
         <div className="flex items-center gap-3 px-1">
           <div className="w-1 h-5 rounded-full bg-white/[0.25]" />
-          <h2 className="text-[13px] font-bold text-white/80 uppercase tracking-wider">Por tema</h2>
-          <span className="text-[10.5px] text-white/30 font-mono">{totalThemes} · escolha o que treinar</span>
+          <h2 className="text-[13px] font-bold text-white/80 uppercase tracking-wider">Modos de treino</h2>
+          <span className="text-[10.5px] text-white/30">escolha como praticar</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {TREINO_CATEGORIES.map((cat) => (
-            <ThemeCard key={cat.key} category={cat} />
-          ))}
-        </div>
-      </div>
-
-      {/* ───── Skills ───── */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 px-1">
-          <div className="w-1 h-5 rounded-full bg-white/[0.25]" />
-          <h2 className="text-[13px] font-bold text-white/80 uppercase tracking-wider">Skills</h2>
-          <span className="text-[10.5px] text-white/30 font-mono">{totalGuided} · sequência de 3 passos com gráfico real</span>
-        </div>
-
-        {Object.entries(grouped).map(([moduleName, treinos]) => {
-          const moduleColor = treinos[0].moduleColor;
-          return (
-            <div key={moduleName} className="space-y-2.5">
-              <div className="flex items-center gap-3 px-1">
-                <div className="w-1 h-4 rounded-full" style={{ backgroundColor: moduleColor + "80" }} />
-                <h4 className="text-[11.5px] font-semibold text-white/55 uppercase tracking-wider">{moduleName}</h4>
-                <span className="text-[10px] text-white/25 font-mono">{treinos.length}</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Treino Livre — tudo misturado */}
+          <Link
+            href="/elite/treino/livre"
+            className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 transition-colors block min-h-[180px] flex flex-col"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
+            <div className="absolute top-[-30%] right-[-10%] w-[260px] h-[180px] bg-brand-500/[0.05] blur-[100px] pointer-events-none" />
+            <div className="relative z-10 p-5 flex-1 flex flex-col">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-0.5 h-5 rounded-full bg-brand-500" />
+                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-brand-500">Infinito</span>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                {treinos.map((treino) => {
-                  const lessonDone = isCompleted(treino.requiredLesson);
-                  return (
-                    <Link
-                      key={treino.id}
-                      href={`/elite/treino/${treino.id}`}
-                      className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4 block hover:border-white/[0.16] transition-colors cursor-pointer"
-                    >
-                      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${moduleColor}40, transparent)` }} />
-                      <div className="flex items-start justify-between gap-3 mb-2.5">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Target className="w-5 h-5 shrink-0" style={{ color: moduleColor }} strokeWidth={1.5} />
-                          <div className="min-w-0">
-                            <h5 className="text-[13.5px] font-bold text-white/90 leading-tight truncate">{treino.title}</h5>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[10px] text-white/30">{treino.difficulty.charAt(0).toUpperCase() + treino.difficulty.slice(1)}</span>
-                              <span className="text-[10px] text-white/20">·</span>
-                              <span className="text-[10px] text-white/30 font-mono">{treino.steps} passos</span>
-                            </div>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-white/15 mt-1 shrink-0" />
-                      </div>
-                      <p className="text-[11.5px] leading-relaxed ml-8 text-white/40">{treino.desc}</p>
-                      <div className="mt-2 ml-8 inline-flex items-center gap-1.5 text-[10px] text-white/35">
-                        {lessonDone ? (
-                          <>
-                            <Check className="w-3 h-3 text-green-400/70" />
-                            <span>Baseado em &ldquo;{treino.requiredLessonTitle}&rdquo;</span>
-                          </>
-                        ) : (
-                          <>
-                            <BookOpen className="w-3 h-3 text-white/30" />
-                            <span>Recomendado: ver &ldquo;{treino.requiredLessonTitle}&rdquo; antes</span>
-                          </>
-                        )}
-                      </div>
-                    </Link>
-                  );
-                })}
+              <Zap className="w-7 h-7 text-brand-500 mb-3" strokeWidth={1.5} />
+              <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mb-1.5">Treino Livre</h3>
+              <p className="text-[11.5px] text-white/45 leading-relaxed">
+                Cenários embaralhados de todos os temas. Responde e avança sem fim.
+              </p>
+              <div className="mt-auto pt-4 flex items-center justify-between">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[18px] font-bold font-mono text-brand-500">{totalScenarios}</span>
+                  <span className="text-[11px] text-white/35">cenários</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-brand-500/70 transition-colors" />
               </div>
             </div>
-          );
-        })}
-      </div>
+          </Link>
 
+          {/* Por Tema */}
+          <Link
+            href="/elite/pratica/temas"
+            className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block min-h-[180px] flex flex-col"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="relative z-10 p-5 flex-1 flex flex-col">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-0.5 h-5 rounded-full bg-white/40" />
+                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/55">Focado</span>
+              </div>
+              <Layers className="w-7 h-7 text-white/70 mb-3" strokeWidth={1.5} />
+              <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mb-1.5">Por Tema</h3>
+              <p className="text-[11.5px] text-white/45 leading-relaxed">
+                Treine um conceito específico. Cada tema tem seus cenários filtrados.
+              </p>
+              <div className="mt-auto pt-4 flex items-center justify-between">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[18px] font-bold font-mono text-white/80">{totalThemes}</span>
+                  <span className="text-[11px] text-white/35">temas</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+              </div>
+            </div>
+          </Link>
+
+          {/* Skills Guiadas */}
+          <Link
+            href="/elite/pratica/skills"
+            className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block min-h-[180px] flex flex-col"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="relative z-10 p-5 flex-1 flex flex-col">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-0.5 h-5 rounded-full bg-white/40" />
+                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/55">Guiado</span>
+              </div>
+              <Target className="w-7 h-7 text-white/70 mb-3" strokeWidth={1.5} />
+              <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mb-1.5">Skills</h3>
+              <p className="text-[11.5px] text-white/45 leading-relaxed">
+                Sequências de 3 passos com gráfico real. Identifique, decida, execute.
+              </p>
+              <div className="mt-auto pt-4 flex items-center justify-between">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[18px] font-bold font-mono text-white/80">{totalGuided}</span>
+                  <span className="text-[11px] text-white/35">skills</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
