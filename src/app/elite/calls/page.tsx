@@ -235,9 +235,9 @@ function CallsHero({ liveCall, upcomingCount }: { liveCall?: ScheduledCall; upco
               <p className="text-[13px] text-white/40 mb-3 max-w-xl leading-relaxed line-clamp-1">{liveCall.desc}</p>
               <div className="flex items-center gap-3 flex-wrap">
                 <a href="https://discord.com/channels/@me" target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all hover:brightness-110 hover:-translate-y-0.5"
-                  style={{ backgroundColor: accent, color: "white", boxShadow: `0 4px 20px ${accent}35` }}>
-                  <Play className="w-3.5 h-3.5 fill-white" />
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[13px] font-bold transition-all hover:-translate-y-0.5"
+                  style={{ borderColor: accent, color: accent }}>
+                  <Play className="w-3.5 h-3.5" />
                   Entrar na call
                 </a>
                 <div className="flex items-center gap-1.5 text-white/35">
@@ -344,17 +344,16 @@ function ScheduleCard({ call }: { call: ScheduledCall }) {
           <CallThumbArt type={call.type} />
 
           {isLive && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md backdrop-blur-md"
-              style={{ backgroundColor: s.color + "30", border: `1px solid ${s.color}60` }}>
+            <div className="absolute top-2 left-2 flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: s.color }} />
-              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: s.color }}>LIVE</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.25em]" style={{ color: s.color }}>Live</span>
             </div>
           )}
 
           {hovered && isLive && (
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-xl" style={{ backgroundColor: s.color }}>
-                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+              <div className="w-12 h-12 rounded-full border-2 flex items-center justify-center" style={{ borderColor: s.color }}>
+                <Play className="w-5 h-5 ml-0.5" style={{ color: s.color }} />
               </div>
             </div>
           )}
@@ -427,15 +426,14 @@ function ReplayCard({ replay }: { replay: Replay }) {
             background: "linear-gradient(to bottom, transparent 40%, rgba(14,14,16,0.55) 75%, rgba(14,14,16,0.85) 100%)",
           }} />
 
-          {/* Type pill */}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md backdrop-blur-md"
-            style={{ backgroundColor: s.color + "25", border: `1px solid ${s.color}40` }}>
-            <s.icon className="w-2.5 h-2.5" style={{ color: s.color }} />
-            <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: s.color }}>{s.label}</span>
+          {/* Type */}
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+            <s.icon className="w-3 h-3" style={{ color: s.color }} strokeWidth={2} />
+            <span className="text-[9.5px] font-bold uppercase tracking-[0.25em]" style={{ color: s.color }}>{s.label}</span>
           </div>
 
-          {/* Duration pill */}
-          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur text-[10px] font-bold font-mono text-white/85">
+          {/* Duration */}
+          <div className="absolute top-2.5 right-2.5 text-[10px] font-bold font-mono text-white/70">
             {fmtDuration(replay.durationMin)}
           </div>
 
@@ -450,8 +448,8 @@ function ReplayCard({ replay }: { replay: Replay }) {
           {/* Play on hover */}
           {hovered && (
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl" style={{ backgroundColor: s.color }}>
-                <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+              <div className="w-14 h-14 rounded-full border-2 flex items-center justify-center" style={{ borderColor: s.color }}>
+                <Play className="w-6 h-6 ml-0.5" style={{ color: s.color }} />
               </div>
             </div>
           )}
@@ -569,8 +567,7 @@ export default function CallsPage() {
                       Ative notificações no Discord pra saber quando o URA começar uma call ao vivo.
                     </p>
                     <Link href="https://discord.com/channels/@me" target="_blank"
-                      className="flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-lg bg-brand-500 text-[12px] font-bold text-white hover:brightness-110 hover:-translate-y-0.5 transition-all"
-                      style={{ boxShadow: "0 4px 20px rgba(255,85,0,0.25)" }}>
+                      className="flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-lg border border-brand-500 text-[12px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors">
                       Ativar no Discord
                       <ChevronRight className="w-3 h-3" />
                     </Link>

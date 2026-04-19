@@ -93,7 +93,7 @@ export function MuralFeed({ channelId }: { channelId?: string }) {
             onClick={() => setFilter("all")}
             className={`px-2.5 py-1 rounded-md border text-[11px] font-semibold transition-all ${
               filter === "all"
-                ? "border-white/[0.20] bg-white/[0.05] text-white"
+                ? "border-white/[0.22] text-white"
                 : "border-white/[0.05] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}
           >
@@ -103,7 +103,7 @@ export function MuralFeed({ channelId }: { channelId?: string }) {
             onClick={() => setFilter("images")}
             className={`px-2.5 py-1 rounded-md border text-[11px] font-semibold transition-all ${
               filter === "images"
-                ? "border-white/[0.20] bg-white/[0.05] text-white"
+                ? "border-white/[0.22] text-white"
                 : "border-white/[0.05] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}
           >

@@ -77,9 +77,7 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
           {/* Completed */}
           {lesson.completed && !lesson.locked && (
             <div className="absolute top-2.5 left-2.5">
-              <div className="w-7 h-7 rounded-full bg-green-500/25 border border-green-500/50 flex items-center justify-center backdrop-blur-sm">
-                <Check className="w-3.5 h-3.5 text-green-400" />
-              </div>
+              <Check className="w-5 h-5 text-green-400" strokeWidth={2} />
             </div>
           )}
 
@@ -266,9 +264,9 @@ function Hero({ curriculum }: { curriculum: Module[] }) {
               <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => next && router.push(`/elite/aulas/${next.lesson.id}`)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all hover:brightness-110 hover:-translate-y-0.5"
-                  style={{ backgroundColor: heroAccent, color: "white", boxShadow: `0 4px 20px ${heroAccent}35` }}>
-                  <Play className="w-3.5 h-3.5 fill-white" />
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[13px] font-bold transition-all hover:-translate-y-0.5"
+                  style={{ borderColor: heroAccent, color: heroAccent }}>
+                  <Play className="w-3.5 h-3.5" />
                   Continuar aula
                 </button>
                 <div className="flex items-center gap-1.5 text-white/35">

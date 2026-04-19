@@ -2,8 +2,16 @@
 
 import { useState, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Check, X, Target, RotateCcw, Trophy } from "lucide-react";
 import { LessonChart, type ChartScenario } from "@/components/elite/LessonChart";
+
+const STEP_TRANSITION = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const },
+};
 
 /** Shuffle options and return new correct index. Eliminates position bias. */
 function shuffleOptions(options: string[], correctIdx: number): { options: string[]; correct: number } {
@@ -219,93 +227,111 @@ export default function TreinoPage() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <button onClick={() => router.push("/elite/pratica")} className="text-[13px] text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
-          <ChevronLeft className="w-3.5 h-3.5" /> Voltar
-        </button>
-        <div className="flex items-center gap-3">
-          <span className="text-[12px] text-white/30">{treino.title}</span>
-          <span className="text-[11px] text-white/20 font-mono">{currentStep + 1}/{treino.steps.length}</span>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="w-full h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${((currentStep + 1) / treino.steps.length) * 100}%`, backgroundColor: treino.moduleColor }} />
-      </div>
-
-      {/* Chart — full width */}
-      <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
-        <LessonChart scenario={step.chart} />
-      </div>
-
-      {/* Question */}
-      <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6">
-        <h3 className="text-[17px] font-bold text-white mb-2">{step.title}</h3>
-        <p className="text-[13px] text-white/45 leading-relaxed">{step.context}</p>
-      </div>
-
-      {/* Options */}
-      <div className="space-y-2.5">
-        {(shuffled?.options ?? step.options).map((option, idx) => {
-          const isSelected = selectedAnswer === idx;
-          const isCorrect = idx === (shuffled?.correct ?? step.correct);
-          let borderColor = "border-white/[0.06]";
-          let bg = "bg-[#0e0e10]";
-          let textColor = "text-white/60";
-
-          if (answered) {
-            if (isCorrect) {
-              borderColor = "border-green-500/40";
-              bg = "bg-green-500/[0.06]";
-              textColor = "text-green-400";
-            } else if (isSelected && !isCorrect) {
-              borderColor = "border-red-500/40";
-              bg = "bg-red-500/[0.06]";
-              textColor = "text-red-400";
-            } else {
-              textColor = "text-white/20";
-            }
-          }
-
-          return (
-            <button
-              key={idx}
-              onClick={() => handleAnswer(idx)}
-              disabled={answered}
-              className={`w-full text-left px-5 py-4 rounded-xl border ${borderColor} ${bg} ${textColor} transition-all duration-200 ${
-                !answered ? "hover:border-white/[0.15] hover:bg-white/[0.02] cursor-pointer" : ""
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                  answered && isCorrect ? "border-green-500 bg-green-500/20" :
-                  answered && isSelected && !isCorrect ? "border-red-500 bg-red-500/20" :
-                  isSelected ? "border-white/40" : "border-white/[0.10]"
-                }`}>
-                  {answered && isCorrect && <Check className="w-3 h-3 text-green-400" />}
-                  {answered && isSelected && !isCorrect && <X className="w-3 h-3 text-red-400" />}
-                </div>
-                <span className="text-[13px] leading-relaxed">{option}</span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Explanation */}
-      {answered && (
-        <div className="rounded-2xl border border-white/[0.06] bg-[#141417] p-6">
-          <p className="text-[12px] text-white/30 uppercase tracking-wider font-semibold mb-2">Explicação</p>
-          <p className="text-[13px] text-white/50 leading-relaxed">{step.explanation}</p>
-
-          <button onClick={handleNext} className="mt-5 flex items-center gap-2 px-5 py-3 rounded-xl text-[13px] font-bold text-white transition-all hover:brightness-110" style={{ backgroundColor: treino.moduleColor }}>
-            {isLast ? "Ver resultado" : "Próxima"} <ChevronRight className="w-4 h-4" />
+    <div className="max-w-7xl mx-auto space-y-5">
+      {/* Header + progress — full width */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <button onClick={() => router.push("/elite/pratica")} className="text-[13px] text-white/30 hover:text-white/60 flex items-center gap-1">
+            <ChevronLeft className="w-3.5 h-3.5" /> Voltar
           </button>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] text-white/30">{treino.title}</span>
+            <span className="text-[11px] text-white/20 font-mono">{currentStep + 1}/{treino.steps.length}</span>
+          </div>
         </div>
-      )}
+
+        <div className="w-full h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${((currentStep + 1) / treino.steps.length) * 100}%`, backgroundColor: treino.moduleColor }} />
+        </div>
+      </div>
+
+      {/* Split: gráfico à esquerda · pergunta + opções à direita (lg+) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-5 items-start">
+        {/* LEFT — Chart */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={`chart-${currentStep}`} {...STEP_TRANSITION} className="rounded-2xl border border-white/[0.06] overflow-hidden">
+            <LessonChart scenario={step.chart} />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* RIGHT — pergunta + opções + explicação (sticky no desktop) */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`qa-${currentStep}`}
+            {...STEP_TRANSITION}
+            transition={{ ...STEP_TRANSITION.transition, delay: 0.04 }}
+            className="lg:sticky lg:top-4 space-y-3 self-start"
+          >
+          <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5 min-h-[140px]">
+            <h3 className="text-[16px] font-bold text-white mb-2 leading-tight">{step.title}</h3>
+            <p className="text-[12.5px] text-white/50 leading-relaxed">{step.context}</p>
+          </div>
+
+          <div className="space-y-2">
+            {(shuffled?.options ?? step.options).map((option, idx) => {
+              const isSelected = selectedAnswer === idx;
+              const isCorrect = idx === (shuffled?.correct ?? step.correct);
+              let borderColor = "border-white/[0.06]";
+              let bg = "bg-[#0e0e10]";
+              let textColor = "text-white/60";
+
+              if (answered) {
+                if (isCorrect) {
+                  borderColor = "border-green-500/40";
+                  bg = "bg-green-500/[0.06]";
+                  textColor = "text-green-400";
+                } else if (isSelected && !isCorrect) {
+                  borderColor = "border-red-500/40";
+                  bg = "bg-red-500/[0.06]";
+                  textColor = "text-red-400";
+                } else {
+                  textColor = "text-white/20";
+                }
+              }
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleAnswer(idx)}
+                  disabled={answered}
+                  className={`w-full text-left px-4 py-3 rounded-lg border ${borderColor} ${bg} ${textColor} ${
+                    !answered ? "hover:border-white/[0.15] hover:bg-white/[0.02] cursor-pointer" : ""
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      answered && isCorrect ? "border-green-500 bg-green-500/20" :
+                      answered && isSelected && !isCorrect ? "border-red-500 bg-red-500/20" :
+                      isSelected ? "border-white/40" : "border-white/[0.10]"
+                    }`}>
+                      {answered && isCorrect && <Check className="w-2.5 h-2.5 text-green-400" />}
+                      {answered && isSelected && !isCorrect && <X className="w-2.5 h-2.5 text-red-400" />}
+                    </div>
+                    <span className="text-[12.5px] leading-relaxed">{option}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {answered && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="rounded-xl border border-white/[0.06] bg-[#141417] p-4"
+            >
+              <p className="text-[10.5px] text-white/30 uppercase tracking-wider font-semibold mb-1.5">Explicação</p>
+              <p className="text-[12px] text-white/55 leading-relaxed">{step.explanation}</p>
+
+              <button onClick={handleNext} className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12.5px] font-bold text-white hover:brightness-110" style={{ backgroundColor: treino.moduleColor }}>
+                {isLast ? "Ver resultado" : "Próxima"} <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

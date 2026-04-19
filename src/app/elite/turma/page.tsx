@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Users, Trophy, TrendingUp, Activity, MessageCircle, Flame,
   ThumbsUp, Send, Clock, Star, Eye, Target, Award, Zap, Plus, X, Upload, Image as ImageIcon, Shield,
@@ -221,13 +222,11 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
             <div className="grid grid-cols-2 gap-2">
               {types.map((t) => (
                 <button key={t.id} onClick={() => setType(t.id)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all text-left ${
-                    type === t.id ? "shadow-sm" : "border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.02]"
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-colors text-left ${
+                    type === t.id ? "" : "border-white/[0.05] hover:border-white/[0.12]"
                   }`}
-                  style={type === t.id ? { borderColor: t.color + "55", backgroundColor: t.color + "10" } : undefined}>
-                  <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: t.color + "18" }}>
-                    <t.icon className="w-3.5 h-3.5" style={{ color: t.color }} />
-                  </div>
+                  style={type === t.id ? { borderColor: t.color + "55" } : undefined}>
+                  <t.icon className="w-4 h-4 shrink-0" style={{ color: t.color }} strokeWidth={1.8} />
                   <div className="min-w-0">
                     <p className={`text-[12px] font-bold leading-tight ${type === t.id ? "text-white" : "text-white/70"}`}>{t.label}</p>
                   </div>
@@ -305,8 +304,8 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
             Cancelar
           </button>
           <button onClick={submit} disabled={!canSubmit}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-[12.5px] font-bold transition-all ${
-              canSubmit ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] text-white/25 cursor-not-allowed"
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg border text-[12.5px] font-bold transition-colors ${
+              canSubmit ? "border-brand-500 text-brand-500 hover:bg-brand-500/[0.04]" : "border-white/[0.06] text-white/25 cursor-not-allowed"
             }`}>
             <Send className="w-3.5 h-3.5" />
             Enviar pra validar
@@ -369,7 +368,7 @@ function MuralView({ isElite }: { isElite: boolean }) {
 
       {/* Submissões pendentes do próprio user (await validação do URA) */}
       {pending.filter(p => p.status === "pending").length > 0 && (
-        <div className="rounded-2xl border border-brand-500/20 bg-brand-500/[0.03] overflow-hidden">
+        <div className="rounded-2xl border border-brand-500/25 overflow-hidden">
           <div className="px-5 py-3 border-b border-brand-500/15 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-brand-500/70" />
@@ -381,7 +380,7 @@ function MuralView({ isElite }: { isElite: boolean }) {
             {isElite && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-brand-500/40 text-[11px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors"
               >
                 <Plus className="w-3 h-3" /> Submeter
               </button>
@@ -403,11 +402,11 @@ function MuralView({ isElite }: { isElite: boolean }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <p className="text-[12.5px] font-bold text-white/80 truncate">Você</p>
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: typeStyle.color + "18", color: typeStyle.color }}>
-                        {typeStyle.label}
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: typeStyle.color }}>
+                        · {typeStyle.label}
                       </span>
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/[0.05] border border-dashed border-white/[0.15] text-white/50">
-                        Aguardando validação
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/45">
+                        · Aguardando validação
                       </span>
                     </div>
                     <p className="text-[12px] text-white/70 leading-snug">{p.title}</p>
@@ -431,7 +430,7 @@ function MuralView({ isElite }: { isElite: boolean }) {
             pending.filter(p => p.status === "pending").length === 0 && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand-500/40 text-[11px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors"
               >
                 <Plus className="w-3 h-3" /> Submeter fora do Discord
               </button>
@@ -512,9 +511,8 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
                     <span className="text-[10px] text-white/30">{m.handle}</span>
                     <span className="text-[10px] text-white/25">·</span>
                     <span className="text-[10px] text-white/30">{post.timestamp}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ml-auto"
-                      style={{ backgroundColor: style.color + "18", color: style.color }}>
-                      {style.label}
+                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] ml-auto" style={{ color: style.color }}>
+                      · {style.label}
                     </span>
                   </div>
                   <h4 className="text-[14px] font-bold text-white/95 mb-1 leading-tight">{post.title}</h4>
@@ -542,9 +540,7 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
         <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4 sticky top-4">
           {!isElite ? (
             <div className="flex flex-col items-center py-6 text-center">
-              <div className="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-3">
-                <Shield className="w-5 h-5 text-brand-500" />
-              </div>
+              <Shield className="w-8 h-8 text-brand-500 mb-3" strokeWidth={1.5} />
               <h3 className="text-[14px] font-bold text-white mb-1">Postar é Elite</h3>
               <p className="text-[11px] text-white/40 max-w-xs mb-4">
                 VIPs leem tudo. Pra publicar trade, análise ou dúvida, upgrade pra Elite.
@@ -556,9 +552,7 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
             </div>
           ) : submitted ? (
             <div className="flex flex-col items-center py-6 text-center">
-              <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-3">
-                <Send className="w-5 h-5 text-green-400" />
-              </div>
+              <Send className="w-8 h-8 text-green-400 mb-3" strokeWidth={1.5} />
               <h3 className="text-[14px] font-bold text-white mb-1">Enviado!</h3>
               <p className="text-[11px] text-white/40 max-w-xs mb-4">Colegas vão poder comentar. Você recebe notificação.</p>
               <button onClick={() => { setSubmitted(false); setActiveType(null); setTitle(""); setBody(""); }}
@@ -573,13 +567,11 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
                   const active = activeType === k;
                   return (
                     <button key={k} onClick={() => setActiveType(k)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-left ${
-                        active ? "shadow-sm" : "border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.02]"
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-left ${
+                        active ? "" : "border-white/[0.05] hover:border-white/[0.12]"
                       }`}
-                      style={active ? { borderColor: style.color + "50", backgroundColor: style.color + "10" } : undefined}>
-                      <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: style.color + "18" }}>
-                        <style.icon className="w-3.5 h-3.5" style={{ color: style.color }} />
-                      </div>
+                      style={active ? { borderColor: style.color + "55" } : undefined}>
+                      <style.icon className="w-4 h-4 shrink-0" style={{ color: style.color }} strokeWidth={1.8} />
                       <span className={`text-[12px] font-semibold ${active ? "text-white" : "text-white/60"}`}>{style.label}</span>
                     </button>
                   );
@@ -718,7 +710,23 @@ function RankingView() {
    ──────────────────────────────────────────── */
 
 export default function TurmaPage() {
-  const [view, setView] = useState<ViewTab>("mural");
+  return (
+    <Suspense fallback={<div className="h-32" />}>
+      <TurmaInner />
+    </Suspense>
+  );
+}
+
+function TurmaInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const rawView = searchParams.get("view");
+  const view: ViewTab = rawView === "review" || rawView === "ranking" ? rawView : "mural";
+  const setView = (v: ViewTab) => {
+    const qs = v === "mural" ? "" : `?view=${v}`;
+    router.replace(`${pathname}${qs}`, { scroll: false });
+  };
   const { isElite } = useTier();
 
   return (
@@ -744,16 +752,16 @@ export default function TurmaPage() {
         {/* Tabs — só Mural/Review/Ranking (membros virou rota própria) */}
         <div className="flex gap-1.5 flex-wrap">
           {([
-            { id: "mural" as ViewTab,   label: "Conquistas",   icon: Trophy },
+            { id: "mural" as ViewTab,   label: "Feed",         icon: Trophy },
             { id: "review" as ViewTab,  label: "Peer Review",  icon: MessageCircle },
             { id: "ranking" as ViewTab, label: "Ranking",      icon: Activity },
           ]).map((tab) => {
             const active = view === tab.id;
             return (
               <button key={tab.id} onClick={() => setView(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors ${
                   active
-                    ? "border-white/[0.20] bg-white/[0.05] text-white"
+                    ? "border-white/[0.22] text-white"
                     : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12]"
                 }`}>
                 <tab.icon className={`w-3.5 h-3.5 ${active ? "text-brand-500" : ""}`} />

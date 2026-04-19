@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search, LayoutDashboard, Users, Radio, BookOpen, Crosshair, Newspaper,
-  Trophy, Gift, BarChart3, Target, type LucideIcon,
+  Trophy, Gift, BarChart3, Target, NotebookPen, type LucideIcon,
 } from "lucide-react";
 import { CURRICULUM } from "@/lib/curriculum";
 import { MODULE_TREINOS } from "@/lib/module-treinos";
+import { TREINO_CATEGORIES, countByCategory } from "@/lib/treino-scenarios";
 
 /* ────────────────────────────────────────────
    Command Palette — atalho global Cmd+K / Ctrl+K.
@@ -30,7 +31,8 @@ const PAGES: Item[] = [
   { id: "page-membros",    label: "Membros",    hint: "Todos membros",       href: "/elite/membros",    group: "Páginas", icon: Users,           keywords: "turma community comunidade" },
   { id: "page-calls",      label: "Calls",      hint: "Ao vivo",             href: "/elite/calls",      group: "Páginas", icon: Radio,           keywords: "live ao vivo transmissao" },
   { id: "page-aulas",      label: "Aulas",      hint: "Currículo Elite",     href: "/elite/aulas",      group: "Páginas", icon: BookOpen,        keywords: "curso curriculo" },
-  { id: "page-pratica",    label: "Prática",    hint: "Treinos e diário",    href: "/elite/pratica",    group: "Páginas", icon: Crosshair,       keywords: "prep sheet diario" },
+  { id: "page-pratica",    label: "Prática",    hint: "Treinos e cenários",  href: "/elite/pratica",    group: "Páginas", icon: Crosshair,       keywords: "treino cenario scenarios" },
+  { id: "page-diario",     label: "Diário",     hint: "Prep Sheet + review", href: "/elite/diario",     group: "Páginas", icon: NotebookPen,     keywords: "prep sheet diario trade journal plano" },
   { id: "page-mural",      label: "Mural",      hint: "Posts da turma",      href: "/elite/turma",      group: "Páginas", icon: Newspaper,       keywords: "feed" },
   { id: "page-conquistas", label: "Conquistas", hint: "Badges e timeline",   href: "/elite/conquistas", group: "Páginas", icon: Trophy,          keywords: "achievements badges" },
   { id: "page-loja",       label: "Loja",       hint: "URA Coin + caixas",   href: "/elite/loja",       group: "Páginas", icon: Gift,            keywords: "coin loot box" },
@@ -80,6 +82,22 @@ function buildIndex(): Item[] {
     icon: Target,
     keywords: "livre infinito aleatorio random",
   });
+
+  // Temas — cada categoria como entrada filtrável do Treino Livre
+  const counts = countByCategory();
+  for (const cat of TREINO_CATEGORIES) {
+    const n = counts[cat.key] ?? 0;
+    if (n === 0) continue;
+    items.push({
+      id: `tema-${cat.key}`,
+      label: `Treino ${cat.key}`,
+      hint: `Tema · ${n} ${n === 1 ? "cenário" : "cenários"}`,
+      href: `/elite/treino/livre?category=${encodeURIComponent(cat.key)}`,
+      group: "Treinos",
+      icon: Target,
+      keywords: `tema ${cat.tagline} ${cat.key}`.toLowerCase(),
+    });
+  }
 
   return items;
 }

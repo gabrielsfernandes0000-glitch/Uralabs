@@ -120,8 +120,70 @@ export function StoreClient({
           Loot Boxes
         </h2>
         {boxes.length === 0 ? (
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-6 py-14 text-center">
-            <p className="text-white/50 text-sm">Nenhuma caixa disponível no momento.</p>
+          <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-8 md:p-10 relative overflow-hidden">
+            {/* Watermark */}
+            <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
+              <span className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-amber-400 pr-12"
+                style={{ fontSize: "200px", letterSpacing: "-0.06em", lineHeight: 1 }}>
+                LOJA
+              </span>
+            </div>
+            <div className="absolute top-[-30%] right-[10%] w-[300px] h-[180px] bg-amber-500/[0.04] blur-[120px] pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-[1fr_260px] gap-8 items-start">
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-amber-400 mb-3">· Próximas caixas em breve</p>
+                <h3 className="text-[22px] font-bold text-white tracking-tight mb-3 leading-tight">
+                  Acumule URA Coin e abra caixas com cosméticos, prêmios em cash e drops especiais
+                </h3>
+                <p className="text-[12.5px] text-white/45 leading-relaxed mb-6 max-w-lg">
+                  Ainda não há caixas disponíveis nesta temporada. Enquanto isso, concentre-se em acumular coin — quanto mais você tiver quando elas forem abertas, mais chances de prêmios raros.
+                </p>
+
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-white/30">Como ganhar coin</p>
+                  <div className="space-y-2 text-[12.5px] text-white/60">
+                    <div className="flex items-baseline gap-2">
+                      <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 translate-y-[6px]" />
+                      <span><span className="font-bold text-white/80">Missão do dia</span> · 3 cenários de prática · streak mantida</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 translate-y-[6px]" />
+                      <span><span className="font-bold text-white/80">Calls ao vivo</span> · coin por presença e engajamento</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 translate-y-[6px]" />
+                      <span><span className="font-bold text-white/80">Drops aleatórios</span> · mensagens surpresa no Discord</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 translate-y-[6px]" />
+                      <span><span className="font-bold text-white/80">Conquistas desbloqueadas</span> · bonus proporcional à raridade</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 md:border-l md:border-white/[0.06] md:pl-8">
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.25em] uppercase text-white/30 mb-3">O que esperar</p>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/60">· Cosméticos</p>
+                      <p className="text-[11px] text-white/35 mt-0.5">Banner, frame de avatar, aura</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/60">· Cash drops</p>
+                      <p className="text-[11px] text-white/35 mt-0.5">PIX direto pra conta</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/60">· Edições raras</p>
+                      <p className="text-[11px] text-white/35 mt-0.5">Limited · nunca reemitidas</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -257,7 +319,7 @@ function HistorySection({
                 onClick={() => { setFilter(f.id); setExpanded(false); }}
                 className={`px-2.5 py-1 rounded-md border text-[11px] font-semibold transition-all ${
                   active
-                    ? "border-white/[0.20] bg-white/[0.05] text-white"
+                    ? "border-white/[0.22] text-white"
                     : "border-white/[0.05] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
                 }`}
               >

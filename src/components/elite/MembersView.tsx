@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { Users, Zap, Flame, Search, MessageCircle, Trophy, Coins } from "lucide-react";
 import { fetchDiscordMembers, type DiscordMember } from "@/lib/discord-members";
 import { MemberProfileModal } from "./MemberProfileModal";
-import { CosmeticBanner, isBannerSlug, bannerAccent } from "./CosmeticBanner";
-import { AvatarWithCosmetics } from "./AvatarCosmetics";
 
 type SortBy = "default" | "messages" | "achievements" | "coins";
+
+const PAGE_SIZE = 24;
 
 const SORT_META: Record<SortBy, { label: string; short: string }> = {
   default:      { label: "Padrão",      short: "Elite primeiro · mais antigos no topo" },
@@ -29,6 +29,12 @@ export function MembersView() {
   const [sortBy, setSortBy] = useState<SortBy>("default");
   const [profileMember, setProfileMember] = useState<DiscordMember | null>(null);
   const [myId, setMyId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reseta reveal quando muda filtro/busca/sort — senão "Mostrar mais" fica incoerente.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [query, tierFilter, sortBy]);
 
   useEffect(() => {
     fetchDiscordMembers()
@@ -92,6 +98,8 @@ export function MembersView() {
   });
 
   const showRank = sortBy !== "default";
+  const visibleMembers = sorted.slice(0, visibleCount);
+  const hasMore = sorted.length > visibleCount;
 
   return (
     <div className="space-y-4">
@@ -101,22 +109,22 @@ export function MembersView() {
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setTierFilter("all")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-all ${
-              tierFilter === "all" ? "border-white/[0.20] bg-white/[0.05] text-white" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
+              tierFilter === "all" ? "border-white/[0.22] text-white" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}>
             <Users className="w-3.5 h-3.5" />
             Todos <span className="text-white/30 font-mono text-[11px]">{members.length}</span>
           </button>
           <button onClick={() => setTierFilter("elite")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-all ${
-              tierFilter === "elite" ? "border-brand-500/40 bg-brand-500/[0.08] text-brand-500" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
+              tierFilter === "elite" ? "border-brand-500/50 text-brand-500" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}>
             <Flame className="w-3.5 h-3.5 fill-current" />
             Elite <span className={`font-mono text-[11px] ${tierFilter === "elite" ? "text-brand-500/60" : "text-white/30"}`}>{eliteCount}</span>
           </button>
           <button onClick={() => setTierFilter("vip")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-all ${
-              tierFilter === "vip" ? "border-blue-500/40 bg-blue-500/[0.08] text-blue-400" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
+              tierFilter === "vip" ? "border-blue-500/50 text-blue-400" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}>
             <Zap className="w-3.5 h-3.5" />
             VIP <span className={`font-mono text-[11px] ${tierFilter === "vip" ? "text-blue-400/60" : "text-white/30"}`}>{vipCount}</span>
@@ -127,7 +135,7 @@ export function MembersView() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25" />
           <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar membro..."
-            className="w-full md:w-64 pl-9 pr-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/85 placeholder-white/25 focus:outline-none focus:border-white/[0.18] transition-colors" />
+            className="w-full md:w-64 pl-9 pr-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/85 placeholder-white/25 focus:outline-none focus:border-white/[0.18]" />
         </div>
       </div>
 
@@ -139,9 +147,9 @@ export function MembersView() {
           const Icon = opt === "messages" ? MessageCircle : opt === "achievements" ? Trophy : opt === "coins" ? Coins : Users;
           return (
             <button key={opt} onClick={() => setSortBy(opt)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] font-semibold ${
                 active
-                  ? "border-white/[0.20] bg-white/[0.05] text-white"
+                  ? "border-white/[0.22] text-white"
                   : "border-white/[0.05] text-white/35 hover:text-white/65 hover:border-white/[0.12]"
               }`}
               title={SORT_META[opt].short}>
@@ -156,7 +164,7 @@ export function MembersView() {
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-white/[0.05] bg-[#0e0e10] p-4 animate-pulse">
+            <div key={i} className="rounded-xl border border-white/[0.05] bg-[#0e0e10] p-4">
               <div className="w-12 h-12 rounded-full bg-white/[0.04] mb-3" />
               <div className="h-3 bg-white/[0.04] rounded w-20 mb-2" />
               <div className="h-2.5 bg-white/[0.04] rounded w-16" />
@@ -170,9 +178,8 @@ export function MembersView() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {sorted.map((m) => {
-            const hasBanner = isBannerSlug(m.bannerSlug);
-            const accent = hasBanner ? bannerAccent(m.bannerSlug) : (m.tier === "elite" ? "#FF5500" : "#3B82F6");
+          {visibleMembers.map((m) => {
+            const accent = m.tier === "elite" ? "#FF5500" : "#3B82F6";
             const isMe = myId != null && m.id === myId;
             const rank = showRank ? rankOf.get(m.id) ?? null : null;
             const scoreValue =
@@ -185,15 +192,15 @@ export function MembersView() {
               <button
                 key={m.id}
                 onClick={() => setProfileMember(m)}
-                className={`group text-left relative overflow-hidden rounded-xl border bg-[#0e0e10] transition-all duration-300 ease-out min-h-[160px] flex flex-col hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] ${
+                className={`text-left relative overflow-hidden rounded-xl border bg-[#0e0e10] min-h-[160px] flex flex-col ${
                   isMe
-                    ? "border-brand-500/40 ring-1 ring-brand-500/20 hover:border-brand-500/60 hover:ring-brand-500/35"
+                    ? "border-brand-500/40 ring-1 ring-brand-500/20 hover:border-brand-500/60"
                     : "border-white/[0.06] hover:border-white/[0.20]"
                 }`}
               >
                 {/* "Você" badge no próprio card */}
                 {isMe && (
-                  <span className="absolute top-2.5 left-2.5 z-20 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-[0.18em] bg-brand-500/90 text-white shadow-sm">
+                  <span className="absolute top-2.5 left-2.5 z-20 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-500">
                     Você
                   </span>
                 )}
@@ -201,12 +208,12 @@ export function MembersView() {
                 {/* Rank badge — top 3 tem medalha (gold/silver/bronze), resto mostra #N */}
                 {rank != null && !isMe && (
                   <span
-                    className="absolute top-2.5 left-2.5 z-20 min-w-[22px] h-5 px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold font-mono shadow-sm"
+                    className="absolute top-2.5 left-2.5 z-20 min-w-[22px] h-5 px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold font-mono"
                     style={medalColor
-                      ? { backgroundColor: medalColor + "25", color: medalColor, border: `1px solid ${medalColor}55`, boxShadow: rank === 1 ? `0 0 10px ${medalColor}50` : undefined }
+                      ? { backgroundColor: medalColor + "25", color: medalColor, border: `1px solid ${medalColor}55` }
                       : { backgroundColor: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.12)" }}
                   >
-                    {rank <= 3 ? `#${rank}` : `#${rank}`}
+                    #{rank}
                   </span>
                 )}
                 {rank != null && isMe && (
@@ -215,58 +222,31 @@ export function MembersView() {
                   </span>
                 )}
 
-                {/* Banner thumb card-variant (~55px de altura) */}
+                {/* Banner simples por tier (sem cosméticos) */}
                 <div className="relative h-[55px] overflow-hidden">
-                  {hasBanner ? (
-                    <CosmeticBanner slug={m.bannerSlug} variant="card" animated="hover" />
-                  ) : (
-                    <div
-                      className="absolute inset-0 transition-opacity duration-300 group-hover:opacity-90"
-                      style={{
-                        background: `linear-gradient(135deg, ${accent}20 0%, transparent 70%)`,
-                      }}
-                    />
-                  )}
-                  {/* Shine sweep no hover — micro-interação tipo Discord */}
                   <div
-                    className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: `linear-gradient(105deg, transparent 30%, ${accent}25 50%, transparent 70%)`,
-                      transform: "translateX(-100%)",
-                      animation: "none",
-                    }}
+                    className="absolute inset-0"
+                    style={{ background: `linear-gradient(135deg, ${accent}20 0%, transparent 70%)` }}
                   />
                   <div className="absolute inset-0 pointer-events-none" style={{
                     background: "linear-gradient(to bottom, transparent 0%, rgba(14,14,16,0.4) 70%, #0e0e10 100%)",
                   }} />
                 </div>
-                <div className="absolute top-0 left-0 right-0 h-[2px] transition-all duration-300 group-hover:h-[3px]" style={{
-                  background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
-                }} />
 
                 <div className="relative z-10 px-4 pb-4 -mt-8 flex-1 flex flex-col">
                   <div className="flex items-end justify-between mb-2.5">
-                    <div className="transition-transform duration-300 ease-out group-hover:scale-[1.05]">
-                      {m.frameSlug || m.effectSlug ? (
-                        <AvatarWithCosmetics
-                          src={m.avatarUrl} name={m.globalName} size={48}
-                          frameSlug={m.frameSlug} auraSlug={m.effectSlug}
-                          animated="hover"
-                        />
-                      ) : (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.avatarUrl} alt={m.globalName}
-                          className="w-12 h-12 rounded-full object-cover relative"
-                          style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50, 0 4px 12px rgba(0,0,0,0.4)` }} />
-                      )}
-                    </div>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-                      style={{ backgroundColor: accent + "18", color: accent, border: `1px solid ${accent}30` }}>
-                      {m.tier === "elite" ? <Flame className="w-2.5 h-2.5 fill-current" /> : <Zap className="w-2.5 h-2.5" />}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={m.avatarUrl} alt={m.globalName}
+                      loading="lazy" decoding="async"
+                      className="w-12 h-12 rounded-full object-cover relative"
+                      style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50` }} />
+                    <span className="inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-[0.22em]"
+                      style={{ color: accent }}>
+                      {m.tier === "elite" ? <Flame className="w-2.5 h-2.5" strokeWidth={2} /> : <Zap className="w-2.5 h-2.5" strokeWidth={2} />}
                       {m.tier === "elite" ? "Elite" : "VIP"}
                     </span>
                   </div>
-                  <p className="text-[12.5px] font-bold text-white/90 tracking-tight leading-tight truncate transition-colors duration-300 group-hover:text-white">{m.globalName}</p>
+                  <p className="text-[12.5px] font-bold text-white/90 tracking-tight leading-tight truncate">{m.globalName}</p>
                   <p className="text-[10.5px] text-white/35 truncate mt-0.5">@{m.username}</p>
 
                   {/* Score visível quando sort ativo */}
@@ -286,9 +266,21 @@ export function MembersView() {
         </div>
       )}
 
+      {!loading && hasMore && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            className="px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-[12px] font-semibold text-white/70 hover:text-white hover:border-white/[0.18] hover:bg-white/[0.04]"
+          >
+            Mostrar mais <span className="text-white/35 font-mono text-[11px] ml-1">+{Math.min(PAGE_SIZE, sorted.length - visibleCount)}</span>
+          </button>
+        </div>
+      )}
+
       {!loading && sorted.length > 0 && (
         <p className="text-center text-[10.5px] text-white/30 font-mono">
-          {sorted.length} de {members.length} membros
+          {visibleMembers.length} de {sorted.length}
+          {sorted.length !== members.length && <span className="text-white/20"> · {members.length} total</span>}
         </p>
       )}
     </div>

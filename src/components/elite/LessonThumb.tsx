@@ -74,17 +74,13 @@ function ThumbBase({ accent, tag, children }: { accent: string; tag?: string; ch
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: `linear-gradient(90deg, transparent, ${accent}70 30%, ${accent}50 70%, transparent)`,
       }} />
-      {/* Tag da categoria — ícone-texto curto pra reconhecimento rápido */}
+      {/* Tag da categoria — somente texto em caps, cor como acento */}
       {tag && (
         <div
-          className="absolute top-2.5 right-2.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.15em] backdrop-blur-sm z-10"
-          style={{
-            backgroundColor: accent + "22",
-            color: accent,
-            border: `1px solid ${accent}45`,
-          }}
+          className="absolute top-2.5 right-2.5 text-[9px] font-bold uppercase tracking-[0.2em] z-10"
+          style={{ color: accent }}
         >
-          {tag}
+          · {tag}
         </div>
       )}
       {children}

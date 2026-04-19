@@ -176,8 +176,8 @@ function BadgeCard({
 
       {/* Manual flag — mostra em qualquer estado */}
       {!achievement.autoDistribute && (
-        <div className="absolute top-3 left-3 z-10 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.08]">
-          <span className="text-[8px] font-bold text-white/45 uppercase tracking-[0.15em]">Manual</span>
+        <div className="absolute top-3 left-3 z-10">
+          <span className="text-[8px] font-bold text-white/40 uppercase tracking-[0.2em]">· Manual</span>
         </div>
       )}
 
@@ -288,9 +288,7 @@ function AchievementModal({
         <div className="mx-5 mb-5 rounded-xl border border-white/[0.05] bg-white/[0.015] p-5">
           {unlocked ? (
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
-                <Check className="w-4 h-4 text-green-400" />
-              </div>
+              <Check className="w-5 h-5 text-green-400 shrink-0 mt-0.5" strokeWidth={1.8} />
               <div>
                 <p className="text-[12px] font-bold text-green-400 uppercase tracking-wider mb-1">Desbloqueada</p>
                 <p className="text-[12px] text-white/50 leading-relaxed">
@@ -380,10 +378,10 @@ function TimelineView({ unlocks }: { unlocks: UnlockMeta[] }) {
                       <p className="text-[11.5px] text-white/45 mt-0.5 truncate">{ach.detail}</p>
                     </div>
                     {u.coins_granted > 0 && (
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 shrink-0">
-                        <span className="text-[10px] text-amber-300 font-bold tabular-nums">+{u.coins_granted.toLocaleString("pt-BR")}</span>
-                        <span className="text-[9px] text-amber-300/60 uppercase tracking-wider">coin</span>
-                      </div>
+                      <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold tabular-nums text-amber-300">
+                        +{u.coins_granted.toLocaleString("pt-BR")}
+                        <span className="text-[9px] text-amber-300/60 uppercase tracking-wider font-normal">coin</span>
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-2 text-[10px] text-white/30">
@@ -631,7 +629,7 @@ function InsightsView() {
             <p className="text-[11px] text-white/25 max-w-sm text-center">
               Registre trades no Diário e preencha Prep Sheets pra desbloquear insights personalizados sobre seu operacional.
             </p>
-            <Link href="/elite/pratica" className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-[12px] text-brand-500 font-medium hover:bg-brand-500/15 transition-all">
+            <Link href="/elite/pratica" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-500/40 text-[12px] text-brand-500 font-medium hover:bg-brand-500/[0.04] transition-colors">
               Ir pra Prática <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -828,9 +826,9 @@ export default function ConquistasPage() {
             const active = view === tab.id;
             return (
               <button key={tab.id} onClick={() => setView(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors ${
                   active
-                    ? "border-white/[0.20] bg-white/[0.05] text-white"
+                    ? "border-white/[0.22] text-white"
                     : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12]"
                 }`}>
                 <tab.icon className={`w-3.5 h-3.5 ${active ? "text-brand-500" : ""}`} />
@@ -876,8 +874,8 @@ export default function ConquistasPage() {
                   <h2 className="text-[18px] font-bold text-white/90">{meta.label}</h2>
                   <span className="text-[12px] text-white/35">{meta.sub}</span>
                   {(isOG || isTrading) && (
-                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/30 px-2 py-0.5 rounded border border-white/[0.08] bg-white/[0.02]">
-                      Manual
+                    <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/35">
+                      · Manual
                     </span>
                   )}
                 </div>

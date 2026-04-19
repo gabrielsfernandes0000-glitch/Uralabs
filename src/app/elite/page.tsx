@@ -94,33 +94,32 @@ export default async function EliteDashboard() {
           style={{ backgroundColor: currentStep.accent + "08" }} />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_60%_at_70%_20%,#000_40%,transparent_100%)]" />
 
-        <div className="relative z-10 p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="absolute -inset-1 rounded-xl blur-md" style={{ backgroundColor: currentStep.accent + "25" }} />
-              <Avatar src={avatar} name={displayName} size={52} className="relative rounded-xl ring-2 ring-white/[0.06] ring-offset-2 ring-offset-[#0e0e10]" />
-            </div>
+            <Avatar src={avatar} name={displayName} size={60} className="rounded-xl ring-1 ring-white/[0.08]" />
             <div>
               <p className="text-[11px] text-white/30 font-medium">{greeting},</p>
-              <h1 className="text-[20px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`text-[9px] font-semibold tracking-[0.2em] uppercase flex items-center gap-1 ${isElite ? "text-brand-500/70" : "text-blue-400/70"}`}>
-                  <Flame className="w-3 h-3" /> {tierLabelText}
+              <h1 className="text-[26px] md:text-[30px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
+              <div className="flex items-center gap-2 mt-1.5">
+                <Flame className={`w-3 h-3 ${isElite ? "text-brand-500/80" : "text-blue-400/80"}`} strokeWidth={2} />
+                <span className={`text-[9.5px] font-bold tracking-[0.25em] uppercase ${isElite ? "text-brand-500/80" : "text-blue-400/80"}`}>
+                  {tierLabelText}
                 </span>
                 <span className="text-white/20">·</span>
-                <span className="text-[10px] text-white/25 capitalize">{dateStr}</span>
+                <span className="text-[10px] text-white/30 capitalize">{dateStr}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="px-4 py-2.5 bg-white/[0.02] border border-brand-500/10 rounded-lg text-center min-w-[64px]">
-              <p className="text-[17px] text-white font-bold leading-none"><CountUp end={stats.streak} duration={1} /></p>
-              <p className="text-[9px] text-brand-500/40 uppercase tracking-wider mt-0.5">streak</p>
+          <div className="flex items-end gap-6">
+            <div className="text-right">
+              <p className="text-[32px] md:text-[38px] font-bold text-white leading-none font-mono"><CountUp end={stats.streak} duration={1} /></p>
+              <p className="text-[10px] text-brand-500/50 uppercase tracking-[0.2em] mt-1.5">streak</p>
             </div>
-            <div className="px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-lg text-center min-w-[64px]">
-              <p className="text-[17px] text-white font-bold leading-none"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></p>
-              <p className="text-[9px] text-white/30 uppercase tracking-wider mt-0.5">dias rest.</p>
+            <div className="h-10 w-px bg-white/[0.08]" />
+            <div className="text-right">
+              <p className="text-[32px] md:text-[38px] font-bold text-white leading-none font-mono"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></p>
+              <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1.5">dias rest.</p>
             </div>
           </div>
         </div>
@@ -133,17 +132,15 @@ export default async function EliteDashboard() {
           <GlowBorder color={currentStep.accent} duration={8} />
           <div className="relative z-10 p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center border shrink-0" style={{ borderColor: currentStep.accent + "30", backgroundColor: currentStep.accent + "10" }}>
-                <currentStep.icon className="w-5 h-5" style={{ color: currentStep.accent }} />
-              </div>
+              <currentStep.icon className="w-8 h-8 shrink-0" style={{ color: currentStep.accent }} strokeWidth={1.5} />
               <div className="min-w-0">
                 <p className="text-[10px] text-white/40 uppercase tracking-wider font-semibold mb-0.5">Próximo · {currentStep.timeHint}</p>
                 <h2 className="text-[18px] font-bold text-white leading-tight">{currentStep.label}</h2>
                 <p className="text-[12px] text-white/40 mt-0.5 truncate">{currentStep.description}</p>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12.5px] font-bold transition-all group-hover:scale-105 shrink-0"
-              style={{ backgroundColor: currentStep.accent, color: "white" }}>
+            <div className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-[12.5px] font-bold transition-all group-hover:scale-105 shrink-0"
+              style={{ borderColor: currentStep.accent, color: currentStep.accent }}>
               Ir agora
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
@@ -189,11 +186,11 @@ export default async function EliteDashboard() {
 
                 <Link href={step.href} className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                   step.done
-                    ? "bg-green-500/15 border-2 border-green-500/30"
+                    ? "border border-green-500/40"
                     : isCurrent
                     ? "border-2"
-                    : "bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15]"
-                }`} style={isCurrent && !step.done ? { borderColor: step.accent + "60", boxShadow: `0 0 18px ${step.accent}25` } : undefined}>
+                    : "border border-white/[0.08] hover:border-white/[0.15]"
+                }`} style={isCurrent && !step.done ? { borderColor: step.accent + "60", boxShadow: `0 0 18px ${step.accent}20` } : undefined}>
                   {step.done ? (
                     <span className="text-green-400 text-[12px] font-bold">✓</span>
                   ) : (
@@ -291,8 +288,8 @@ export default async function EliteDashboard() {
                 { initials: "LR", color: "#A855F7", name: "Lucas",   action: "payout",  detail: "TopStep $1.100",     time: "1d" },
               ].map((a, i) => (
                 <div key={i} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0"
-                    style={{ background: `linear-gradient(135deg, ${a.color}30, ${a.color}10)`, color: a.color, border: `1px solid ${a.color}40` }}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border"
+                    style={{ color: a.color, borderColor: a.color + "40" }}>
                     {a.initials}
                   </div>
                   <div className="flex-1 min-w-0">

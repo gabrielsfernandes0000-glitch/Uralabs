@@ -558,9 +558,7 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
   if (allDone) {
     return (
       <div className="flex flex-col items-center py-8">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: accent + "15" }}>
-          <Sparkles className="w-7 h-7" style={{ color: accent }} />
-        </div>
+        <Sparkles className="w-10 h-10 mb-4" style={{ color: accent }} strokeWidth={1.5} />
         <p className="text-[18px] font-bold text-white mb-1">Todos revisados!</p>
         <p className="text-[13px] text-white/35 mb-5">{cards.length} conceitos dominados</p>
         <button onClick={handleReset} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white/80 transition-all">
@@ -610,16 +608,14 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
                 background: `radial-gradient(ellipse 50% 50% at 50% 30%, ${accent}08, transparent)`
               }} />
               <div className="relative z-10 p-8 flex flex-col items-center justify-center h-full text-center">
-                {/* Question mark icon */}
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-5" style={{ backgroundColor: accent + "15" }}>
-                  <span className="text-[20px] font-black" style={{ color: accent + "80" }}>?</span>
-                </div>
+                {/* Question mark */}
+                <span className="text-[36px] font-black mb-5 leading-none" style={{ color: accent + "80" }}>?</span>
                 {/* Question */}
                 <p className="text-[18px] text-white/90 font-bold leading-relaxed max-w-md">{currentCard.front}</p>
                 {/* CTA */}
-                <div className="mt-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                  <span className="text-[11px] text-white/25">Pensou na resposta?</span>
-                  <span className="text-[11px] font-medium" style={{ color: accent + "90" }}>Clique pra virar</span>
+                <div className="mt-6 flex items-center gap-2">
+                  <span className="text-[11px] text-white/30">Pensou na resposta?</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: accent + "A0" }}>· Clique pra virar</span>
                 </div>
               </div>
             </div>
@@ -636,10 +632,8 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
                 background: `linear-gradient(90deg, transparent, ${accent}50 30%, ${accent}30 70%, transparent)`
               }} />
               <div className="relative z-10 p-8 flex flex-col items-center justify-center h-full text-center">
-                {/* Check icon */}
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-5" style={{ backgroundColor: accent + "15" }}>
-                  <Check className="w-5 h-5" style={{ color: accent + "90" }} />
-                </div>
+                {/* Check */}
+                <Check className="w-8 h-8 mb-5" style={{ color: accent + "90" }} strokeWidth={1.5} />
                 {/* Answer */}
                 <p className="text-[15px] text-white/80 leading-relaxed max-w-md">{currentCard.back}</p>
               </div>
@@ -653,11 +647,11 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
         <div className="space-y-3">
           <p className="text-[12px] text-white/25 text-center mb-3">Você sabia a resposta?</p>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => handleMark(false)} className="flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-yellow-500/20 bg-yellow-500/[0.04] text-[13px] text-yellow-400/80 font-medium hover:bg-yellow-500/[0.08] transition-all">
+            <button onClick={() => handleMark(false)} className="flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-yellow-500/30 text-[13px] text-yellow-400/80 font-medium hover:border-yellow-500/50 transition-colors">
               <RotateCcw className="w-4 h-4" />
               Não sabia
             </button>
-            <button onClick={() => handleMark(true)} className="flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-green-500/20 bg-green-500/[0.04] text-[13px] text-green-400/80 font-medium hover:bg-green-500/[0.08] transition-all">
+            <button onClick={() => handleMark(true)} className="flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-green-500/30 text-[13px] text-green-400/80 font-medium hover:border-green-500/50 transition-colors">
               <Check className="w-4 h-4" />
               Sabia
             </button>
@@ -870,9 +864,9 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
           Voltar para aulas
         </Link>
         <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider"
-            style={{ backgroundColor: accent + "18", color: accent + "CC" }}>
-            Módulo {mod.number} · Aula {String(index + 1).padStart(2, "0")}
+          <span className="text-[10px] font-bold font-mono uppercase tracking-[0.2em]"
+            style={{ color: accent + "CC" }}>
+            · Módulo {mod.number} · Aula {String(index + 1).padStart(2, "0")}
           </span>
           <span className="text-[11px] text-white/30 font-medium">{mod.subtitle}</span>
           <span className="ml-auto flex items-center gap-3 text-white/30">
@@ -904,13 +898,11 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
                   maskImage: "radial-gradient(ellipse 50% 50% at 50% 50%, black 20%, transparent 70%)",
                   WebkitMaskImage: "radial-gradient(ellipse 50% 50% at 50% 50%, black 20%, transparent 70%)"
                 }} />
-                <div className="relative z-10 flex flex-col items-center gap-4">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center border-2 border-dashed" style={{ borderColor: accent + "30" }}>
-                    <Play className="w-8 h-8 ml-1" style={{ color: accent + "50" }} />
-                  </div>
+                <div className="relative z-10 flex flex-col items-center gap-5">
+                  <Play className="w-12 h-12" style={{ color: accent + "60" }} strokeWidth={1.2} />
                   <div className="text-center">
-                    <p className="text-[14px] text-white/30 font-medium">Vídeo em breve</p>
-                    <p className="text-[11px] text-white/30 mt-1">A gravação será disponibilizada aqui</p>
+                    <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2" style={{ color: accent + "90" }}>Vídeo em breve</p>
+                    <p className="text-[12px] text-white/40 leading-relaxed max-w-[280px]">A gravação será disponibilizada nesta área quando pronta</p>
                   </div>
                 </div>
               </div>
@@ -923,10 +915,8 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-0.5 pl-1">Recursos da aula</p>
 
           {lesson.hasPdf && (
-            <button onClick={() => {}} className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02] transition-all text-left">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "14" }}>
-                <FileText className="w-4 h-4" style={{ color: accent + "CC" }} />
-              </div>
+            <button onClick={() => {}} className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] transition-colors text-left">
+              <FileText className="w-5 h-5 shrink-0" style={{ color: accent + "CC" }} strokeWidth={1.5} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Material da Aula</p>
                 <p className="text-[10.5px] text-white/35 mt-0.5">Baixar PDF</p>
@@ -937,15 +927,11 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {lesson.hasQuiz && lesson.quiz && lesson.quiz.length > 0 && (
             <button onClick={() => activateResource("quiz")}
-              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all text-left ${
-                activeResource === "quiz"
-                  ? "shadow-lg"
-                  : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02]"
+              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
+                activeResource === "quiz" ? "" : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14]"
               }`}
-              style={activeResource === "quiz" ? { borderColor: accent + "55", backgroundColor: accent + "10", boxShadow: `0 4px 16px ${accent}15` } : undefined}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + (activeResource === "quiz" ? "22" : "14") }}>
-                <BookOpen className="w-4 h-4" style={{ color: activeResource === "quiz" ? accent : accent + "CC" }} />
-              </div>
+              style={activeResource === "quiz" ? { borderColor: accent + "55" } : undefined}>
+              <BookOpen className="w-5 h-5 shrink-0" style={{ color: activeResource === "quiz" ? accent : accent + "CC" }} strokeWidth={1.5} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Quiz</p>
                 <p className="text-[10.5px] text-white/35 mt-0.5">{lesson.quiz.length} perguntas</p>
@@ -962,15 +948,11 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {hasFlashcards && (
             <button onClick={() => activateResource("flashcards")}
-              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all text-left ${
-                activeResource === "flashcards"
-                  ? "shadow-lg"
-                  : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02]"
+              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
+                activeResource === "flashcards" ? "" : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14]"
               }`}
-              style={activeResource === "flashcards" ? { borderColor: accent + "55", backgroundColor: accent + "10", boxShadow: `0 4px 16px ${accent}15` } : undefined}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + (activeResource === "flashcards" ? "22" : "14") }}>
-                <Sparkles className="w-4 h-4" style={{ color: activeResource === "flashcards" ? accent : accent + "CC" }} />
-              </div>
+              style={activeResource === "flashcards" ? { borderColor: accent + "55" } : undefined}>
+              <Sparkles className="w-5 h-5 shrink-0" style={{ color: activeResource === "flashcards" ? accent : accent + "CC" }} strokeWidth={1.5} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Flashcards</p>
                 <p className="text-[10.5px] text-white/35 mt-0.5">{flashcards!.length} conceitos</p>
@@ -985,15 +967,11 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {hasChecklist && (
             <button onClick={() => activateResource("checklist")}
-              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all text-left ${
-                activeResource === "checklist"
-                  ? "shadow-lg"
-                  : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] hover:bg-white/[0.02]"
+              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
+                activeResource === "checklist" ? "" : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14]"
               }`}
-              style={activeResource === "checklist" ? { borderColor: accent + "55", backgroundColor: accent + "10", boxShadow: `0 4px 16px ${accent}15` } : undefined}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + (activeResource === "checklist" ? "22" : "14") }}>
-                <CheckCircle className="w-4 h-4" style={{ color: activeResource === "checklist" ? accent : accent + "CC" }} />
-              </div>
+              style={activeResource === "checklist" ? { borderColor: accent + "55" } : undefined}>
+              <CheckCircle className="w-5 h-5 shrink-0" style={{ color: activeResource === "checklist" ? accent : accent + "CC" }} strokeWidth={1.5} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Exercício Prático</p>
                 <p className="text-[10.5px] text-white/35 mt-0.5">{lesson.checklist!.length} items</p>
@@ -1008,18 +986,12 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {hasTreinos && (
             <button onClick={() => activateResource("treino")}
-              className="group relative overflow-hidden w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-all hover:-translate-y-0.5"
-              style={{
-                borderColor: activeResource === "treino" ? accent + "70" : accent + "40",
-                backgroundColor: activeResource === "treino" ? accent + "18" : accent + "0C",
-                boxShadow: activeResource === "treino" ? `0 4px 16px ${accent}25` : undefined,
-              }}>
+              className="group relative overflow-hidden w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-colors"
+              style={{ borderColor: activeResource === "treino" ? accent + "70" : accent + "40" }}>
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{
                 background: `linear-gradient(90deg, transparent, ${accent}70, transparent)`
               }} />
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "22" }}>
-                <Target className="w-4 h-4" style={{ color: accent }} />
-              </div>
+              <Target className="w-5 h-5 shrink-0" style={{ color: accent }} strokeWidth={1.5} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white font-bold leading-tight">Agora pratique</p>
                 <p className="text-[10.5px] mt-0.5" style={{ color: accent + "AA" }}>
