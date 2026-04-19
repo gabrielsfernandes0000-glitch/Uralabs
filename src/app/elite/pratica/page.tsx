@@ -106,33 +106,33 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
   const done14 = days.filter((d) => d.done).length;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6">
-      <div className="absolute top-[-30%] right-[-10%] w-[280px] h-[180px] bg-amber-500/[0.05] blur-[120px] pointer-events-none" />
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+      <div className="absolute top-[-30%] right-[-10%] w-[260px] h-[160px] bg-amber-500/[0.05] blur-[110px] pointer-events-none" />
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
 
-      <div className="relative z-10 space-y-5">
-        <div className="flex items-center gap-4">
-          <Flame className={`w-10 h-10 shrink-0 ${streak > 0 ? "text-amber-400" : "text-white/25"}`} strokeWidth={1.5} />
+      <div className="relative z-10 space-y-3.5">
+        <div className="flex items-center gap-3">
+          <Flame className={`w-8 h-8 shrink-0 ${streak > 0 ? "text-amber-400" : "text-white/25"}`} strokeWidth={1.5} />
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
-              <p className={`text-[32px] font-bold font-mono leading-none ${streak > 0 ? "text-amber-300" : "text-white/80"}`}>{streak}</p>
-              <p className="text-[12px] text-white/45 font-medium">{streak === 1 ? "dia seguido" : "dias seguidos"}</p>
+              <p className={`text-[26px] font-bold font-mono leading-none ${streak > 0 ? "text-amber-300" : "text-white/80"}`}>{streak}</p>
+              <p className="text-[11px] text-white/45 font-medium">{streak === 1 ? "dia seguido" : "dias seguidos"}</p>
             </div>
-            <p className="text-[11px] text-white/40 mt-1 leading-relaxed">{milestone.msg}</p>
+            <p className="text-[10.5px] text-white/40 mt-0.5 leading-snug">{milestone.msg}</p>
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Últimos 14 dias</p>
-            <p className="text-[10.5px] font-mono text-white/40">{done14}/14</p>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-white/30">Últimos 14 dias</p>
+            <p className="text-[10px] font-mono text-white/40">{done14}/14</p>
           </div>
-          <div className="grid gap-[5px]" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
+          <div className="grid gap-[4px]" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
             {days.map((d) => (
               <div
                 key={d.key}
                 title={`${d.key}${d.done ? " · ✓ concluído" : d.isToday ? " · hoje" : ""}`}
-                className={`aspect-square rounded-[4px] flex items-center justify-center text-[8.5px] font-mono font-bold border ${
+                className={`aspect-square rounded-[4px] flex items-center justify-center text-[8px] font-mono font-bold border ${
                   d.done
                     ? "border-amber-500/45 text-amber-400"
                     : d.isToday
@@ -147,42 +147,39 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
         </div>
 
         {milestone.next && (
-          <div className="pt-3 border-t border-white/[0.05] flex items-center justify-between">
+          <div className="pt-2.5 border-t border-white/[0.05] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Trophy className="w-3.5 h-3.5 text-white/30" strokeWidth={1.8} />
-              <p className="text-[11px] text-white/45">Próximo marco</p>
+              <Trophy className="w-3 h-3 text-white/30" strokeWidth={1.8} />
+              <p className="text-[10.5px] text-white/45">Próximo marco</p>
             </div>
-            <p className="text-[11px] font-bold font-mono text-white/70">
-              {milestone.next - streak} {milestone.next - streak === 1 ? "dia" : "dias"} · {milestone.next} seguidos
+            <p className="text-[10.5px] font-bold font-mono text-white/70">
+              {milestone.next - streak}d · {milestone.next} seguidos
             </p>
           </div>
         )}
 
-        {/* Temas cobertos — mini constelação */}
-        <div className="pt-3 border-t border-white/[0.05]">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Temas cobertos</p>
-            <p className="text-[10.5px] font-mono text-white/40">{themesCovered.size}/{TREINO_CATEGORIES.length}</p>
+        {/* Temas cobertos — linha horizontal compacta */}
+        <div className="pt-2.5 border-t border-white/[0.05]">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-white/30">Temas cobertos</p>
+            <p className="text-[10px] font-mono text-white/40">{themesCovered.size}/{TREINO_CATEGORIES.length}</p>
           </div>
-          <div className="space-y-1.5">
+          <div className="grid gap-[4px]" style={{ gridTemplateColumns: `repeat(${TREINO_CATEGORIES.length}, minmax(0, 1fr))` }}>
             {TREINO_CATEGORIES.map((cat) => {
               const covered = themesCovered.has(cat.key);
               return (
-                <div key={cat.key} className="flex items-center gap-2.5">
-                  <div
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ backgroundColor: covered ? cat.accent : "rgba(255,255,255,0.12)" }}
-                  />
-                  <span className="text-[10.5px] font-medium" style={{ color: covered ? cat.accent : "rgba(255,255,255,0.30)" }}>
-                    {cat.key}
-                  </span>
-                </div>
+                <div
+                  key={cat.key}
+                  title={`${cat.key}${covered ? " · ✓ coberto" : ""}`}
+                  className="aspect-square rounded-[3px] border"
+                  style={{
+                    backgroundColor: covered ? `${cat.accent}30` : "transparent",
+                    borderColor: covered ? `${cat.accent}80` : "rgba(255,255,255,0.06)",
+                  }}
+                />
               );
             })}
           </div>
-          <p className="text-[10px] text-white/35 leading-relaxed mt-3">
-            Cada dia um tema diferente. Em ~15 dias você passa por todos.
-          </p>
         </div>
       </div>
     </div>
@@ -244,25 +241,28 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
   // Estado: já concluiu hoje
   if (doneToday) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-green-500/20 bg-[#0e0e10] min-h-[460px] flex items-center justify-center p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-green-500/20 bg-[#0e0e10] p-5 flex items-center gap-5">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-green-500/40 to-transparent" />
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 60% 50% at 50% 30%, rgba(16,185,129,0.04), transparent 70%)"
+          background: "radial-gradient(ellipse 50% 100% at 20% 50%, rgba(16,185,129,0.05), transparent 70%)"
         }} />
-        <div className="relative z-10 text-center space-y-5 max-w-sm">
-          <Check className="mx-auto w-14 h-14 text-green-400" strokeWidth={1.5} />
-          <div>
-            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-green-400/80 mb-2">Concluído</p>
-            <h3 className="text-[22px] font-bold text-white tracking-tight leading-tight">Missão do dia completa</h3>
-            <p className="text-[12.5px] text-white/45 mt-2 leading-relaxed">
-              Hoje você treinou <span className="text-white/70 font-semibold">{theme}</span> — 3 cenários respondidos.
-              Volte amanhã pra um novo tema.
-            </p>
+
+        <div className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-green-500/[0.08] border border-green-500/25 flex items-center justify-center">
+          <Check className="w-7 h-7 text-green-400" strokeWidth={2} />
+        </div>
+
+        <div className="relative z-10 flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-green-400/80">Concluído</span>
+            <span className="text-white/15">·</span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.15em] uppercase text-amber-300/90">
+              <Flame className="w-3 h-3" strokeWidth={2} /> Streak mantida
+            </span>
           </div>
-          <div className="inline-flex items-center gap-2">
-            <Flame className="w-3.5 h-3.5 text-amber-400" strokeWidth={1.8} />
-            <span className="text-[10.5px] font-bold tracking-[0.2em] uppercase text-amber-300/90">Streak mantida</span>
-          </div>
+          <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight">Missão do dia completa</h3>
+          <p className="text-[11.5px] text-white/45 mt-1 leading-relaxed">
+            Hoje você treinou <span className="text-white/70 font-semibold">{theme}</span> — 3 cenários respondidos. Volte amanhã pra um novo tema.
+          </p>
         </div>
       </div>
     );
@@ -425,47 +425,46 @@ export default function PraticaPage() {
   const totalThemes = TREINO_CATEGORIES.length;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       {/* ───── HERO ───── */}
       <div className="relative overflow-hidden rounded-2xl bg-[#0e0e10] border border-white/[0.06]">
         <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
           <span
-            className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-brand-500 pr-12"
-            style={{ fontSize: "240px", letterSpacing: "-0.06em", lineHeight: 1 }}
+            className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-brand-500 pr-10"
+            style={{ fontSize: "160px", letterSpacing: "-0.06em", lineHeight: 1 }}
           >
             PRÁTICA
           </span>
         </div>
-        <div className="absolute top-[-40%] left-[5%] w-[600px] h-[400px] bg-brand-500/[0.05] blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-[-30%] right-[5%] w-[500px] h-[300px] bg-white/[0.02] blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-40%] left-[5%] w-[500px] h-[300px] bg-brand-500/[0.05] blur-[140px] pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
 
-        <div className="relative z-10 p-8 lg:p-10">
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8">
+        <div className="relative z-10 p-5 lg:p-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-5">
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-2">
                 <div className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
-                <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-500">Modo infinito · 24/7</span>
+                <span className="text-[9.5px] font-bold tracking-[0.3em] uppercase text-brand-500">Modo infinito · 24/7</span>
               </div>
-              <h1 className="text-[34px] lg:text-[44px] font-bold text-white tracking-tight leading-[1.05]">Prática</h1>
-              <p className="text-[14px] text-white/45 mt-3 max-w-lg leading-relaxed">
-                Treine leitura e decisão com cenários reais. Missão diária rotativa pelos temas, centenas de cenários filtráveis e 10 skills com sequência de 3 passos e gráfico real.
+              <h1 className="text-[26px] lg:text-[30px] font-bold text-white tracking-tight leading-[1.05]">Prática</h1>
+              <p className="text-[12.5px] text-white/45 mt-2 max-w-lg leading-relaxed">
+                Treine leitura e decisão com cenários reais. Missão diária rotativa, {totalScenarios} cenários filtráveis e {totalGuided} skills guiadas.
               </p>
             </div>
-            <div className="flex items-end gap-6">
+            <div className="flex items-end gap-5">
               <div className="text-right">
-                <p className="text-[36px] lg:text-[44px] font-bold text-white leading-none font-mono">{totalScenarios}</p>
-                <p className="text-[10.5px] text-white/30 uppercase tracking-[0.15em] mt-1.5">cenários</p>
+                <p className="text-[26px] lg:text-[30px] font-bold text-white leading-none font-mono">{totalScenarios}</p>
+                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">cenários</p>
               </div>
-              <div className="h-12 w-px bg-white/[0.08]" />
+              <div className="h-8 w-px bg-white/[0.08]" />
               <div className="text-right">
-                <p className="text-[36px] lg:text-[44px] font-bold text-white leading-none font-mono">{totalThemes}</p>
-                <p className="text-[10.5px] text-white/30 uppercase tracking-[0.15em] mt-1.5">temas</p>
+                <p className="text-[26px] lg:text-[30px] font-bold text-white leading-none font-mono">{totalThemes}</p>
+                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">temas</p>
               </div>
-              <div className="h-12 w-px bg-white/[0.08]" />
+              <div className="h-8 w-px bg-white/[0.08]" />
               <div className="text-right">
-                <p className="text-[36px] lg:text-[44px] font-bold text-white leading-none font-mono">{totalGuided}</p>
-                <p className="text-[10.5px] text-white/30 uppercase tracking-[0.15em] mt-1.5">skills</p>
+                <p className="text-[26px] lg:text-[30px] font-bold text-white leading-none font-mono">{totalGuided}</p>
+                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">skills</p>
               </div>
             </div>
           </div>
@@ -473,103 +472,94 @@ export default function PraticaPage() {
       </div>
 
       {/* ───── HOJE ───── */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <div className="flex items-center gap-3 px-1">
-          <div className="w-1 h-5 rounded-full bg-brand-500/60" />
-          <h2 className="text-[13px] font-bold text-white/80 uppercase tracking-wider">Hoje</h2>
+          <div className="w-1 h-4 rounded-full bg-brand-500/60" />
+          <h2 className="text-[12px] font-bold text-white/80 uppercase tracking-wider">Hoje</h2>
           <span className="text-[10.5px] text-white/30">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" })}</span>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 items-start">
           <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
           <StreakPanel streakVersion={streakVersion} />
         </div>
       </div>
 
-      {/* ───── Modos de treino — 3 atalhos ───── */}
-      <div className="space-y-4">
+      {/* ───── Modos de treino — 3 atalhos compactos ───── */}
+      <div className="space-y-2.5">
         <div className="flex items-center gap-3 px-1">
-          <div className="w-1 h-5 rounded-full bg-white/[0.25]" />
-          <h2 className="text-[13px] font-bold text-white/80 uppercase tracking-wider">Modos de treino</h2>
+          <div className="w-1 h-4 rounded-full bg-white/[0.25]" />
+          <h2 className="text-[12px] font-bold text-white/80 uppercase tracking-wider">Modos de treino</h2>
           <span className="text-[10.5px] text-white/30">escolha como praticar</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {/* Treino Livre — tudo misturado */}
+          {/* Treino Livre */}
           <Link
             href="/elite/treino/livre"
-            className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 transition-colors block min-h-[180px] flex flex-col"
+            className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 transition-colors block"
           >
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-            <div className="absolute top-[-30%] right-[-10%] w-[260px] h-[180px] bg-brand-500/[0.05] blur-[100px] pointer-events-none" />
-            <div className="relative z-10 p-5 flex-1 flex flex-col">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-0.5 h-5 rounded-full bg-brand-500" />
-                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-brand-500">Infinito</span>
+            <div className="absolute top-[-30%] right-[-10%] w-[200px] h-[140px] bg-brand-500/[0.05] blur-[90px] pointer-events-none" />
+            <div className="relative z-10 p-4 flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-brand-500/[0.08] border border-brand-500/25 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-brand-500" strokeWidth={1.8} />
               </div>
-              <Zap className="w-7 h-7 text-brand-500 mb-3" strokeWidth={1.5} />
-              <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mb-1.5">Treino Livre</h3>
-              <p className="text-[11.5px] text-white/45 leading-relaxed">
-                Cenários embaralhados de todos os temas. Responde e avança sem fim.
-              </p>
-              <div className="mt-auto pt-4 flex items-center justify-between">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[18px] font-bold font-mono text-brand-500">{totalScenarios}</span>
-                  <span className="text-[11px] text-white/35">cenários</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-[14px] font-bold text-white tracking-tight">Treino Livre</h3>
+                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-brand-500/80">Infinito</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-brand-500/70 transition-colors" />
+                <p className="text-[11px] text-white/45 leading-snug mt-0.5">
+                  <span className="font-mono text-brand-500">{totalScenarios}</span> cenários embaralhados · todos os temas
+                </p>
               </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-brand-500/70 transition-colors shrink-0" />
             </div>
           </Link>
 
           {/* Por Tema */}
           <Link
             href="/elite/pratica/temas"
-            className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block min-h-[180px] flex flex-col"
+            className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block"
           >
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <div className="relative z-10 p-5 flex-1 flex flex-col">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-0.5 h-5 rounded-full bg-white/40" />
-                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/55">Focado</span>
+            <div className="relative z-10 p-4 flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0">
+                <Layers className="w-5 h-5 text-white/70" strokeWidth={1.8} />
               </div>
-              <Layers className="w-7 h-7 text-white/70 mb-3" strokeWidth={1.5} />
-              <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mb-1.5">Por Tema</h3>
-              <p className="text-[11.5px] text-white/45 leading-relaxed">
-                Treine um conceito específico. Cada tema tem seus cenários filtrados.
-              </p>
-              <div className="mt-auto pt-4 flex items-center justify-between">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[18px] font-bold font-mono text-white/80">{totalThemes}</span>
-                  <span className="text-[11px] text-white/35">temas</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-[14px] font-bold text-white tracking-tight">Por Tema</h3>
+                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Focado</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+                <p className="text-[11px] text-white/45 leading-snug mt-0.5">
+                  <span className="font-mono text-white/70">{totalThemes}</span> temas · cenários filtrados por conceito
+                </p>
               </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors shrink-0" />
             </div>
           </Link>
 
           {/* Skills Guiadas */}
           <Link
             href="/elite/pratica/skills"
-            className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block min-h-[180px] flex flex-col"
+            className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block"
           >
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <div className="relative z-10 p-5 flex-1 flex flex-col">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-0.5 h-5 rounded-full bg-white/40" />
-                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/55">Guiado</span>
+            <div className="relative z-10 p-4 flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0">
+                <Target className="w-5 h-5 text-white/70" strokeWidth={1.8} />
               </div>
-              <Target className="w-7 h-7 text-white/70 mb-3" strokeWidth={1.5} />
-              <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mb-1.5">Skills</h3>
-              <p className="text-[11.5px] text-white/45 leading-relaxed">
-                Sequências de 3 passos com gráfico real. Identifique, decida, execute.
-              </p>
-              <div className="mt-auto pt-4 flex items-center justify-between">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[18px] font-bold font-mono text-white/80">{totalGuided}</span>
-                  <span className="text-[11px] text-white/35">skills</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-[14px] font-bold text-white tracking-tight">Skills</h3>
+                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Guiado</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+                <p className="text-[11px] text-white/45 leading-snug mt-0.5">
+                  <span className="font-mono text-white/70">{totalGuided}</span> sequências de 3 passos · gráfico real
+                </p>
               </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors shrink-0" />
             </div>
           </Link>
         </div>
