@@ -21,6 +21,10 @@ export interface DiscordMember {
   bannerSlug?: string | null;
   frameSlug?: string | null;
   effectSlug?: string | null;
+  /** Score agregado (v3+) — usado pra sort/filter no frontend */
+  messageCount?: number;
+  achievementCount?: number;
+  coinLifetime?: number;
 }
 
 export interface MembersResponse {

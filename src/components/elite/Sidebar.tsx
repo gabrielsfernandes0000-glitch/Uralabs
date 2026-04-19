@@ -1,30 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Flame, Menu, X, LogOut, Lock, Radio,
-  LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift, Coins,
+  Menu, X, LogOut, Lock, Radio, Search,
+  LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Avatar } from "@/components/elite/Avatar";
 import { CosmeticBanner, isBannerSlug } from "@/components/elite/CosmeticBanner";
 import { AvatarWithCosmetics } from "@/components/elite/AvatarCosmetics";
+import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 
 type NavItem = { href: string; icon: typeof LayoutDashboard; label: string; exact?: boolean; eliteOnly?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/elite",            icon: LayoutDashboard, label: "Dashboard",  exact: true },
-  { href: "/elite/aulas",      icon: BookOpen,        label: "Aulas" },
-  { href: "/elite/turma",      icon: Newspaper,       label: "Mural" },
   { href: "/elite/membros",    icon: Users,           label: "Membros" },
+  { href: "/elite/calls",      icon: Radio,           label: "Calls",      eliteOnly: true },
+  { href: "/elite/aulas",      icon: BookOpen,        label: "Aulas" },
+  { href: "/elite/pratica",    icon: Crosshair,       label: "Prática",    eliteOnly: true },
+  { href: "/elite/turma",      icon: Newspaper,       label: "Mural" },
   { href: "/elite/conquistas", icon: Trophy,          label: "Conquistas" },
   { href: "/elite/loja",       icon: Gift,            label: "Loja" },
-  { href: "/elite/calls",      icon: Radio,           label: "Calls",      eliteOnly: true },
-  { href: "/elite/pratica",    icon: Crosshair,       label: "Prática",    eliteOnly: true },
   { href: "/elite/corretora",  icon: BarChart3,       label: "Corretora",  eliteOnly: true },
 ];
 
@@ -81,11 +83,16 @@ export function EliteSidebar({
           <div className="px-7 pt-8 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="relative">
-                  <div className="absolute -inset-1.5 bg-brand-500/20 rounded-xl blur-lg" />
-                  <div className="relative p-2.5 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl shadow-lg shadow-brand-500/20">
-                    <Flame className="w-5 h-5 text-white fill-white" />
-                  </div>
+                <div className="relative shrink-0">
+                  <div className="absolute -inset-2 bg-brand-500/20 rounded-full blur-lg" />
+                  <Image
+                    src="/brand/ura-labs-logo.png"
+                    alt="URA Labs"
+                    width={44}
+                    height={44}
+                    priority
+                    className="relative w-11 h-11 drop-shadow-[0_4px_12px_rgba(255,85,0,0.3)]"
+                  />
                 </div>
                 <div>
                   <span className="text-[18px] font-bold text-white tracking-tight">URA <span className="text-brand-500">LABS</span></span>
@@ -97,6 +104,27 @@ export function EliteSidebar({
           </div>
 
           <div className="mx-6 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+          {/* Quick search trigger — dispara Cmd+K programaticamente */}
+          <div className="px-4 pt-4">
+            <button
+              onClick={() => {
+                const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
+                window.dispatchEvent(new KeyboardEvent("keydown", {
+                  key: "k",
+                  metaKey: isMac,
+                  ctrlKey: !isMac,
+                  bubbles: true,
+                }));
+              }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.10] transition-all text-white/40 hover:text-white/70 group"
+              title="Buscar aulas, treinos e páginas"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span className="text-[12px] flex-1 text-left">Buscar…</span>
+              <kbd className="text-[9px] font-mono text-white/35 border border-white/[0.10] rounded px-1 py-0.5">⌘K</kbd>
+            </button>
+          </div>
 
           {/* Navigation */}
           <nav className="flex-1 py-5 px-4 space-y-1 overflow-y-auto">
@@ -162,7 +190,7 @@ export function EliteSidebar({
               onClick={() => setMobileOpen(false)}
               className="mx-4 mb-2 flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-500/[0.04] border border-amber-500/20 hover:bg-amber-500/[0.08] hover:border-amber-500/30 transition-all"
             >
-              <Coins className="w-4 h-4 text-amber-400" />
+              <UraCoinIcon className="w-4 h-4" />
               <span className="text-[12px] font-semibold tabular-nums text-amber-200">
                 {coinBalance.toLocaleString("pt-BR")}
               </span>

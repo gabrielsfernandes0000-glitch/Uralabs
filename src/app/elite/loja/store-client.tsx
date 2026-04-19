@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Coins, History } from "lucide-react";
+import { History, ChevronDown, ChevronUp } from "lucide-react";
 import type { BoxWithPrizes, UserCoinBalance, RecentOpening, PrizeType, PrizeRarity } from "@/lib/ura-coin";
+import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 import { BoxCard } from "./box-card";
 import { OpenOverlay, type OpenResult } from "./open-overlay";
 import { PixDialog } from "./pix-dialog";
@@ -138,17 +139,10 @@ export function StoreClient({
       </section>
 
       {recentOpenings.length > 0 && (
-        <section className="mt-12">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 mb-4 flex items-center gap-2">
-            <History className="w-3 h-3" />
-            Últimas aberturas
-          </h2>
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-            {recentOpenings.map((op) => (
-              <RecentRow key={op.id} op={op} onClaim={(r) => setPixClaim(r)} />
-            ))}
-          </div>
-        </section>
+        <HistorySection
+          openings={recentOpenings}
+          onClaim={(r) => setPixClaim(r)}
+        />
       )}
 
       {opening && (
@@ -180,7 +174,7 @@ function Header({ balance, lifetimeEarned }: { balance: number; lifetimeEarned: 
           <div className="flex items-baseline gap-2">
             <div className="relative">
               <div className="absolute inset-0 blur-xl bg-amber-500/30" />
-              <Coins className="relative w-9 h-9 md:w-11 md:h-11 text-amber-400 fill-amber-500/30" />
+              <UraCoinIcon className="relative w-9 h-9 md:w-11 md:h-11" />
             </div>
             <span className="text-5xl md:text-6xl font-bold tabular-nums tracking-tight">
               {balance.toLocaleString("pt-BR")}
@@ -200,6 +194,113 @@ function Header({ balance, lifetimeEarned }: { balance: number; lifetimeEarned: 
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Histórico de premiações — filtro por tipo + expansão ──
+     Backend já manda até 80 aberturas no primeiro load. Mostramos 8 até o
+     user pedir pra ver tudo, pra não pesar o viewport. ── */
+type HistoryFilter = "all" | "cash" | "cosmetic" | "coin" | "other";
+
+function HistorySection({
+  openings,
+  onClaim,
+}: {
+  openings: RecentOpening[];
+  onClaim: (r: { redemptionId: string; prizeName: string; amountBrl: number | null }) => void;
+}) {
+  const [filter, setFilter] = useState<HistoryFilter>("all");
+  const [expanded, setExpanded] = useState(false);
+
+  const matchFilter = (op: RecentOpening): boolean => {
+    if (filter === "all") return true;
+    if (filter === "cash") return op.prize.type === "cash_brl";
+    if (filter === "coin") return op.prize.type === "ura_coin_bonus";
+    if (filter === "cosmetic") return ["banner", "avatar_frame", "avatar_effect", "profile_design"].includes(op.prize.type);
+    return !["cash_brl", "ura_coin_bonus", "banner", "avatar_frame", "avatar_effect", "profile_design"].includes(op.prize.type);
+  };
+
+  const filtered = openings.filter(matchFilter);
+  const visible = expanded ? filtered : filtered.slice(0, 8);
+  const hiddenCount = filtered.length - visible.length;
+
+  const totalCoinsSpent = openings.reduce((sum, o) => sum + Number(o.coins_spent || 0), 0);
+
+  const FILTERS: { id: HistoryFilter; label: string }[] = [
+    { id: "all", label: "Tudo" },
+    { id: "cash", label: "Cash" },
+    { id: "cosmetic", label: "Cosméticos" },
+    { id: "coin", label: "Coin Bonus" },
+    { id: "other", label: "Outros" },
+  ];
+
+  return (
+    <section className="mt-12">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <History className="w-3 h-3 text-white/40" />
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
+            Histórico de aberturas
+          </h2>
+          <span className="text-[11px] text-white/30 font-mono">
+            {openings.length} · {totalCoinsSpent.toLocaleString("pt-BR")} coin gastos
+          </span>
+        </div>
+
+        {/* Filter chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {FILTERS.map((f) => {
+            const active = filter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => { setFilter(f.id); setExpanded(false); }}
+                className={`px-2.5 py-1 rounded-md border text-[11px] font-semibold transition-all ${
+                  active
+                    ? "border-white/[0.20] bg-white/[0.05] text-white"
+                    : "border-white/[0.05] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
+                }`}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-white/[0.06] bg-white/[0.01] py-10 text-center">
+          <p className="text-[12px] text-white/35">Nenhuma abertura nesse filtro.</p>
+        </div>
+      ) : (
+        <>
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+            {visible.map((op) => (
+              <RecentRow key={op.id} op={op} onClaim={onClaim} />
+            ))}
+          </div>
+
+          {hiddenCount > 0 && (
+            <button
+              onClick={() => setExpanded(true)}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] text-[12px] font-semibold text-white/60 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.04] transition-all"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+              Ver mais {hiddenCount}
+            </button>
+          )}
+          {expanded && filtered.length > 8 && (
+            <button
+              onClick={() => setExpanded(false)}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg border border-white/[0.06] bg-transparent text-[12px] font-semibold text-white/40 hover:text-white/70 hover:border-white/[0.12] transition-all"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+              Recolher
+            </button>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 
@@ -225,7 +326,7 @@ function RecentRow({
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{op.prize.name}</div>
         <div className="text-[11px] text-white/40 flex items-center gap-2 mt-0.5">
-          <Coins className="w-3 h-3 text-amber-500/60" />
+          <UraCoinIcon className="w-3 h-3" />
           <span className="tabular-nums">{op.coins_spent.toLocaleString("pt-BR")}</span>
           <span>·</span>
           <time>{formatTimeAgo(op.opened_at)}</time>

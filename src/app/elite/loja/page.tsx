@@ -16,7 +16,7 @@ export default async function LojaPage() {
   const [balance, boxes, recent] = await Promise.all([
     getUserBalance(session.userId),
     getActiveBoxesWithPrizes(),
-    getRecentOpenings(session.userId, 8),
+    getRecentOpenings(session.userId, 80),
   ]);
 
   return (

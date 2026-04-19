@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { fetchDiscordMembers, memberColor, memberInitials, type DiscordMember } from "@/lib/discord-members";
 import { useTier } from "@/hooks/useTier";
+import { MuralFeed } from "@/components/elite/MuralFeed";
 
 /* ────────────────────────────────────────────
    Mock Data — Elite 1.0 members (the OG class)
@@ -366,28 +367,27 @@ function MuralView({ isElite }: { isElite: boolean }) {
         ))}
       </div>
 
-      {/* Achievement feed — full width (member roster lives in the Membros tab) */}
-      <div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-white/[0.04] flex items-center justify-between">
+      {/* Submissões pendentes do próprio user (await validação do URA) */}
+      {pending.filter(p => p.status === "pending").length > 0 && (
+        <div className="rounded-2xl border border-brand-500/20 bg-brand-500/[0.03] overflow-hidden">
+          <div className="px-5 py-3 border-b border-brand-500/15 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-500/70" />
-              <h2 className="text-[13px] font-bold text-white/85">Mural de Conquistas</h2>
-              <span className="text-[10px] text-white/30 font-mono">{ACHIEVEMENTS.length + pending.filter(p => p.status === "pending").length}</span>
+              <Clock className="w-4 h-4 text-brand-500/70" />
+              <h3 className="text-[12px] font-bold text-white/80">Minhas submissões pendentes</h3>
+              <span className="text-[10px] text-white/30 font-mono">
+                {pending.filter(p => p.status === "pending").length}
+              </span>
             </div>
-            {isElite ? (
-              <button onClick={() => setModalOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all">
+            {isElite && (
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all"
+              >
                 <Plus className="w-3 h-3" /> Submeter
               </button>
-            ) : (
-              <a href="/elite/desbloquear" title="Upgrade pra Elite pra submeter conquistas"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-[11px] font-bold text-white/40 hover:text-white/70 hover:border-white/[0.18] transition-all">
-                <Shield className="w-3 h-3" /> Só Elite
-              </a>
             )}
           </div>
           <div className="divide-y divide-white/[0.04]">
-            {/* Pending submissions from current user */}
             {pending.filter(p => p.status === "pending").map((p) => {
               const typeStyle = {
                 mesa:      { color: "#F59E0B", icon: Award,   label: "MESA" },
@@ -396,7 +396,7 @@ function MuralView({ isElite }: { isElite: boolean }) {
                 milestone: { color: "#3B82F6", icon: Flame,   label: "MILESTONE" },
               }[p.type];
               return (
-                <div key={p.id} className="flex items-center gap-3 px-5 py-3 bg-brand-500/[0.03] hover:bg-brand-500/[0.05] transition-colors">
+                <div key={p.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-dashed border-white/[0.20]">
                     <Clock className="w-4 h-4 text-white/40" />
                   </div>
@@ -420,38 +420,30 @@ function MuralView({ isElite }: { isElite: boolean }) {
                 </div>
               );
             })}
-            {ACHIEVEMENTS.map((a, i) => {
-              const m = MEMBERS[a.member];
-              const typeStyle = {
-                mesa:      { color: "#F59E0B", icon: Award,   label: "MESA" },
-                payout:    { color: "#10B981", icon: TrendingUp, label: "PAYOUT" },
-                badge:     { color: "#A855F7", icon: Star,    label: "BADGE" },
-                milestone: { color: "#3B82F6", icon: Flame,   label: "MILESTONE" },
-              }[a.type];
-              return (
-                <div key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors">
-                  <Avatar member={m} size="md" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <p className="text-[12.5px] font-bold text-white/90 truncate">{m.name}</p>
-                      <span className="text-[10px] text-white/30">{m.handle}</span>
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: typeStyle.color + "18", color: typeStyle.color }}>
-                        {typeStyle.label}
-                      </span>
-                    </div>
-                    <p className="text-[12px] text-white/70 leading-snug">{a.title}</p>
-                    <p className="text-[11px] text-white/35 mt-0.5">{a.detail}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    {a.value && <p className="text-[13px] font-bold font-mono" style={{ color: typeStyle.color }}>{a.value}</p>}
-                    <p className="text-[10px] text-white/25 mt-0.5">{a.timestamp}</p>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
+      )}
 
+      {/* Feed real sincronizado do canal #sucesso — imagens, texto, autores */}
+      <div>
+        <div className="flex items-center justify-end gap-1.5 mb-3">
+          {isElite ? (
+            pending.filter(p => p.status === "pending").length === 0 && (
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-500/15 border border-brand-500/30 text-[11px] font-bold text-brand-500 hover:bg-brand-500/25 transition-all"
+              >
+                <Plus className="w-3 h-3" /> Submeter fora do Discord
+              </button>
+            )
+          ) : (
+            <a href="/elite/desbloquear" title="Upgrade pra Elite pra submeter"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-[11px] font-bold text-white/40 hover:text-white/70 hover:border-white/[0.18] transition-all">
+              <Shield className="w-3 h-3" /> Submeter é Elite
+            </a>
+          )}
+        </div>
+        <MuralFeed />
       </div>
     </div>
   );

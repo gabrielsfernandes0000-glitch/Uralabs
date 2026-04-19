@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Flame, Zap, Calendar, ExternalLink, Trophy, Coins, Loader2, Mic } from "lucide-react";
+import { X, Flame, Zap, Calendar, ExternalLink, Trophy, Loader2, Mic } from "lucide-react";
 import type { DiscordMember } from "@/lib/discord-members";
+import { UraCoinIcon } from "./UraCoinIcon";
 import {
   resolveAchievements,
   RARITY_META,
@@ -243,11 +244,11 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             <p className="text-[18px] font-bold text-white font-mono leading-none">
               {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : postsCount.toLocaleString("pt-BR")}
             </p>
-            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Posts</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Mensagens</p>
           </div>
           <div className="p-4 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Coins className="w-3 h-3 text-amber-400/70" />
+              <UraCoinIcon className="w-3 h-3" />
               <p className="text-[18px] font-bold font-mono leading-none" style={{ color: lifetimeCoin > 0 ? "#F59E0B" : "rgba(255,255,255,0.85)" }}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin inline text-white/30" /> : lifetimeCoin.toLocaleString("pt-BR")}
               </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, TrendingUp, Brain, Flame, Target, ChevronRight, ArrowUp, Sparkles } from "lucide-react";
+import { Lock, TrendingUp, Brain, Flame, Target, ChevronRight, ArrowUp, Sparkles, X, Check, Trophy } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import Link from "next/link";
 import {
@@ -13,6 +13,48 @@ import {
   type Category,
 } from "@/lib/achievements";
 import { AchievementBadge } from "@/components/elite/AchievementBadge";
+
+/* ────────────────────────────────────────────
+   Unlock hints — texto humano de como conquistar
+   cada badge. Um por ID, manual ou automático.
+   ──────────────────────────────────────────── */
+const UNLOCK_HINTS: Record<string, string> = {
+  /* Learning — auto */
+  "first-lesson":  "Complete a primeira aula em Aulas.",
+  "module-base":   "Conclua as 3 aulas do módulo Base (Intro, Candles, Risco).",
+  "module-smc":    "Conclua as 4 aulas do módulo Leitura SMC (OBs, FVG, Premium/Discount, Liquidez).",
+  "all-lessons":   "Termine todas as 14 aulas do currículo Elite.",
+  /* Practice — auto */
+  "first-quiz-a":  "Tire 100% em qualquer quiz de aula.",
+  "quiz-master":   "Tire 100% em 10 quizzes diferentes.",
+  "trinity":       "Tire 100% em 3 quizzes no mesmo módulo.",
+  /* Milestones — auto (voz+mensagens tracked pelo bot) */
+  "streak-7":      "Mantenha streak de voz + mensagens no Discord por 7 dias.",
+  "streak-30":     "Mantenha streak de voz + mensagens no Discord por 30 dias.",
+  "streak-100":    "Mantenha streak de voz + mensagens no Discord por 100 dias.",
+  "trades-100":    "Registre 100 trades no Diário (aba Prática).",
+  /* Trading — manual (URA valida com print) */
+  "mesa-fp":       "Aprovação no Challenge 2-phase da FundingPips. Mande o print pro URA no Discord pra validar.",
+  "mesa-ts":       "Aprovação no Trader Combine da TopStep. Mande o print pro URA no Discord pra validar.",
+  "mesa-5ers":     "Aprovação no Hyper Growth da The 5%ers. Mande o print pro URA no Discord pra validar.",
+  "payout-1":      "Receber seu primeiro saque aprovado de qualquer mesa prop. Mande o comprovante pro URA validar.",
+  "payout-10k":    "Acumular US$ 10.000 em payouts somados. URA valida o total conforme você envia comprovantes.",
+  /* Community — manual */
+  "peer-reviewer": "Dê 10+ reviews em trades/análises de colegas no Mural. URA reconhece após o 10º.",
+  "mentor":        "Ajude múltiplos membros na jornada — posts, DMs, chamadas. URA libera quando reconhece o impacto.",
+  /* OG — edição limitada */
+  "og-elite":      "Entrar na mentoria Elite. Libera automaticamente quando seu cargo Elite é atribuído.",
+  "og-1":          "Exclusiva da turma fundadora Elite 1.0 — não é mais emitida.",
+  "og-2":          "Exclusiva da turma Elite 2.0 — não é mais emitida.",
+  "og-3":          "Exclusiva da turma Elite 3.0 — não é mais emitida.",
+  "og-4":          "Exclusiva da turma atual Elite 4.0 — liberada ao ingressar na turma.",
+};
+function unlockHint(a: Achievement): string {
+  return UNLOCK_HINTS[a.id]
+    ?? (a.autoDistribute
+      ? "Continue progredindo no currículo — essa libera automaticamente."
+      : "Validação manual pelo URA. Cumpra o marco e mande comprovante no Discord.");
+}
 
 /* ────────────────────────────────────────────
    Display order — OG em destaque primeiro, depois trading (manual),
@@ -74,10 +116,42 @@ const SKILL_TREE: SkillNode[][] = [
    Components
    ──────────────────────────────────────────── */
 
-type ViewTab = "badges" | "tree" | "insights";
+type ViewTab = "badges" | "timeline" | "tree" | "insights";
 
-/* ── Badge card (unlocked state) — large variant pra OG/legendary, small pra resto ── */
-function BadgeCard({ achievement, unlocked, large }: { achievement: Achievement; unlocked: boolean; large?: boolean }) {
+/** Unlock cru vindo do backend — achievement_id + quando/como/quanto ganhou */
+interface UnlockMeta {
+  achievement_id: string;
+  unlocked_at: string;
+  coins_granted: number;
+  source: "admin" | "system" | "self";
+}
+
+function formatFullDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString("pt-BR", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
+}
+
+/* ── Badge card — clicável em qualquer estado. Locked mostra badge ofuscado
+     (opacidade ~75% + grayscale 45%) em vez de invisível, com lock discreto
+     no canto. Click abre modal de detalhe com hint de como conquistar. ── */
+function BadgeCard({
+  achievement,
+  unlocked,
+  large,
+  onOpen,
+}: {
+  achievement: Achievement;
+  unlocked: boolean;
+  large?: boolean;
+  onOpen: (a: Achievement) => void;
+}) {
   const rarity = RARITY_META[achievement.rarity];
   const size = large ? 140 : 88;
   const isLegendary = achievement.rarity === "legendary";
@@ -88,50 +162,243 @@ function BadgeCard({ achievement, unlocked, large }: { achievement: Achievement;
       : achievement.rarity === "gold"
         ? "border-[#F59E0B]/15 hover:border-[#F59E0B]/35 hover:shadow-[0_0_32px_rgba(245,158,11,0.10)]"
         : "border-white/[0.06] hover:border-white/[0.18]"
-    : "border-white/[0.03]";
+    : "border-dashed border-white/[0.07] hover:border-white/[0.15]";
 
-  const content = (
-    <div className={`group relative rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden ${borderClass} ${unlocked ? "hover:-translate-y-1" : "opacity-55"}`}>
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(achievement)}
+      className={`group relative w-full text-left rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-1`}
+    >
       {isLegendary && unlocked && (
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
       )}
 
-      {!achievement.autoDistribute && unlocked && (
-        <div className="absolute top-3 right-3 z-10 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.08]">
+      {/* Manual flag — mostra em qualquer estado */}
+      {!achievement.autoDistribute && (
+        <div className="absolute top-3 left-3 z-10 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.08]">
           <span className="text-[8px] font-bold text-white/45 uppercase tracking-[0.15em]">Manual</span>
         </div>
       )}
 
-      {/* All cards: centered vertical layout. Large só tem mais padding + badge maior. */}
+      {/* Lock discreto no canto quando locked */}
+      {!unlocked && (
+        <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+          <Lock className="w-3 h-3 text-white/30" />
+        </div>
+      )}
+
       <div className={`relative z-10 flex flex-col items-center text-center ${large ? "px-6 pt-8 pb-6" : "px-5 pt-6 pb-5"}`}>
-        <div className={`relative transition-transform duration-500 ease-out ${unlocked ? "group-hover:scale-[1.06] group-hover:-translate-y-0.5" : ""}`}>
-          <AchievementBadge achievement={achievement} size={size} locked={!unlocked} />
-          {!unlocked && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Lock className="w-5 h-5 text-white/25" />
-            </div>
-          )}
+        <div className={`relative transition-all duration-500 ease-out group-hover:scale-[1.06] group-hover:-translate-y-0.5`}>
+          <div
+            style={!unlocked ? { filter: "grayscale(0.55) brightness(0.7) contrast(0.85)", opacity: 0.75 } : undefined}
+            className="transition-[filter,opacity] duration-300 group-hover:!opacity-90"
+          >
+            <AchievementBadge achievement={achievement} size={size} locked={!unlocked} />
+          </div>
         </div>
 
         <div className={`w-full ${large ? "mt-5" : "mt-4"}`}>
-          <span className={`block text-[9px] font-bold tracking-[0.22em] uppercase ${unlocked ? rarity.className : "text-white/20"} mb-1.5`}>
+          <span className={`block text-[9px] font-bold tracking-[0.22em] uppercase ${unlocked ? rarity.className : "text-white/35"} mb-1.5`}>
             {rarity.label}
           </span>
-          <h4 className={`font-bold tracking-tight ${unlocked ? "text-white" : "text-white/20"} ${large ? "text-[18px] mb-1.5" : "text-[13.5px] mb-1"}`}>
+          <h4 className={`font-bold tracking-tight ${unlocked ? "text-white" : "text-white/55"} ${large ? "text-[18px] mb-1.5" : "text-[13.5px] mb-1"}`}>
             {achievement.label}
           </h4>
-          <p className={`leading-relaxed ${unlocked ? "text-white/45" : "text-white/15"} ${large ? "text-[12px]" : "text-[10.5px]"}`}>
+          <p className={`leading-relaxed ${unlocked ? "text-white/45" : "text-white/30"} ${large ? "text-[12px]" : "text-[10.5px]"}`}>
             {achievement.detail}
           </p>
         </div>
       </div>
+    </button>
+  );
+}
+
+/* ── Modal de detalhe — abre ao clicar em qualquer badge (incl. locked).
+     Mostra badge em destaque + hint de como conseguir se ainda não liberado. ── */
+function AchievementModal({
+  achievement,
+  unlocked,
+  unlockedAt,
+  onClose,
+}: {
+  achievement: Achievement;
+  unlocked: boolean;
+  unlockedAt?: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  const rarity = RARITY_META[achievement.rarity];
+  const category = CATEGORY_META[achievement.category];
+  const hint = unlockHint(achievement);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#141417] overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar"
+          className="absolute top-3 right-3 z-30 w-9 h-9 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        {/* Badge em destaque */}
+        <div className="relative flex justify-center pt-10 pb-6">
+          <div
+            style={!unlocked ? { filter: "grayscale(0.35) brightness(0.85)", opacity: 0.85 } : undefined}
+            className="transition-[filter,opacity] duration-300"
+          >
+            <AchievementBadge achievement={achievement} size={160} locked={!unlocked} />
+          </div>
+        </div>
+
+        {/* Metadata */}
+        <div className="px-7 pb-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className={`text-[9px] font-bold tracking-[0.22em] uppercase ${rarity.className}`}>
+              {rarity.label}
+            </span>
+            <span className="text-white/15">·</span>
+            <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/40">
+              {category.label}
+            </span>
+          </div>
+          <h3 className="text-[22px] font-bold text-white tracking-tight mb-2">{achievement.label}</h3>
+          <p className="text-[13px] text-white/50 leading-relaxed">{achievement.detail}</p>
+        </div>
+
+        {/* Status + hint */}
+        <div className="mx-5 mb-5 rounded-xl border border-white/[0.05] bg-white/[0.015] p-5">
+          {unlocked ? (
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
+                <Check className="w-4 h-4 text-green-400" />
+              </div>
+              <div>
+                <p className="text-[12px] font-bold text-green-400 uppercase tracking-wider mb-1">Desbloqueada</p>
+                <p className="text-[12px] text-white/50 leading-relaxed">
+                  {unlockedAt ? `Conquistada em ${formatFullDate(unlockedAt)}.` : "Você já tem essa conquista."}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0">
+                <Lock className="w-4 h-4 text-white/50" />
+              </div>
+              <div>
+                <p className="text-[12px] font-bold text-white/60 uppercase tracking-wider mb-1">Como desbloquear</p>
+                <p className="text-[12px] text-white/55 leading-relaxed">{hint}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
+}
 
-  if (unlocked) {
-    return <Link href={`/elite/conquistas/${achievement.id}`} className="block">{content}</Link>;
+/* ── Timeline — linha cronológica de conquistas desbloqueadas ── */
+
+function TimelineView({ unlocks }: { unlocks: UnlockMeta[] }) {
+  const sorted = [...unlocks].sort(
+    (a, b) => new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime()
+  );
+
+  if (sorted.length === 0) {
+    return (
+      <div className="flex flex-col items-center py-16 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
+          <Trophy className="w-6 h-6 text-white/20" />
+        </div>
+        <h3 className="text-[15px] font-bold text-white/70 mb-2">Ainda sem conquistas</h3>
+        <p className="text-[12px] text-white/35 max-w-sm">
+          Complete aulas, mantenha streak e participe de calls. Cada conquista desbloqueada aparece aqui com data e recompensa.
+        </p>
+      </div>
+    );
   }
-  return content;
+
+  const sourceLabel: Record<UnlockMeta["source"], string> = {
+    admin:  "Liberada pelo URA",
+    system: "Automática",
+    self:   "Auto-concedida",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-[18px] font-bold text-white/90 mb-1">Timeline</h2>
+        <p className="text-[12px] text-white/35">Suas conquistas em ordem cronológica · {sorted.length} no total</p>
+      </div>
+
+      <div className="relative">
+        {/* Linha vertical conectando os eventos */}
+        <div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-white/[0.08] via-white/[0.04] to-transparent" />
+
+        <ol className="space-y-3">
+          {sorted.map((u) => {
+            const ach = ACHIEVEMENTS[u.achievement_id];
+            if (!ach) return null;
+            const rarity = RARITY_META[ach.rarity];
+            return (
+              <li key={u.achievement_id} className="relative flex items-start gap-4 group">
+                {/* Dot na linha + badge thumbnail */}
+                <div className="relative z-10 shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#141417] border border-white/[0.08] flex items-center justify-center overflow-hidden">
+                    <AchievementBadge achievement={ach} size={32} />
+                  </div>
+                </div>
+
+                {/* Card do evento */}
+                <div className="flex-1 min-w-0 rounded-xl border border-white/[0.06] bg-gradient-to-r from-[#141417] to-[#111114] px-4 py-3 transition-colors duration-200 group-hover:border-white/[0.12]">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[13.5px] font-bold text-white/90 leading-tight">{ach.label}</span>
+                        <span className={`text-[9px] font-bold tracking-[0.18em] uppercase ${rarity.className}`}>
+                          {rarity.label}
+                        </span>
+                      </div>
+                      <p className="text-[11.5px] text-white/45 mt-0.5 truncate">{ach.detail}</p>
+                    </div>
+                    {u.coins_granted > 0 && (
+                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 shrink-0">
+                        <span className="text-[10px] text-amber-300 font-bold tabular-nums">+{u.coins_granted.toLocaleString("pt-BR")}</span>
+                        <span className="text-[9px] text-amber-300/60 uppercase tracking-wider">coin</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2 text-[10px] text-white/30">
+                    <time>{formatFullDate(u.unlocked_at)}</time>
+                    <span>·</span>
+                    <span>{sourceLabel[u.source]}</span>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </div>
+  );
 }
 
 /* ── Skill Tree ── */
@@ -401,10 +668,14 @@ function InsightsView() {
 
 export default function ConquistasPage() {
   const [view, setView] = useState<ViewTab>("badges");
+  const [selected, setSelected] = useState<Achievement | null>(null);
   const { progress } = useProgress();
 
-  // Unlocks reais vindos do DB + voice streak do bot tracking
-  const [unlockedIds, setUnlockedIds] = useState<Set<string> | null>(null);
+  // Unlocks reais vindos do DB + voice streak do bot tracking.
+  // Guardamos a lista completa (com unlocked_at, source, coins_granted) pra
+  // a Timeline. Set de IDs é derivado via useMemo.
+  const [unlocks, setUnlocks] = useState<UnlockMeta[] | null>(null);
+  const unlockedIds = unlocks == null ? null : new Set(unlocks.map((u) => u.achievement_id));
   const [serverStreak, setServerStreak] = useState(0);
   useEffect(() => {
     let cancelled = false;
@@ -413,15 +684,15 @@ export default function ConquistasPage() {
         const res = await fetch("/api/achievements/me", { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as {
-          unlocks: Array<{ achievement_id: string }>;
+          unlocks: UnlockMeta[];
           streak_days: number;
         };
         if (cancelled) return;
-        setUnlockedIds(new Set(data.unlocks.map((u) => u.achievement_id)));
+        setUnlocks(data.unlocks ?? []);
         setServerStreak(data.streak_days ?? 0);
       } catch {
         // fail silently — mostra tudo como locked
-        if (!cancelled) setUnlockedIds(new Set());
+        if (!cancelled) setUnlocks([]);
       }
     })();
     return () => {
@@ -478,9 +749,15 @@ export default function ConquistasPage() {
             body: JSON.stringify({ achievement_id: id }),
           });
           if (!res.ok || cancelled) continue;
-          const data = (await res.json()) as { status?: string };
+          const data = (await res.json()) as { status?: string; unlocked_at?: string; coins_granted?: number; source?: UnlockMeta["source"] };
           if (data.status === "granted" || data.status === "restored") {
-            setUnlockedIds((prev) => (prev ? new Set([...prev, id]) : new Set([id])));
+            const entry: UnlockMeta = {
+              achievement_id: id,
+              unlocked_at: data.unlocked_at ?? new Date().toISOString(),
+              coins_granted: data.coins_granted ?? 0,
+              source: data.source ?? "system",
+            };
+            setUnlocks((prev) => (prev ? [...prev, entry] : [entry]));
           }
         } catch {
           /* silencioso — tenta de novo no próximo render */
@@ -544,6 +821,7 @@ export default function ConquistasPage() {
         <div className="flex gap-1.5">
           {([
             { id: "badges" as ViewTab,   label: "Badges",     icon: Target },
+            { id: "timeline" as ViewTab, label: "Timeline",   icon: ArrowUp },
             { id: "tree" as ViewTab,     label: "Skill Tree", icon: TrendingUp },
             { id: "insights" as ViewTab, label: "Insights",   icon: Brain },
           ]).map((tab) => {
@@ -610,7 +888,7 @@ export default function ConquistasPage() {
                     : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
                 }>
                   {items.map((a) => (
-                    <BadgeCard key={a.id} achievement={a} unlocked={isUnlocked(a)} large={useLarge} />
+                    <BadgeCard key={a.id} achievement={a} unlocked={isUnlocked(a)} large={useLarge} onOpen={setSelected} />
                   ))}
                 </div>
               </section>
@@ -619,8 +897,18 @@ export default function ConquistasPage() {
         </div>
       )}
 
+      {view === "timeline" && <TimelineView unlocks={unlocks ?? []} />}
       {view === "tree" && <SkillTreeView />}
       {view === "insights" && <InsightsView />}
+
+      {selected && (
+        <AchievementModal
+          achievement={selected}
+          unlocked={isUnlocked(selected)}
+          unlockedAt={unlocks?.find((u) => u.achievement_id === selected.id)?.unlocked_at}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }

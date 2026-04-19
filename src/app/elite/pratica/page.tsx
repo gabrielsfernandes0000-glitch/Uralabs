@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   FileText, TrendingUp, Zap, Check, ChevronRight,
   Clock, Target, Brain, ArrowUp, ArrowDown, Minus,
-  Play, Pause, SkipForward, RotateCcw,
+  Play, Pause, SkipForward, RotateCcw, BookOpen,
 } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import Link from "next/link";
@@ -397,17 +397,13 @@ const TREINOS: Treino[] = [
 
 function TreinoTab() {
   const { completedLessons } = useProgress();
-
-  // DEV: tudo desbloqueado pra teste
-  const isUnlocked = (_lessonId: string) => true;
+  const isCompleted = (lessonId: string) => completedLessons.includes(lessonId);
 
   // Group by module
   const grouped = TREINOS.reduce<Record<string, Treino[]>>((acc, t) => {
     (acc[t.module] ??= []).push(t);
     return acc;
   }, {});
-
-  const totalUnlocked = TREINOS.filter(t => isUnlocked(t.requiredLesson)).length;
 
   return (
     <div className="space-y-8">
@@ -423,15 +419,15 @@ function TreinoTab() {
                 Treino
               </h1>
               <p className="text-[14px] text-white/40 mt-3 max-w-md">
-                Cada treino &eacute; desbloqueado ao completar a aula correspondente. Pratique o que aprendeu com cen&aacute;rios reais.
+                Pratique com cen&aacute;rios reais. Cada treino tem uma aula recomendada como base &mdash; assistir &eacute; opcional, mas ajuda se o conceito ainda n&atilde;o est&aacute; firme.
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <p className="text-[36px] lg:text-[42px] font-bold text-white leading-none tracking-tight">{totalUnlocked}</p>
+              <p className="text-[36px] lg:text-[42px] font-bold text-white leading-none tracking-tight">{TREINOS.length}</p>
               <div>
-                <p className="text-[12px] text-white/30">de {TREINOS.length}</p>
-                <p className="text-[12px] text-white/30">desbloqueados</p>
+                <p className="text-[12px] text-white/30">treinos</p>
+                <p className="text-[12px] text-white/30">dispon&iacute;veis</p>
               </div>
             </div>
           </div>
@@ -469,9 +465,9 @@ function TreinoTab() {
             {/* Treino cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {treinos.map((treino) => {
-                const unlocked = isUnlocked(treino.requiredLesson);
+                const lessonDone = isCompleted(treino.requiredLesson);
 
-                return unlocked ? (
+                return (
                   <Link
                     key={treino.id}
                     href={`/elite/treino/${treino.id}`}
@@ -491,29 +487,22 @@ function TreinoTab() {
                       <ChevronRight className="w-4 h-4 text-white/15 mt-1" />
                     </div>
                     <p className="text-[12px] leading-relaxed ml-11 text-white/40">{treino.desc}</p>
-                  </Link>
-                ) : (
-                  <div
-                    key={treino.id}
-                    className="relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 block border-white/[0.04] bg-[#0c0c0e] opacity-40 cursor-default"
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white/[0.08]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-[15px] font-bold leading-tight text-white/25">{treino.title}</h4>
-                          <span className="text-[11px] text-white/15">{treino.difficulty.charAt(0).toUpperCase() + treino.difficulty.slice(1)}</span>
-                        </div>
-                      </div>
+
+                    {/* Aula recomendada — hint não bloqueante */}
+                    <div className="mt-3 ml-11 inline-flex items-center gap-1.5 text-[10.5px] text-white/35">
+                      {lessonDone ? (
+                        <>
+                          <Check className="w-3 h-3 text-green-400/70" />
+                          <span>Baseado em &ldquo;{treino.requiredLessonTitle}&rdquo;</span>
+                        </>
+                      ) : (
+                        <>
+                          <BookOpen className="w-3 h-3 text-white/30" />
+                          <span>Recomendado: ver &ldquo;{treino.requiredLessonTitle}&rdquo; antes</span>
+                        </>
+                      )}
                     </div>
-                    <p className="text-[12px] leading-relaxed ml-11 text-white/15">
-                      Complete &quot;{treino.requiredLessonTitle}&quot; para desbloquear.
-                    </p>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

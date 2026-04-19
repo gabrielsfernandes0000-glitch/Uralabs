@@ -1,7 +1,8 @@
 "use client";
 
-import { Coins, Lock, Package } from "lucide-react";
+import { Lock, Package } from "lucide-react";
 import type { BoxWithPrizes } from "@/lib/ura-coin";
+import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 import { PrizeTile } from "./prize-tile";
 
 const TIER_STYLES: Record<
@@ -117,7 +118,7 @@ export function BoxCard({
             </>
           ) : (
             <>
-              <Coins className="w-4 h-4 text-amber-500" />
+              <UraCoinIcon className="w-4 h-4" />
               Abrir por {box.cost_coins.toLocaleString("pt-BR")}
             </>
           )}

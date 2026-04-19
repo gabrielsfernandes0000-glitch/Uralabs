@@ -22,6 +22,24 @@ export type ThumbKind =
   | "prop-firms"      // mesas-prop
   | "accounts";       // gerenciamento-contas
 
+/** Tag curta exibida no canto do thumb — dá reconhecimento rápido sem precisar ler a ilustração */
+const KIND_TAG: Record<ThumbKind, string> = {
+  "roadmap":        "Intro",
+  "candle-anatomy": "Candle",
+  "risk-shield":    "Risco",
+  "ob-bounce":      "OB",
+  "fvg-fill":       "FVG",
+  "premium":        "Premium",
+  "liquidity":      "Liquidez",
+  "sessions":       "Sessões",
+  "amd":            "AMD",
+  "judas":          "Judas",
+  "smt":            "SMT",
+  "entry-setup":    "Entry",
+  "prop-firms":     "Mesas",
+  "accounts":       "Contas",
+};
+
 const C = {
   green: "#10B981",
   red:   "#EF4444",
@@ -36,10 +54,10 @@ const C = {
    Shared pieces: background, grid, accent glow
    ──────────────────────────────────────────── */
 
-function ThumbBase({ accent, children }: { accent: string; children: React.ReactNode }) {
+function ThumbBase({ accent, tag, children }: { accent: string; tag?: string; children: React.ReactNode }) {
   return (
     <div className="absolute inset-0 overflow-hidden select-none" style={{ background: "#0e0e10" }}>
-      {/* Subtle grid */}
+      {/* Grid sutil */}
       <div className="absolute inset-0" style={{
         backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
                           linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
@@ -47,15 +65,28 @@ function ThumbBase({ accent, children }: { accent: string; children: React.React
         maskImage: "radial-gradient(ellipse 75% 75% at 50% 50%, black 30%, transparent 85%)",
         WebkitMaskImage: "radial-gradient(ellipse 75% 75% at 50% 50%, black 30%, transparent 85%)",
       }} />
-      {/* Accent glow */}
+      {/* Accent glow — mais presente pra dar identidade de cor sólida ao módulo */}
       <div className="absolute inset-0" style={{
-        background: `radial-gradient(ellipse 60% 60% at 80% 30%, ${accent}14, transparent 60%),
-                     radial-gradient(ellipse 40% 40% at 15% 80%, ${accent}08, transparent 55%)`,
+        background: `radial-gradient(ellipse 80% 70% at 80% 30%, ${accent}22, transparent 65%),
+                     radial-gradient(ellipse 50% 50% at 15% 85%, ${accent}14, transparent 60%)`,
       }} />
-      {/* Top accent line */}
+      {/* Barra superior em accent sólido */}
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: `linear-gradient(90deg, transparent, ${accent}70 30%, ${accent}50 70%, transparent)`,
       }} />
+      {/* Tag da categoria — ícone-texto curto pra reconhecimento rápido */}
+      {tag && (
+        <div
+          className="absolute top-2.5 right-2.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.15em] backdrop-blur-sm z-10"
+          style={{
+            backgroundColor: accent + "22",
+            color: accent,
+            border: `1px solid ${accent}45`,
+          }}
+        >
+          {tag}
+        </div>
+      )}
       {children}
     </div>
   );
@@ -67,7 +98,9 @@ function ThumbBase({ accent, children }: { accent: string; children: React.React
 
 interface CandleData { x: number; o: number; h: number; l: number; c: number; w?: number; op?: number; }
 function Candle({ x, o, h, l, c, w = 9, op = 1 }: CandleData) {
-  const bullish = c >= o;
+  // o/c são coordenadas Y em SVG: menor Y = preço mais alto.
+  // Então bullish (subiu) = close acima de open no ecrã = c < o.
+  const bullish = c <= o;
   const color = bullish ? C.green : C.red;
   const bodyTop = Math.min(o, c);
   const bodyH = Math.max(Math.abs(c - o), 1.5);
@@ -589,7 +622,7 @@ export function LessonThumb({ kind, accent }: { kind: ThumbKind; accent: string 
   }[kind];
 
   return (
-    <ThumbBase accent={accent}>
+    <ThumbBase accent={accent} tag={KIND_TAG[kind]}>
       <Content />
     </ThumbBase>
   );

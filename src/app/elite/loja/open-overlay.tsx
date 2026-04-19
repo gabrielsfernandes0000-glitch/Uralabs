@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, Coins, AlertTriangle, Loader2 } from "lucide-react";
+import { X, AlertTriangle, Loader2 } from "lucide-react";
 import type { BoxWithPrizes, Prize, PrizeType, PrizeRarity } from "@/lib/ura-coin";
+import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 import { PrizeTile, RARITY_STYLES } from "./prize-tile";
 
 export type OpenResult = {
@@ -276,7 +277,7 @@ function RevealCard({ result, onClose }: { result: OpenResult; onClose: () => vo
       )}
       {isCoinBonus && (
         <p className="text-sm text-white/60 mb-2 inline-flex items-center gap-1">
-          <Coins className="w-3.5 h-3.5 text-amber-400" />
+          <UraCoinIcon className="w-3.5 h-3.5" />
           +{coinAmount.toLocaleString("pt-BR")} URA Coin · creditado automático
         </p>
       )}

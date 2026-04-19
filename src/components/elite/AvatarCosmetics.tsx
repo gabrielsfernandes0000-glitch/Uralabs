@@ -139,20 +139,6 @@ function FrameVariant({ slug, size }: { slug: FrameSlug; size: number }) {
   }
 }
 
-function FrameTouroChifres({ size, accent }: { size: number; accent: string }) {
-  return (
-    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="frame-touro">
-      {/* Chifre esquerdo */}
-      <path d="M 35 18 Q 25 6 22 2 Q 30 14 38 22" fill={accent} stroke="#8B4513" strokeWidth="0.8" opacity="0.95"
-        style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
-      {/* Chifre direito */}
-      <path d="M 65 18 Q 75 6 78 2 Q 70 14 62 22" fill={accent} stroke="#8B4513" strokeWidth="0.8" opacity="0.95"
-        style={{ filter: `drop-shadow(0 0 3px ${accent})` }} />
-      <style>{`.frame-touro { animation: touroSway 4s ease-in-out infinite; transform-origin: center bottom; } @keyframes touroSway { 0%, 100% { transform: rotate(-1deg) } 50% { transform: rotate(1deg) } } .av-cos-wrap[data-anim="always"]:hover .frame-touro, .av-cos-wrap[data-anim="hover"]:hover .frame-touro { animation-duration: 1.5s; }`}</style>
-    </svg>
-  );
-}
-
 function FrameUrsoGarras({ size, accent }: { size: number; accent: string }) {
   return (
     <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
@@ -239,26 +225,6 @@ function FrameCoroaDiamante({ size, accent }: { size: number; accent: string }) 
         ))}
       </g>
       <style>{`.coroa-diamond { animation: coroaTwinkle 2s ease-in-out calc(var(--i) * 0.3s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes coroaTwinkle { 0%, 100% { opacity: 0.7; transform: scale(1) } 50% { opacity: 1; transform: scale(1.3) } } .av-cos-wrap[data-anim="always"]:hover .coroa-diamond, .av-cos-wrap[data-anim="hover"]:hover .coroa-diamond { animation-duration: 0.7s; }`}</style>
-    </svg>
-  );
-}
-
-function FrameAsasTouro({ size, accent }: { size: number; accent: string }) {
-  return (
-    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
-      {/* Asa esquerda */}
-      <g className="asa asa-l">
-        <path d="M 15 50 Q 0 40 -5 55 Q 0 60 10 58 Q 4 52 8 48 M 15 55 Q 3 52 -3 62 Q 3 66 12 62 M 18 60 Q 8 60 4 68 Q 10 70 17 66"
-          fill={accent} stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.4" opacity="0.9"
-          style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
-      </g>
-      {/* Asa direita */}
-      <g className="asa asa-r">
-        <path d="M 85 50 Q 100 40 105 55 Q 100 60 90 58 Q 96 52 92 48 M 85 55 Q 97 52 103 62 Q 97 66 88 62 M 82 60 Q 92 60 96 68 Q 90 70 83 66"
-          fill={accent} stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.4" opacity="0.9"
-          style={{ filter: `drop-shadow(0 0 4px ${accent})` }} />
-      </g>
-      <style>{`.asa { animation: asaFlap 3s ease-in-out infinite; transform-box: fill-box; } .asa-l { transform-origin: right center; } .asa-r { transform-origin: left center; } @keyframes asaFlap { 0%, 100% { transform: scaleY(1) } 50% { transform: scaleY(0.7) } } .av-cos-wrap[data-anim="always"]:hover .asa, .av-cos-wrap[data-anim="hover"]:hover .asa { animation-duration: 0.8s; }`}</style>
     </svg>
   );
 }
@@ -398,22 +364,6 @@ function AuraDouradaPayout({ size, accent }: { size: number; accent: string }) {
   );
 }
 
-function AuraRelampago({ size, accent }: { size: number; accent: string }) {
-  const bolts = Array.from({ length: 5 }, (_, i) => ({ a: (i * 72), delay: (i * 0.3) }));
-  return (
-    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
-      {bolts.map((b, i) => (
-        <g key={i} className="bolt" transform={`rotate(${b.a}, 50, 50)`} style={{ ["--delay" as string]: `${b.delay}s` }}>
-          <path d="M 50 10 L 46 26 L 52 28 L 48 46" stroke={accent} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"
-            style={{ filter: `drop-shadow(0 0 5px ${accent})` }} />
-        </g>
-      ))}
-      <circle cx="50" cy="50" r="42" fill="none" stroke={accent} strokeWidth="0.5" opacity="0.3" />
-      <style>{`.bolt { animation: boltFlash 2.5s ease-in-out var(--delay) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .bolt, .av-cos-wrap[data-anim="hover"]:hover .bolt { animation-duration: 0.9s; } @keyframes boltFlash { 0%, 40%, 100% { opacity: 0 } 45%, 55% { opacity: 1 } }`}</style>
-    </svg>
-  );
-}
-
 function AuraCosmos({ size, accent }: { size: number; accent: string }) {
   const stars = Array.from({ length: 14 }, (_, i) => ({ angle: (i * 360) / 14, orbit: 36 + (i % 3) * 6, delay: (i * 0.15) % 2.5, size: 1 + (i % 3) * 0.7 }));
   return (
@@ -489,27 +439,6 @@ function FrameArcanoEstelar({ size, accent }: { size: number; accent: string }) 
   );
 }
 
-function FrameRunasTraders({ size, accent }: { size: number; accent: string }) {
-  const runes = [
-    { x: 50, y: 5, label: "OB" }, { x: 90, y: 50, label: "FVG" },
-    { x: 50, y: 95, label: "LIQ" }, { x: 10, y: 50, label: "$$" },
-  ];
-  return (
-    <svg viewBox="0 0 100 100" style={{ width: size, height: size }}>
-      {runes.map((r, i) => (
-        <g key={i} className="rune-hex" style={{ ["--i" as string]: i }}>
-          <polygon
-            points={`${r.x},${r.y - 5} ${r.x + 4.3},${r.y - 2.5} ${r.x + 4.3},${r.y + 2.5} ${r.x},${r.y + 5} ${r.x - 4.3},${r.y + 2.5} ${r.x - 4.3},${r.y - 2.5}`}
-            fill={`${accent}20`} stroke={accent} strokeWidth="0.8" style={{ filter: `drop-shadow(0 0 4px ${accent})` }}
-          />
-          <text x={r.x} y={r.y + 1.5} textAnchor="middle" fontSize="3.5" fontFamily="monospace" fontWeight="bold" fill={accent}>{r.label}</text>
-        </g>
-      ))}
-      <style>{`.av-cos-wrap[data-anim="always"] .rune-hex { animation: runeGlow 4s ease-in-out calc(var(--i) * 0.4s) infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .rune-hex, .av-cos-wrap[data-anim="hover"]:hover .rune-hex { animation: runeGlow 1s ease-in-out calc(var(--i) * 0.15s) infinite; transform-origin: center; transform-box: fill-box; } @keyframes runeGlow { 0%, 100% { opacity: 0.5 } 50% { opacity: 1; filter: brightness(1.4) } }`}</style>
-    </svg>
-  );
-}
-
 function FramePentagrama({ size, accent }: { size: number; accent: string }) {
   const tips = [{ x: 50, y: 10 }, { x: 90, y: 50 }, { x: 78, y: 92 }, { x: 22, y: 92 }, { x: 10, y: 50 }];
   return (
@@ -525,36 +454,9 @@ function FramePentagrama({ size, accent }: { size: number; accent: string }) {
   );
 }
 
-function FrameSigiloMago({ size, accent }: { size: number; accent: string }) {
-  return (
-    <svg viewBox="0 0 100 100" style={{ width: size, height: size }} className="frame-sigilo">
-      <circle cx="50" cy="50" r="47" fill="none" stroke={accent} strokeWidth="0.8" opacity="0.6" />
-      <circle cx="50" cy="50" r="43" fill="none" stroke={accent} strokeWidth="0.4" opacity="0.3" strokeDasharray="3 3" />
-      {Array.from({ length: 12 }, (_, i) => i * 30).map((angle, i) => (
-        <g key={i} transform={`rotate(${angle}, 50, 50)`}>
-          <line x1="50" y1="4" x2="50" y2="8" stroke={accent} strokeWidth="1.2" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 2px ${accent})` }} />
-        </g>
-      ))}
-      <style>{`.av-cos-wrap[data-anim="always"] .frame-sigilo { animation: sigiloSpin 20s linear infinite; transform-origin: center; transform-box: fill-box; } .av-cos-wrap[data-anim="always"]:hover .frame-sigilo, .av-cos-wrap[data-anim="hover"]:hover .frame-sigilo { animation: sigiloSpin 5s linear infinite; transform-origin: center; transform-box: fill-box; } @keyframes sigiloSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
-    </svg>
-  );
-}
-
 /* ══════════════════════════════════════════════════════════════════════════
-   TAROT v3 — 6 auras arcanas
+   TAROT v3 — auras arcanas
    ═════════════════════════════════════════════════════════════════════ */
-
-function AuraNevoa({ size, accent }: { size: number; accent: string }) {
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <div className="nevoa-layer" style={{
-        position: "absolute", inset: 0, borderRadius: "50%",
-        background: `radial-gradient(ellipse 40% 30% at 20% 50%, ${accent}50, transparent 60%), radial-gradient(ellipse 40% 30% at 80% 50%, ${accent}30, transparent 60%)`,
-      }} />
-      <style>{`.av-cos-wrap[data-anim="always"] .nevoa-layer { animation: nevoaDrift 4s ease-in-out infinite; } .av-cos-wrap[data-anim="always"]:hover .nevoa-layer, .av-cos-wrap[data-anim="hover"]:hover .nevoa-layer { animation: nevoaDrift 1.5s ease-in-out infinite; } @keyframes nevoaDrift { 0%, 100% { transform: translateX(-4px); opacity: 0.7 } 50% { transform: translateX(4px); opacity: 1 } }`}</style>
-    </div>
-  );
-}
 
 function AuraRunasOrbital({ size, accent }: { size: number; accent: string }) {
   const runes = [

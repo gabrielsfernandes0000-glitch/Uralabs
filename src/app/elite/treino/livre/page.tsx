@@ -2,8 +2,100 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Check, X, Shuffle, ArrowRight, Trophy, RotateCcw, Zap } from "lucide-react";
+import {
+  ChevronLeft, Check, X, Shuffle, ArrowRight, Trophy, RotateCcw, Zap,
+  LayoutGrid, Box, Droplets, Clock, RefreshCw, TrendingUp, ShieldCheck,
+  GitBranch, Brain, BarChart3, Target, Building2, Clock4, LogOut,
+  type LucideIcon,
+} from "lucide-react";
 import { LessonChart, type ChartScenario } from "@/components/elite/LessonChart";
+
+/* ────────────────────────────────────────────
+   Concept Visual — cartão decorativo pra cenários sem gráfico
+   Cada categoria ganha um ícone e cor de accent.
+   Evita que a tela fique "vazia" em perguntas conceituais.
+   ──────────────────────────────────────────── */
+
+const CATEGORY_VISUAL: Record<string, { icon: LucideIcon; accent: string; tagline: string }> = {
+  "Estrutura":         { icon: LayoutGrid,  accent: "#3B82F6", tagline: "Leitura de estrutura" },
+  "Order Blocks":      { icon: Box,         accent: "#3B82F6", tagline: "Zonas institucionais" },
+  "FVG":               { icon: Zap,         accent: "#A855F7", tagline: "Desequilíbrio de preço" },
+  "Liquidez":          { icon: Droplets,    accent: "#06B6D4", tagline: "Pools de stops" },
+  "Sessões":           { icon: Clock,       accent: "#F59E0B", tagline: "Timing de mercado" },
+  "AMD":               { icon: RefreshCw,   accent: "#A855F7", tagline: "Acumulação · Manipulação · Distribuição" },
+  "Premium/Discount":  { icon: TrendingUp,  accent: "#10B981", tagline: "Valor relativo do preço" },
+  "Gestão":            { icon: ShieldCheck, accent: "#10B981", tagline: "Gestão de risco" },
+  "SMT":               { icon: GitBranch,   accent: "#EC4899", tagline: "Divergência entre correlatos" },
+  "Psicologia":        { icon: Brain,       accent: "#6366F1", tagline: "Mente do trader" },
+  "Candles":           { icon: BarChart3,   accent: "#F59E0B", tagline: "Leitura de candle" },
+  "Viés":              { icon: Target,      accent: "#F59E0B", tagline: "Viés diário & semanal" },
+  "Mesas":             { icon: Building2,   accent: "#3B82F6", tagline: "Mesas proprietárias" },
+  "Timing":            { icon: Clock4,      accent: "#A855F7", tagline: "Janelas de oportunidade" },
+  "Saída":             { icon: LogOut,      accent: "#EF4444", tagline: "Gestão de saída" },
+};
+
+function ConceptVisual({ category, title }: { category: string; title: string }) {
+  const meta = CATEGORY_VISUAL[category] ?? { icon: Brain, accent: "#FF5500", tagline: "Conceito" };
+  const Icon = meta.icon;
+  const a = meta.accent;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06]" style={{ backgroundColor: "#0e0e10" }}>
+      {/* Accent ambient */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: `radial-gradient(ellipse 70% 60% at 75% 20%, ${a}22, transparent 65%),
+                     radial-gradient(ellipse 50% 50% at 20% 85%, ${a}12, transparent 60%)`,
+      }} />
+      {/* Grid sutil */}
+      <div className="absolute inset-0 pointer-events-none opacity-50" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
+        backgroundSize: "32px 32px",
+        maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 85%)",
+        WebkitMaskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 85%)",
+      }} />
+      {/* Top line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
+        background: `linear-gradient(90deg, transparent, ${a}80 30%, ${a}60 70%, transparent)`,
+      }} />
+
+      <div className="relative z-10 flex items-center gap-5 px-7 py-8">
+        {/* Ícone grande com glow */}
+        <div className="relative shrink-0">
+          <div className="absolute inset-0 blur-2xl rounded-full opacity-60" style={{ backgroundColor: a + "45" }} />
+          <div
+            className="relative w-20 h-20 rounded-2xl flex items-center justify-center border"
+            style={{ backgroundColor: a + "18", borderColor: a + "45" }}
+          >
+            <Icon className="w-10 h-10" style={{ color: a }} strokeWidth={1.5} />
+          </div>
+        </div>
+
+        {/* Texto */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1.5" style={{ color: a }}>
+            {category}
+          </p>
+          <h4 className="text-[18px] font-bold text-white tracking-tight leading-tight mb-1.5">
+            {title}
+          </h4>
+          <p className="text-[11.5px] text-white/35 leading-relaxed">{meta.tagline}</p>
+        </div>
+
+        {/* Ornamento à direita: linhas verticais sutis */}
+        <div className="hidden md:flex flex-col gap-1 shrink-0 opacity-25">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-0.5 rounded-full"
+              style={{ width: 24 - i * 4, backgroundColor: a }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ────────────────────────────────────────────
    Banco de Cenários — Treino Livre
@@ -342,9 +434,12 @@ export default function TreinoLivrePage() {
         <p className="text-[13px] text-white/45 leading-relaxed">{scenario.context}</p>
       </div>
 
-      {/* Chart (only when scenario has a chartType) */}
-      {scenario.chartType && (
+      {/* Visual — gráfico quando o cenário tem chartType, senão cartão de conceito
+          pra não deixar a tela vazia em perguntas teóricas (Psicologia, Mesas, etc) */}
+      {scenario.chartType ? (
         <LessonChart key={scenario.id} scenario={scenario.chartType} />
+      ) : (
+        <ConceptVisual category={scenario.category} title={scenario.title} />
       )}
 
       {/* Options */}

@@ -554,8 +554,6 @@ function DegenNights({ variant, animated, accent, className }: BannerChildProps)
 
 /* ══════════════════════════════════════════════════════════════════════════
    TAROT v3 — banners arcanos adaptados pro nicho trade/crypto
-   (só os que passaram em qualidade visual; removidos: o-mago-smc,
-    a-morte-liq, o-diabo-fomo)
    ═════════════════════════════════════════════════════════════════════ */
 
 function ATorreFlash({ variant, animated, accent, className }: BannerChildProps) {

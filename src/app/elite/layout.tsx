@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession, canAccessPlatform } from "@/lib/session";
 import { EliteSidebar } from "@/components/elite/Sidebar";
+import { CommandPalette } from "@/components/elite/CommandPalette";
 import { getUserState } from "@/lib/ura-coin";
 
 export default async function EliteLayout({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,9 @@ export default async function EliteLayout({ children }: { children: React.ReactN
           {children}
         </div>
       </main>
+
+      {/* Cmd+K / Ctrl+K — busca global de aulas, treinos e páginas */}
+      <CommandPalette />
     </div>
   );
 }

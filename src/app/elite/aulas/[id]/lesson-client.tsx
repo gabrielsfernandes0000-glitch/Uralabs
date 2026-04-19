@@ -11,6 +11,7 @@ import {
 import type { QuizQuestion, LessonData, ModuleData } from "@/lib/curriculum";
 import { getTreinosForLesson } from "@/lib/module-treinos";
 import { LessonChart, hasLiveChart } from "@/components/elite/LessonChart";
+import { LessonComments } from "@/components/elite/LessonComments";
 
 /* ────────────────────────────────────────────
    Confetti — lightweight celebration particles
@@ -818,6 +819,16 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
   type Resource = "quiz" | "flashcards" | "checklist" | "treino";
   const [activeResource, setActiveResource] = useState<Resource | null>(null);
 
+  // Discord user id do usuário logado — usado pelo CommentSection pra saber
+  // quais comentários pode deletar e marcar "Você".
+  const [myId, setMyId] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/me", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.userId) setMyId(String(d.userId)); })
+      .catch(() => {});
+  }, []);
+
   // Track completion of all sections
   const [sections, setSections] = useState({ quiz: false, checklist: false, chart: false, flashcards: false });
 
@@ -1115,6 +1126,9 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
         </div>
       )}
 
+
+      {/* Comentários da aula — discussão entre alunos */}
+      <LessonComments lessonId={lessonId} currentUserId={myId} accent={accent} />
 
       {/* Navigation — prev/next */}
       <div className="flex items-center justify-between pt-6 border-t border-white/[0.04]">

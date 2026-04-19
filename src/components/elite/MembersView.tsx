@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Zap, Flame, Search } from "lucide-react";
+import { Users, Zap, Flame, Search, MessageCircle, Trophy, Coins } from "lucide-react";
 import { fetchDiscordMembers, type DiscordMember } from "@/lib/discord-members";
 import { MemberProfileModal } from "./MemberProfileModal";
 import { CosmeticBanner, isBannerSlug, bannerAccent } from "./CosmeticBanner";
 import { AvatarWithCosmetics } from "./AvatarCosmetics";
+
+type SortBy = "default" | "messages" | "achievements" | "coins";
+
+const SORT_META: Record<SortBy, { label: string; short: string }> = {
+  default:      { label: "Padrão",      short: "Elite primeiro · mais antigos no topo" },
+  messages:     { label: "Mensagens",   short: "Quem mais fala no Discord" },
+  achievements: { label: "Conquistas",  short: "Quem mais desbloqueou badges" },
+  coins:        { label: "URA Coin",    short: "Quem mais ganhou coin" },
+};
 
 /* ────────────────────────────────────────────
    MembersView — grid completo com busca, filtro por tier e perfil clicável.
@@ -17,13 +26,22 @@ export function MembersView() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<"all" | "elite" | "vip">("all");
+  const [sortBy, setSortBy] = useState<SortBy>("default");
   const [profileMember, setProfileMember] = useState<DiscordMember | null>(null);
+  const [myId, setMyId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDiscordMembers()
       .then((data) => setMembers(data.members))
       .catch((err) => console.warn("[membros] discord fallback:", err))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/me", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.userId) setMyId(String(d.userId)); })
+      .catch(() => {});
   }, []);
 
   const eliteCount = members.filter((m) => m.tier === "elite").length;
@@ -40,10 +58,40 @@ export function MembersView() {
     );
   });
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier === "elite" ? -1 : 1;
+  // Comparador puro pelo critério — sem sticky do próprio user.
+  // Usado pra calcular o rank real de cada membro.
+  const comparator = (a: DiscordMember, b: DiscordMember) => {
+    if (sortBy === "messages") {
+      const diff = (b.messageCount ?? 0) - (a.messageCount ?? 0);
+      if (diff !== 0) return diff;
+    } else if (sortBy === "achievements") {
+      const diff = (b.achievementCount ?? 0) - (a.achievementCount ?? 0);
+      if (diff !== 0) return diff;
+    } else if (sortBy === "coins") {
+      const diff = (b.coinLifetime ?? 0) - (a.coinLifetime ?? 0);
+      if (diff !== 0) return diff;
+    } else {
+      if (a.tier !== b.tier) return a.tier === "elite" ? -1 : 1;
+      return a.joinedAt.localeCompare(b.joinedAt);
+    }
     return a.globalName.localeCompare(b.globalName);
+  };
+
+  // Rank real (posição natural) — ignora sticky do próprio user.
+  const rankedByScore = [...filtered].sort(comparator);
+  const rankOf = new Map<string, number>();
+  rankedByScore.forEach((m, i) => rankOf.set(m.id, i + 1));
+
+  // Ordem de display: próprio user sempre no topo, resto pelo critério.
+  const sorted = [...filtered].sort((a, b) => {
+    if (myId) {
+      if (a.id === myId) return -1;
+      if (b.id === myId) return 1;
+    }
+    return comparator(a, b);
   });
+
+  const showRank = sortBy !== "default";
 
   return (
     <div className="space-y-4">
@@ -83,6 +131,27 @@ export function MembersView() {
         </div>
       </div>
 
+      {/* Sort chips — ranking */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mr-1">Ordenar</span>
+        {(["default", "messages", "achievements", "coins"] as SortBy[]).map((opt) => {
+          const active = sortBy === opt;
+          const Icon = opt === "messages" ? MessageCircle : opt === "achievements" ? Trophy : opt === "coins" ? Coins : Users;
+          return (
+            <button key={opt} onClick={() => setSortBy(opt)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] font-semibold transition-all ${
+                active
+                  ? "border-white/[0.20] bg-white/[0.05] text-white"
+                  : "border-white/[0.05] text-white/35 hover:text-white/65 hover:border-white/[0.12]"
+              }`}
+              title={SORT_META[opt].short}>
+              <Icon className="w-3 h-3" />
+              {SORT_META[opt].label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -104,48 +173,112 @@ export function MembersView() {
           {sorted.map((m) => {
             const hasBanner = isBannerSlug(m.bannerSlug);
             const accent = hasBanner ? bannerAccent(m.bannerSlug) : (m.tier === "elite" ? "#FF5500" : "#3B82F6");
+            const isMe = myId != null && m.id === myId;
+            const rank = showRank ? rankOf.get(m.id) ?? null : null;
+            const scoreValue =
+              sortBy === "messages" ? m.messageCount ?? 0
+              : sortBy === "achievements" ? m.achievementCount ?? 0
+              : sortBy === "coins" ? m.coinLifetime ?? 0
+              : null;
+            const medalColor = rank === 1 ? "#F59E0B" : rank === 2 ? "#D1D5DB" : rank === 3 ? "#CD7F32" : null;
             return (
-              <button key={m.id} onClick={() => setProfileMember(m)}
-                className="group text-left relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-200 min-h-[160px] flex flex-col">
+              <button
+                key={m.id}
+                onClick={() => setProfileMember(m)}
+                className={`group text-left relative overflow-hidden rounded-xl border bg-[#0e0e10] transition-all duration-300 ease-out min-h-[160px] flex flex-col hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] ${
+                  isMe
+                    ? "border-brand-500/40 ring-1 ring-brand-500/20 hover:border-brand-500/60 hover:ring-brand-500/35"
+                    : "border-white/[0.06] hover:border-white/[0.20]"
+                }`}
+              >
+                {/* "Você" badge no próprio card */}
+                {isMe && (
+                  <span className="absolute top-2.5 left-2.5 z-20 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-[0.18em] bg-brand-500/90 text-white shadow-sm">
+                    Você
+                  </span>
+                )}
+
+                {/* Rank badge — top 3 tem medalha (gold/silver/bronze), resto mostra #N */}
+                {rank != null && !isMe && (
+                  <span
+                    className="absolute top-2.5 left-2.5 z-20 min-w-[22px] h-5 px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold font-mono shadow-sm"
+                    style={medalColor
+                      ? { backgroundColor: medalColor + "25", color: medalColor, border: `1px solid ${medalColor}55`, boxShadow: rank === 1 ? `0 0 10px ${medalColor}50` : undefined }
+                      : { backgroundColor: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    {rank <= 3 ? `#${rank}` : `#${rank}`}
+                  </span>
+                )}
+                {rank != null && isMe && (
+                  <span className="absolute top-2.5 right-2.5 z-20 min-w-[22px] h-5 px-1.5 rounded-md flex items-center justify-center text-[10px] font-bold font-mono bg-black/55 text-white/75 border border-white/[0.12]">
+                    #{rank}
+                  </span>
+                )}
+
                 {/* Banner thumb card-variant (~55px de altura) */}
                 <div className="relative h-[55px] overflow-hidden">
                   {hasBanner ? (
                     <CosmeticBanner slug={m.bannerSlug} variant="card" animated="hover" />
                   ) : (
-                    <div className="absolute inset-0" style={{
-                      background: `linear-gradient(135deg, ${accent}20 0%, transparent 70%)`,
-                    }} />
+                    <div
+                      className="absolute inset-0 transition-opacity duration-300 group-hover:opacity-90"
+                      style={{
+                        background: `linear-gradient(135deg, ${accent}20 0%, transparent 70%)`,
+                      }}
+                    />
                   )}
+                  {/* Shine sweep no hover — micro-interação tipo Discord */}
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      background: `linear-gradient(105deg, transparent 30%, ${accent}25 50%, transparent 70%)`,
+                      transform: "translateX(-100%)",
+                      animation: "none",
+                    }}
+                  />
                   <div className="absolute inset-0 pointer-events-none" style={{
                     background: "linear-gradient(to bottom, transparent 0%, rgba(14,14,16,0.4) 70%, #0e0e10 100%)",
                   }} />
                 </div>
-                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
+                <div className="absolute top-0 left-0 right-0 h-[2px] transition-all duration-300 group-hover:h-[3px]" style={{
                   background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
                 }} />
 
                 <div className="relative z-10 px-4 pb-4 -mt-8 flex-1 flex flex-col">
                   <div className="flex items-end justify-between mb-2.5">
-                    {m.frameSlug || m.effectSlug ? (
-                      <AvatarWithCosmetics
-                        src={m.avatarUrl} name={m.globalName} size={48}
-                        frameSlug={m.frameSlug} auraSlug={m.effectSlug}
-                        animated="hover"
-                      />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.avatarUrl} alt={m.globalName}
-                        className="w-12 h-12 rounded-full object-cover relative"
-                        style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50, 0 4px 12px rgba(0,0,0,0.4)` }} />
-                    )}
+                    <div className="transition-transform duration-300 ease-out group-hover:scale-[1.05]">
+                      {m.frameSlug || m.effectSlug ? (
+                        <AvatarWithCosmetics
+                          src={m.avatarUrl} name={m.globalName} size={48}
+                          frameSlug={m.frameSlug} auraSlug={m.effectSlug}
+                          animated="hover"
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.avatarUrl} alt={m.globalName}
+                          className="w-12 h-12 rounded-full object-cover relative"
+                          style={{ border: `2px solid #0e0e10`, boxShadow: `0 0 0 1.5px ${accent}50, 0 4px 12px rgba(0,0,0,0.4)` }} />
+                      )}
+                    </div>
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
                       style={{ backgroundColor: accent + "18", color: accent, border: `1px solid ${accent}30` }}>
                       {m.tier === "elite" ? <Flame className="w-2.5 h-2.5 fill-current" /> : <Zap className="w-2.5 h-2.5" />}
                       {m.tier === "elite" ? "Elite" : "VIP"}
                     </span>
                   </div>
-                  <p className="text-[12.5px] font-bold text-white/90 tracking-tight leading-tight truncate">{m.globalName}</p>
+                  <p className="text-[12.5px] font-bold text-white/90 tracking-tight leading-tight truncate transition-colors duration-300 group-hover:text-white">{m.globalName}</p>
                   <p className="text-[10.5px] text-white/35 truncate mt-0.5">@{m.username}</p>
+
+                  {/* Score visível quando sort ativo */}
+                  {scoreValue != null && (
+                    <div className="mt-2 flex items-center gap-1.5 text-[10.5px] font-mono">
+                      {sortBy === "messages" && <MessageCircle className="w-3 h-3 text-cyan-400/70" />}
+                      {sortBy === "achievements" && <Trophy className="w-3 h-3 text-amber-400/70" />}
+                      {sortBy === "coins" && <Coins className="w-3 h-3 text-amber-400/70" />}
+                      <span className="font-bold text-white/75">{scoreValue.toLocaleString("pt-BR")}</span>
+                      <span className="text-white/30">{sortBy === "messages" ? "msgs" : sortBy === "achievements" ? "badges" : "coin"}</span>
+                    </div>
+                  )}
                 </div>
               </button>
             );
