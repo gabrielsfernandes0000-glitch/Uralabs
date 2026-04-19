@@ -7,7 +7,7 @@ export default function MembrosPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="animate-in-up flex items-center gap-3">
         <div className="w-1 h-7 rounded-full bg-brand-500/60" />
         <div>
           <h1 className="flex items-center gap-2 text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">
@@ -17,7 +17,7 @@ export default function MembrosPage() {
         </div>
       </div>
 
-      <MembersView />
+      <div className="animate-in-up delay-1"><MembersView /></div>
     </div>
   );
 }

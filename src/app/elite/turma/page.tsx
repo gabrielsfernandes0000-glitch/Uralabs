@@ -210,7 +210,7 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
             <h2 className="text-[16px] font-bold text-white tracking-tight">Submeter conquista</h2>
             <p className="text-[11px] text-white/40 mt-0.5">URA valida · aparece no mural após aprovação</p>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-colors">
+          <button onClick={onClose} className="interactive-tap w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -222,7 +222,7 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
             <div className="grid grid-cols-2 gap-2">
               {types.map((t) => (
                 <button key={t.id} onClick={() => setType(t.id)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-colors text-left ${
+                  className={`interactive-tap flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-colors text-left ${
                     type === t.id ? "" : "border-white/[0.05] hover:border-white/[0.12]"
                   }`}
                   style={type === t.id ? { borderColor: t.color + "55" } : undefined}>
@@ -273,13 +273,13 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
               <div className="relative rounded-lg overflow-hidden border border-white/[0.08]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={screenshot} alt="Comprovante" className="w-full max-h-60 object-contain bg-[#0a0a0c]" />
-                <button onClick={() => setScreenshot("")} className="absolute top-2 right-2 w-7 h-7 rounded-md bg-black/60 backdrop-blur flex items-center justify-center text-white/80 hover:bg-black/80 transition-colors">
+                <button onClick={() => setScreenshot("")} className="interactive-tap absolute top-2 right-2 w-7 h-7 rounded-md bg-black/60 backdrop-blur flex items-center justify-center text-white/80 hover:bg-black/80 transition-colors">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button onClick={() => fileRef.current?.click()}
-                className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border border-dashed border-white/[0.10] bg-white/[0.02] hover:border-white/[0.20] hover:bg-white/[0.04] transition-all">
+                className="interactive w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border border-dashed border-white/[0.10] bg-white/[0.02] hover:border-white/[0.20] hover:bg-white/[0.04] transition-all">
                 <Upload className="w-4 h-4 text-white/35" />
                 <p className="text-[12px] text-white/55 font-medium">Clique pra subir imagem</p>
                 <p className="text-[10px] text-white/25">PNG, JPG · máx 2MB</p>
@@ -300,11 +300,11 @@ function SubmitAchievementModal({ open, onClose, onSubmit }: {
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-white/[0.05] bg-[#0e0e10]">
-          <button onClick={onClose} className="px-4 py-2 text-[12.5px] text-white/50 hover:text-white/80 transition-colors font-medium">
+          <button onClick={onClose} className="interactive-tap px-4 py-2 text-[12.5px] text-white/50 hover:text-white/80 transition-colors font-medium">
             Cancelar
           </button>
           <button onClick={submit} disabled={!canSubmit}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg border text-[12.5px] font-bold transition-colors ${
+            className={`interactive-tap flex items-center gap-2 px-5 py-2 rounded-lg border text-[12.5px] font-bold transition-colors ${
               canSubmit ? "border-brand-500 text-brand-500 hover:bg-brand-500/[0.04]" : "border-white/[0.06] text-white/25 cursor-not-allowed"
             }`}>
             <Send className="w-3.5 h-3.5" />
@@ -380,7 +380,7 @@ function MuralView({ isElite }: { isElite: boolean }) {
             {isElite && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-brand-500/40 text-[11px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors"
+                className="interactive-tap flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-brand-500/40 text-[11px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors"
               >
                 <Plus className="w-3 h-3" /> Submeter
               </button>
@@ -430,7 +430,7 @@ function MuralView({ isElite }: { isElite: boolean }) {
             pending.filter(p => p.status === "pending").length === 0 && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand-500/40 text-[11px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors"
+                className="interactive-tap flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand-500/40 text-[11px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors"
               >
                 <Plus className="w-3 h-3" /> Submeter fora do Discord
               </button>
@@ -518,13 +518,13 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
                   <h4 className="text-[14px] font-bold text-white/95 mb-1 leading-tight">{post.title}</h4>
                   <p className="text-[12px] text-white/50 leading-relaxed line-clamp-3">{post.body}</p>
                   <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/[0.04]">
-                    <button className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/70 transition-colors">
+                    <button className="interactive-tap flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/70 transition-colors">
                       <ThumbsUp className="w-3.5 h-3.5" /> {post.reactions}
                     </button>
-                    <button className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/70 transition-colors">
+                    <button className="interactive-tap flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/70 transition-colors">
                       <MessageCircle className="w-3.5 h-3.5" /> {post.comments}
                     </button>
-                    <button className="ml-auto text-[11px] text-white/30 hover:text-white/70 transition-colors font-medium">
+                    <button className="interactive-tap ml-auto text-[11px] text-white/30 hover:text-white/70 transition-colors font-medium">
                       Ver thread
                     </button>
                   </div>
@@ -567,7 +567,7 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
                   const active = activeType === k;
                   return (
                     <button key={k} onClick={() => setActiveType(k)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-left ${
+                      className={`interactive-tap w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-left ${
                         active ? "" : "border-white/[0.05] hover:border-white/[0.12]"
                       }`}
                       style={active ? { borderColor: style.color + "55" } : undefined}>
@@ -588,7 +588,7 @@ function PeerReviewView({ isElite }: { isElite: boolean }) {
                     className="w-full h-24 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[12px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] transition-colors mb-3" />
                   <button onClick={() => title.trim() && body.trim() && setSubmitted(true)}
                     disabled={!title.trim() || !body.trim()}
-                    className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[12px] font-bold transition-all ${
+                    className={`interactive-tap w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[12px] font-bold transition-all ${
                       title.trim() && body.trim() ? "bg-brand-500 text-white hover:brightness-110" : "bg-white/[0.03] text-white/30 cursor-not-allowed"
                     }`}>
                     <Send className="w-3.5 h-3.5" /> Enviar
@@ -732,7 +732,7 @@ function TurmaInner() {
   return (
     <div className="space-y-5">
       {/* Compact header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="animate-in-up flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="relative">
@@ -759,7 +759,7 @@ function TurmaInner() {
             const active = view === tab.id;
             return (
               <button key={tab.id} onClick={() => setView(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors ${
+                className={`interactive-tap flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors ${
                   active
                     ? "border-white/[0.22] text-white"
                     : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12]"
@@ -773,9 +773,9 @@ function TurmaInner() {
       </div>
 
       {/* Content */}
-      {view === "mural"   && <MuralView isElite={isElite} />}
-      {view === "review"  && <PeerReviewView isElite={isElite} />}
-      {view === "ranking" && <RankingView />}
+      {view === "mural"   && <div className="animate-in-up delay-1"><MuralView isElite={isElite} /></div>}
+      {view === "review"  && <div className="animate-in-up delay-1"><PeerReviewView isElite={isElite} /></div>}
+      {view === "ranking" && <div className="animate-in-up delay-1"><RankingView /></div>}
     </div>
   );
 }

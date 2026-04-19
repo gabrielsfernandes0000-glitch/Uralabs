@@ -95,24 +95,25 @@ body {
   color: white;
 }
 
-/* ── Entrance Animations (CSS-only, no JS wrapper) ── */
+/* ── Entrance Animations (CSS-only, no JS wrapper) ──
+   Keyframes sem bloco `to` pro final state reverter ao estilo natural do elemento.
+   Isso evita `transform: matrix(1,0,0,1,0,0)` residual que cria containing block e
+   quebra `position: fixed` de modais renderizados dentro de elementos animados. */
 @keyframes animate-in-up {
   from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 @keyframes animate-in-scale {
   from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
 }
 @keyframes animate-in-fade {
   from { opacity: 0; }
-  to { opacity: 1; }
 }
 
-/* Apply via class: animate-in + variant */
-.animate-in-up { animation: animate-in-up 0.5s ease-out both; }
-.animate-in-scale { animation: animate-in-scale 0.5s ease-out both; }
-.animate-in-fade { animation: animate-in-fade 0.5s ease-out both; }
+/* Apply via class: animate-in + variant — `backwards` aplica o from-state antes
+   da animação começar (evita flicker) mas não persiste transform depois do fim. */
+.animate-in-up { animation: animate-in-up 0.5s ease-out backwards; }
+.animate-in-scale { animation: animate-in-scale 0.5s ease-out backwards; }
+.animate-in-fade { animation: animate-in-fade 0.5s ease-out backwards; }
 
 /* Stagger delays — apply on children */
 .delay-1 { animation-delay: 0.05s; }
@@ -123,3 +124,36 @@ body {
 .delay-6 { animation-delay: 0.3s; }
 .delay-7 { animation-delay: 0.35s; }
 .delay-8 { animation-delay: 0.4s; }
+
+/* ── Interactive affordance — aplicar em Links/buttons de navegação e ação.
+   Hover: sobe 1px. Active: pressiona 2% (tap feedback).
+   Transições curtas, GPU-accelerated (transform/opacity apenas). */
+.interactive {
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.interactive:hover { transform: translateY(-1px); }
+.interactive:active { transform: translateY(0) scale(0.985); transition-duration: 80ms; }
+
+/* Variante pra botões pequenos (pills, ícones) que não devem deslocar */
+.interactive-tap {
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.interactive-tap:active { transform: scale(0.94); transition-duration: 60ms; }
+
+/* ── Modal entrance — aplicar no backdrop (modal-in-backdrop) e no panel (modal-in-panel).
+   Usamos `backwards` em vez de `both` pro transform não persistir após a animação:
+   transform residual cria stacking context que quebra scroll interno (max-h + overflow-y-auto). */
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+}
+@keyframes modalPanelIn {
+  from { opacity: 0; transform: translateY(8px); }
+}
+.modal-in-backdrop { animation: modalBackdropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.modal-in-panel    { animation: modalPanelIn 220ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }

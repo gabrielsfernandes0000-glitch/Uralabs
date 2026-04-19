@@ -244,7 +244,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
       <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] p-5 flex items-center gap-5">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-green-500/35 to-transparent" />
 
-        <div className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-green-500/[0.06] border border-green-500/25 flex items-center justify-center">
+        <div className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
           <Check className="w-7 h-7 text-green-400" strokeWidth={2} />
         </div>
 
@@ -412,7 +412,7 @@ export default function PraticaPage() {
   return (
     <div className="space-y-6">
       {/* ───── HERO ───── */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0e0e10] border border-white/[0.06]">
+      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-[#0e0e10] border border-white/[0.06]">
         <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
           <span
             className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-brand-500 pr-10"
@@ -456,97 +456,88 @@ export default function PraticaPage() {
         </div>
       </div>
 
-      {/* ───── HOJE ───── */}
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-3 px-1">
-          <div className="w-1 h-4 rounded-full bg-brand-500/60" />
-          <h2 className="text-[12px] font-bold text-white/80 uppercase tracking-wider">Hoje</h2>
-          <span className="text-[10.5px] text-white/30">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" })}</span>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 items-start">
-          <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
-          <StreakPanel streakVersion={streakVersion} />
-        </div>
-      </div>
+      {/* ───── Grid principal: missão+modos (esquerda) · streak (direita) ───── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
+        {/* Coluna esquerda — missão do dia + 3 modos de treino */}
+        <div className="space-y-3">
+          <div className="animate-in-up delay-1">
+            <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
+          </div>
 
-      {/* ───── Modos de treino — 3 atalhos compactos ───── */}
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-3 px-1">
-          <div className="w-1 h-4 rounded-full bg-white/[0.25]" />
-          <h2 className="text-[12px] font-bold text-white/80 uppercase tracking-wider">Modos de treino</h2>
-          <span className="text-[10.5px] text-white/30">escolha como praticar</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {/* Treino Livre */}
-          <Link
-            href="/elite/treino/livre"
-            className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 transition-colors block"
-          >
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-            <div className="absolute top-[-30%] right-[-10%] w-[200px] h-[140px] bg-brand-500/[0.05] blur-[90px] pointer-events-none" />
-            <div className="relative z-10 p-4 flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-brand-500/[0.08] border border-brand-500/25 flex items-center justify-center shrink-0">
-                <Zap className="w-5 h-5 text-brand-500" strokeWidth={1.8} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-[14px] font-bold text-white tracking-tight">Treino Livre</h3>
-                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-brand-500/80">Infinito</span>
+          {/* Modos de treino */}
+          <div className="animate-in-up delay-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Treino Livre */}
+            <Link
+              href="/elite/treino/livre"
+              className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 block"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
+              <div className="absolute top-[-30%] right-[-10%] w-[200px] h-[140px] bg-brand-500/[0.05] blur-[90px] pointer-events-none" />
+              <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
+                    <Zap className="w-4.5 h-4.5 text-brand-500" strokeWidth={1.8} />
+                  </div>
+                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Infinito</span>
                 </div>
-                <p className="text-[11px] text-white/45 leading-snug mt-0.5">
-                  <span className="font-mono text-brand-500">{totalScenarios}</span> cenários embaralhados · todos os temas
-                </p>
+                <div className="min-w-0">
+                  <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">Treino Livre</h3>
+                  <p className="text-[11px] text-white/45 leading-snug mt-1">
+                    <span className="font-mono text-brand-500">{totalScenarios}</span> cenários · todos os temas
+                  </p>
+                </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-brand-500/70 transition-colors shrink-0" />
-            </div>
-          </Link>
+            </Link>
 
-          {/* Por Tema */}
-          <Link
-            href="/elite/pratica/temas"
-            className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block"
-          >
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <div className="relative z-10 p-4 flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0">
-                <Layers className="w-5 h-5 text-white/70" strokeWidth={1.8} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-[14px] font-bold text-white tracking-tight">Por Tema</h3>
+            {/* Por Tema */}
+            <Link
+              href="/elite/pratica/temas"
+              className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] block"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+              <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
+                    <Layers className="w-4.5 h-4.5 text-white/70" strokeWidth={1.8} />
+                  </div>
                   <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Focado</span>
                 </div>
-                <p className="text-[11px] text-white/45 leading-snug mt-0.5">
-                  <span className="font-mono text-white/70">{totalThemes}</span> temas · cenários filtrados por conceito
-                </p>
+                <div className="min-w-0">
+                  <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">Por Tema</h3>
+                  <p className="text-[11px] text-white/45 leading-snug mt-1">
+                    <span className="font-mono text-white/70">{totalThemes}</span> temas · cenários filtrados
+                  </p>
+                </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors shrink-0" />
-            </div>
-          </Link>
+            </Link>
 
-          {/* Skills Guiadas */}
-          <Link
-            href="/elite/pratica/skills"
-            className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors block"
-          >
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <div className="relative z-10 p-4 flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0">
-                <Target className="w-5 h-5 text-white/70" strokeWidth={1.8} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-[14px] font-bold text-white tracking-tight">Skills</h3>
+            {/* Skills Guiadas */}
+            <Link
+              href="/elite/pratica/skills"
+              className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] block"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+              <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
+                    <Target className="w-4.5 h-4.5 text-white/70" strokeWidth={1.8} />
+                  </div>
                   <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Guiado</span>
                 </div>
-                <p className="text-[11px] text-white/45 leading-snug mt-0.5">
-                  <span className="font-mono text-white/70">{totalGuided}</span> sequências de 3 passos · gráfico real
-                </p>
+                <div className="min-w-0">
+                  <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">Skills</h3>
+                  <p className="text-[11px] text-white/45 leading-snug mt-1">
+                    <span className="font-mono text-white/70">{totalGuided}</span> sequências · gráfico real
+                  </p>
+                </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors shrink-0" />
-            </div>
-          </Link>
+            </Link>
+          </div>
+        </div>
+
+        {/* Coluna direita — streak panel */}
+        <div className="animate-in-up delay-2">
+          <StreakPanel streakVersion={streakVersion} />
         </div>
       </div>
     </div>

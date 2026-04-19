@@ -264,7 +264,7 @@ function Hero({ curriculum }: { curriculum: Module[] }) {
               <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => next && router.push(`/elite/aulas/${next.lesson.id}`)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[13px] font-bold transition-all hover:-translate-y-0.5"
+                  className="interactive-tap flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[13px] font-bold transition-all hover:-translate-y-0.5"
                   style={{ borderColor: heroAccent, color: heroAccent }}>
                   <Play className="w-3.5 h-3.5" />
                   Continuar aula
@@ -522,15 +522,17 @@ export default function AulasClient({ curriculum: raw }: { curriculum: ModuleDat
 
   return (
     <div className="space-y-14">
-      <Hero curriculum={curriculum} />
+      <div className="animate-in-up"><Hero curriculum={curriculum} /></div>
 
-      {curriculum.map((mod) => (
-        <ModuleSection key={mod.id} mod={mod} />
+      {curriculum.map((mod, i) => (
+        <div key={mod.id} className={`animate-in-up delay-${Math.min(i + 1, 8)}`}>
+          <ModuleSection mod={mod} />
+        </div>
       ))}
 
-      <LivesSection />
+      <div className="animate-in-up delay-8"><LivesSection /></div>
 
-      <div className="text-center py-6">
+      <div className="animate-in-up delay-8 text-center py-6">
         <p className="text-[12px] text-white/30">
           Conteúdo exclusivo Elite 4.0 · Aulas gravadas + lives semanais + calls diárias
         </p>

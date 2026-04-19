@@ -22,7 +22,7 @@ export function ThemeCard({ category }: { category: ThemeCategory }) {
   return (
     <Link
       href={`/elite/treino/livre?category=${encodeURIComponent(category.key)}`}
-      className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] transition-colors min-h-[180px] flex flex-col"
+      className="interactive group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] min-h-[180px] flex flex-col"
     >
       <div
         className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-100 transition-opacity"

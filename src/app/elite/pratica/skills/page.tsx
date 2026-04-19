@@ -16,7 +16,7 @@ export default function PraticaSkillsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="animate-in-up">
         <Link
           href="/elite/pratica"
           className="inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70 transition-colors mb-5"
@@ -44,7 +44,7 @@ export default function PraticaSkillsPage() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="animate-in-up delay-1 space-y-6">
         {Object.entries(grouped).map(([moduleName, treinos]) => {
           const moduleColor = treinos[0].moduleColor;
           return (
@@ -64,7 +64,7 @@ export default function PraticaSkillsPage() {
                     <Link
                       key={treino.id}
                       href={`/elite/treino/${treino.id}`}
-                      className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4 block hover:border-white/[0.16] transition-colors cursor-pointer"
+                      className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4 block hover:border-white/[0.16] cursor-pointer"
                     >
                       <div
                         className="absolute top-0 left-0 right-0 h-[1px]"

@@ -6,12 +6,21 @@ import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Play, Check, CheckCircle, Clock,
   FileText, Download, BookOpen, ChevronDown, ChevronUp, RotateCcw,
-  Sparkles, Star, RefreshCw, Target,
+  Sparkles, Star, RefreshCw, Target, CalendarClock, Zap,
 } from "lucide-react";
 import type { QuizQuestion, LessonData, ModuleData } from "@/lib/curriculum";
 import { getTreinosForLesson } from "@/lib/module-treinos";
 import { LessonChart, hasLiveChart } from "@/components/elite/LessonChart";
 import { LessonComments } from "@/components/elite/LessonComments";
+
+export interface UpcomingEventPreview {
+  id: string;
+  date: string;
+  time: string;
+  country: string;
+  event: string;
+  impact: "low" | "medium" | "high";
+}
 
 /* ────────────────────────────────────────────
    Confetti — lightweight celebration particles
@@ -415,7 +424,7 @@ function QuizSection({ questions, accent, onComplete }: {
         </div>
         <div className="flex gap-3">
           {!passed && (
-            <button onClick={handleRetry} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white/80 transition-all">
+            <button onClick={handleRetry} className="interactive-tap flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white/80 transition-all">
               <RotateCcw className="w-4 h-4" /> Refazer Quiz
             </button>
           )}
@@ -466,7 +475,7 @@ function QuizSection({ questions, accent, onComplete }: {
 
             return (
               <button key={optIdx} onClick={() => handleSelect(optIdx)} disabled={revealed}
-                className={`w-full text-left px-5 py-4 rounded-xl border ${cls} text-[14px] transition-all duration-200`}>
+                className={`interactive-tap w-full text-left px-5 py-4 rounded-xl border ${cls} text-[14px] transition-all duration-200`}>
                 <span className="font-mono text-white/30 mr-3">{String.fromCharCode(65 + optIdx)}</span>
                 {opt}
                 {revealed && isCorrectOpt && <Check className="inline w-4 h-4 ml-2 text-green-400" />}
@@ -488,7 +497,7 @@ function QuizSection({ questions, accent, onComplete }: {
       <div className="flex justify-end mt-6">
         {!revealed ? (
           <button onClick={handleConfirm} disabled={selected === null}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-bold transition-all ${
+            className={`interactive-tap flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-bold transition-all ${
               selected !== null ? "text-white hover:brightness-110" : "bg-white/[0.03] text-white/30 cursor-not-allowed"
             }`}
             style={selected !== null ? { backgroundColor: accent, boxShadow: `0 4px 20px ${accent}30` } : undefined}>
@@ -496,7 +505,7 @@ function QuizSection({ questions, accent, onComplete }: {
           </button>
         ) : (
           <button onClick={handleNext}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-bold text-white transition-all hover:brightness-110"
+            className="interactive-tap flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-bold text-white transition-all hover:brightness-110"
             style={{ backgroundColor: accent, boxShadow: `0 4px 20px ${accent}30` }}>
             {current < questions.length - 1 ? "Próxima" : "Ver Resultado"}
             <ArrowRight className="w-4 h-4" />
@@ -561,7 +570,7 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
         <Sparkles className="w-10 h-10 mb-4" style={{ color: accent }} strokeWidth={1.5} />
         <p className="text-[18px] font-bold text-white mb-1">Todos revisados!</p>
         <p className="text-[13px] text-white/35 mb-5">{cards.length} conceitos dominados</p>
-        <button onClick={handleReset} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white/80 transition-all">
+        <button onClick={handleReset} className="interactive-tap flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/50 hover:text-white/80 transition-all">
           <RefreshCw className="w-4 h-4" />
           Revisar novamente
         </button>
@@ -647,11 +656,11 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
         <div className="space-y-3">
           <p className="text-[12px] text-white/25 text-center mb-3">Você sabia a resposta?</p>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => handleMark(false)} className="flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-yellow-500/30 text-[13px] text-yellow-400/80 font-medium hover:border-yellow-500/50 transition-colors">
+            <button onClick={() => handleMark(false)} className="interactive-tap flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-yellow-500/30 text-[13px] text-yellow-400/80 font-medium hover:border-yellow-500/50 transition-colors">
               <RotateCcw className="w-4 h-4" />
               Não sabia
             </button>
-            <button onClick={() => handleMark(true)} className="flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-green-500/30 text-[13px] text-green-400/80 font-medium hover:border-green-500/50 transition-colors">
+            <button onClick={() => handleMark(true)} className="interactive-tap flex-1 max-w-[200px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-green-500/30 text-[13px] text-green-400/80 font-medium hover:border-green-500/50 transition-colors">
               <Check className="w-4 h-4" />
               Sabia
             </button>
@@ -681,7 +690,7 @@ function ChecklistSection({ items, accent }: { items: string[]; accent: string }
         <button
           key={i}
           onClick={() => setChecked((prev) => ({ ...prev, [i]: !prev[i] }))}
-          className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg border text-left transition-all ${
+          className={`interactive-tap w-full flex items-start gap-3 px-4 py-3 rounded-lg border text-left transition-all ${
             checked[i]
               ? "border-green-500/15 bg-green-500/[0.03]"
               : "border-white/[0.04] hover:border-white/[0.08] bg-transparent"
@@ -727,7 +736,7 @@ function Section({ title, icon: Icon, defaultOpen, accent, children }: {
     <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden hover:border-white/[0.10] transition-all duration-300">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-white/[0.01] transition-colors"
+        className="interactive-tap w-full flex items-center justify-between px-6 py-5 text-left hover:bg-white/[0.01] transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: accent + "15" }}>
@@ -803,9 +812,67 @@ interface LessonClientProps {
   index: number;
   prev: { lesson: LessonData; mod: ModuleData } | null;
   next: { lesson: LessonData; mod: ModuleData } | null;
+  upcomingEvents?: UpcomingEventPreview[];
 }
 
-export default function LessonClient({ lessonId, lesson, mod, index, prev, next }: LessonClientProps) {
+/* ────────────────────────────────────────────
+   Banner — próximos eventos econômicos relevantes pra essa aula.
+   Conecta o currículo ao calendário real do mercado: "você estudou
+   bias/risco → tem FOMC amanhã, revise antes de operar".
+   ──────────────────────────────────────────── */
+
+function UpcomingEventsBanner({ events, accent }: { events: UpcomingEventPreview[]; accent: string }) {
+  const countryLabel = (c: string) => ({ US: "EUA", EU: "UE", BR: "BR", UK: "UK", CN: "CN", JP: "JP" } as Record<string, string>)[c] ?? c;
+  const dateLabel = (date: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
+    if (date === today) return "hoje";
+    if (date === tomorrow) return "amanhã";
+    return new Date(date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  };
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10]">
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${accent}55, transparent)` }} />
+      <div className="relative z-10 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="w-3.5 h-3.5" style={{ color: accent }} strokeWidth={2} />
+          <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: accent + "CC" }}>
+            Essa aula puxa esses eventos
+          </span>
+          <span className="text-white/15 text-[10px]">·</span>
+          <span className="text-[10.5px] text-white/40">revise antes de operar</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {events.map((ev) => (
+            <Link
+              key={ev.id}
+              href="/elite/noticias"
+              className="interactive-tap inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] transition-colors text-[11px] group"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                ev.impact === "high" ? "bg-red-400" : ev.impact === "medium" ? "bg-amber-400" : "bg-white/30"
+              }`} />
+              <span className="font-mono text-white/60 tabular-nums">{dateLabel(ev.date)}</span>
+              <span className="text-white/20">·</span>
+              <span className="font-mono text-white/40 text-[10px] uppercase tracking-wider">{countryLabel(ev.country)}</span>
+              <span className="text-white/20">·</span>
+              <span className="font-semibold text-white/80 group-hover:text-white max-w-[200px] truncate">{ev.event}</span>
+              <span className="text-white/30 font-mono text-[10px]">{ev.time}</span>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-3 flex items-center gap-1.5">
+          <CalendarClock className="w-3 h-3 text-white/25" strokeWidth={1.8} />
+          <Link href="/elite/noticias" className="text-[10.5px] text-white/35 hover:text-white/60 transition-colors">
+            Ver agenda completa →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LessonClient({ lessonId, lesson, mod, index, prev, next, upcomingEvents = [] }: LessonClientProps) {
   const router = useRouter();
 
   const [quizPassed, setQuizPassed] = useState(false);
@@ -881,6 +948,9 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
         <p className="text-[13px] text-white/40 mt-1">{lesson.subtitle}</p>
       </div>
 
+      {/* Eventos econômicos relevantes — ponte aula ↔ mercado real */}
+      {upcomingEvents.length > 0 && <UpcomingEventsBanner events={upcomingEvents} accent={accent} />}
+
       {/* Main grid — video (2/3) + resources sidebar (1/3) */}
       <div className="grid md:grid-cols-3 gap-5">
         {/* Video */}
@@ -915,7 +985,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-0.5 pl-1">Recursos da aula</p>
 
           {lesson.hasPdf && (
-            <button onClick={() => {}} className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] transition-colors text-left">
+            <button onClick={() => {}} className="interactive group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] transition-colors text-left">
               <FileText className="w-5 h-5 shrink-0" style={{ color: accent + "CC" }} strokeWidth={1.5} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-white/85 font-semibold leading-tight">Material da Aula</p>
@@ -927,7 +997,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {lesson.hasQuiz && lesson.quiz && lesson.quiz.length > 0 && (
             <button onClick={() => activateResource("quiz")}
-              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
+              className={`interactive group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
                 activeResource === "quiz" ? "" : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14]"
               }`}
               style={activeResource === "quiz" ? { borderColor: accent + "55" } : undefined}>
@@ -948,7 +1018,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {hasFlashcards && (
             <button onClick={() => activateResource("flashcards")}
-              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
+              className={`interactive group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
                 activeResource === "flashcards" ? "" : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14]"
               }`}
               style={activeResource === "flashcards" ? { borderColor: accent + "55" } : undefined}>
@@ -967,7 +1037,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {hasChecklist && (
             <button onClick={() => activateResource("checklist")}
-              className={`group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
+              className={`interactive group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-colors text-left ${
                 activeResource === "checklist" ? "" : "border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14]"
               }`}
               style={activeResource === "checklist" ? { borderColor: accent + "55" } : undefined}>
@@ -986,7 +1056,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
 
           {hasTreinos && (
             <button onClick={() => activateResource("treino")}
-              className="group relative overflow-hidden w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-colors"
+              className="interactive group relative overflow-hidden w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border text-left transition-colors"
               style={{ borderColor: activeResource === "treino" ? accent + "70" : accent + "40" }}>
               <div className="absolute top-0 left-0 right-0 h-[1.5px]" style={{
                 background: `linear-gradient(90deg, transparent, ${accent}70, transparent)`
@@ -1052,7 +1122,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
               </h2>
             </div>
             <button onClick={() => setActiveResource(null)}
-              className="text-[11px] text-white/30 hover:text-white/70 transition-colors font-medium">
+              className="interactive-tap text-[11px] text-white/30 hover:text-white/70 transition-colors font-medium">
               Fechar
             </button>
           </div>
@@ -1073,7 +1143,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
                 <Link
                   key={treino.id}
                   href={`/elite/treino/${treino.id}`}
-                  className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e0e10] p-5 hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-300"
+                  className="interactive group relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e0e10] p-5 hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-300"
                 >
                   <div className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity" style={{
                     background: `linear-gradient(90deg, transparent, ${accent}80, transparent)`
@@ -1106,7 +1176,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
       <div className="flex items-center justify-between pt-6 border-t border-white/[0.04]">
         {prev ? (
           <button onClick={() => router.push(`/elite/aulas/${prev.lesson.id}`)}
-            className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-left group">
+            className="interactive flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-left group">
             <ArrowLeft className="w-4 h-4 text-white/25 group-hover:text-white/50 transition-colors" />
             <div>
               <p className="text-[10px] text-white/30 uppercase tracking-wider">Anterior</p>
@@ -1116,7 +1186,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next 
         ) : <div />}
         {next ? (
           <button onClick={() => router.push(`/elite/aulas/${next.lesson.id}`)}
-            className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-right group">
+            className="interactive flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-right group">
             <div>
               <p className="text-[10px] text-white/30 uppercase tracking-wider">Próxima</p>
               <p className="text-[13px] text-white/60 font-medium">{next.lesson.title}</p>

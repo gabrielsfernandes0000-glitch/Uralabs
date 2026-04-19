@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search, LayoutDashboard, Users, Radio, BookOpen, Crosshair, Newspaper,
-  Trophy, Gift, BarChart3, Target, NotebookPen, type LucideIcon,
+  Trophy, Gift, BarChart3, Target, NotebookPen, Globe, type LucideIcon,
 } from "lucide-react";
 import { CURRICULUM } from "@/lib/curriculum";
 import { MODULE_TREINOS } from "@/lib/module-treinos";
@@ -33,6 +33,7 @@ const PAGES: Item[] = [
   { id: "page-aulas",      label: "Aulas",      hint: "Currículo Elite",     href: "/elite/aulas",      group: "Páginas", icon: BookOpen,        keywords: "curso curriculo" },
   { id: "page-pratica",    label: "Prática",    hint: "Treinos e cenários",  href: "/elite/pratica",    group: "Páginas", icon: Crosshair,       keywords: "treino cenario scenarios" },
   { id: "page-diario",     label: "Diário",     hint: "Prep Sheet + review", href: "/elite/diario",     group: "Páginas", icon: NotebookPen,     keywords: "prep sheet diario trade journal plano" },
+  { id: "page-noticias",   label: "Notícias",   hint: "Agenda + manchetes",  href: "/elite/noticias",   group: "Páginas", icon: Globe,           keywords: "news calendario cpi fomc nfp fed economia agenda" },
   { id: "page-mural",      label: "Mural",      hint: "Posts da turma",      href: "/elite/turma",      group: "Páginas", icon: Newspaper,       keywords: "feed" },
   { id: "page-conquistas", label: "Conquistas", hint: "Badges e timeline",   href: "/elite/conquistas", group: "Páginas", icon: Trophy,          keywords: "achievements badges" },
   { id: "page-loja",       label: "Loja",       hint: "URA Coin + caixas",   href: "/elite/loja",       group: "Páginas", icon: Gift,            keywords: "coin loot box" },

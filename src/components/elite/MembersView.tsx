@@ -109,21 +109,21 @@ export function MembersView() {
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setTierFilter("all")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
+            className={`interactive-tap flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
               tierFilter === "all" ? "border-white/[0.22] text-white" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}>
             <Users className="w-3.5 h-3.5" />
             Todos <span className="text-white/30 font-mono text-[11px]">{members.length}</span>
           </button>
           <button onClick={() => setTierFilter("elite")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
+            className={`interactive-tap flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
               tierFilter === "elite" ? "border-brand-500/50 text-brand-500" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}>
             <Flame className="w-3.5 h-3.5 fill-current" />
             Elite <span className={`font-mono text-[11px] ${tierFilter === "elite" ? "text-brand-500/60" : "text-white/30"}`}>{eliteCount}</span>
           </button>
           <button onClick={() => setTierFilter("vip")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
+            className={`interactive-tap flex items-center gap-2 px-3.5 py-2 rounded-lg border text-[12px] font-semibold ${
               tierFilter === "vip" ? "border-blue-500/50 text-blue-400" : "border-white/[0.06] text-white/40 hover:text-white/70 hover:border-white/[0.12]"
             }`}>
             <Zap className="w-3.5 h-3.5" />
@@ -147,7 +147,7 @@ export function MembersView() {
           const Icon = opt === "messages" ? MessageCircle : opt === "achievements" ? Trophy : opt === "coins" ? Coins : Users;
           return (
             <button key={opt} onClick={() => setSortBy(opt)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] font-semibold ${
+              className={`interactive-tap flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[11px] font-semibold ${
                 active
                   ? "border-white/[0.22] text-white"
                   : "border-white/[0.05] text-white/35 hover:text-white/65 hover:border-white/[0.12]"
@@ -192,7 +192,7 @@ export function MembersView() {
               <button
                 key={m.id}
                 onClick={() => setProfileMember(m)}
-                className={`text-left relative overflow-hidden rounded-xl border bg-[#0e0e10] min-h-[160px] flex flex-col ${
+                className={`interactive text-left relative overflow-hidden rounded-xl border bg-[#0e0e10] min-h-[160px] flex flex-col ${
                   isMe
                     ? "border-brand-500/40 ring-1 ring-brand-500/20 hover:border-brand-500/60"
                     : "border-white/[0.06] hover:border-white/[0.20]"
@@ -270,7 +270,7 @@ export function MembersView() {
         <div className="flex justify-center pt-2">
           <button
             onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
-            className="px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-[12px] font-semibold text-white/70 hover:text-white hover:border-white/[0.18] hover:bg-white/[0.04]"
+            className="interactive-tap px-4 py-2 rounded-lg border border-white/[0.08] bg-white/[0.02] text-[12px] font-semibold text-white/70 hover:text-white hover:border-white/[0.18] hover:bg-white/[0.04]"
           >
             Mostrar mais <span className="text-white/35 font-mono text-[11px] ml-1">+{Math.min(PAGE_SIZE, sorted.length - visibleCount)}</span>
           </button>

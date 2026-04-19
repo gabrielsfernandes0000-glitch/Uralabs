@@ -227,7 +227,7 @@ function BadgeCard({
     <button
       type="button"
       onClick={() => onOpen(achievement)}
-      className={`group relative w-full text-left rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-1`}
+      className={`interactive group relative w-full text-left rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-1`}
     >
       {isLegendary && unlocked && (
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
@@ -302,18 +302,18 @@ function AchievementModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="modal-in-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#141417] overflow-hidden shadow-2xl"
+        className="modal-in-panel relative w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#141417] overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Fechar"
-          className="absolute top-3 right-3 z-30 w-9 h-9 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
+          className="interactive-tap absolute top-3 right-3 z-30 w-9 h-9 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -530,7 +530,7 @@ function SkillTreeView({ completedLessons }: { completedLessons: string[] }) {
                   const Icon = node.icon;
                   const isComplete = node.progress === 100;
                   const clickable = node.unlocked;
-                  const wrapperClass = `group relative w-[250px] rounded-xl border p-4 transition-all duration-300 overflow-hidden ${
+                  const wrapperClass = `interactive group relative w-[250px] rounded-xl border p-4 transition-all duration-300 overflow-hidden ${
                     node.unlocked
                       ? isComplete
                         ? "border-white/[0.10] bg-gradient-to-b from-[#16161a] to-[#111114] hover:-translate-y-0.5"
@@ -787,7 +787,7 @@ function InsightsView() {
             <p className="text-[11px] text-white/25 max-w-sm text-center">
               Registre trades no Diário e preencha Prep Sheets pra desbloquear insights personalizados sobre seu operacional.
             </p>
-            <Link href="/elite/pratica" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-500/40 text-[12px] text-brand-500 font-medium hover:bg-brand-500/[0.04] transition-colors">
+            <Link href="/elite/pratica" className="interactive-tap mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-500/40 text-[12px] text-brand-500 font-medium hover:bg-brand-500/[0.04] transition-colors">
               Ir pra Prática <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -953,7 +953,7 @@ export default function ConquistasPage() {
   return (
     <div className="space-y-5">
       {/* Header + stats + tabs */}
-      <div className="flex items-center justify-between flex-wrap gap-5">
+      <div className="animate-in-up flex items-center justify-between flex-wrap gap-5">
         <div className="flex items-center gap-5">
           <div>
             <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">Suas Conquistas</h1>
@@ -984,7 +984,7 @@ export default function ConquistasPage() {
             const active = view === tab.id;
             return (
               <button key={tab.id} onClick={() => setView(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors ${
+                className={`interactive-tap flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors ${
                   active
                     ? "border-white/[0.22] text-white"
                     : "border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/[0.12]"
@@ -998,7 +998,7 @@ export default function ConquistasPage() {
       </div>
 
       {/* Rarity legend */}
-      <div className="flex flex-wrap items-center gap-4 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.02]">
+      <div className="animate-in-up delay-1 flex flex-wrap items-center gap-4 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.02]">
         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Raridade</span>
         {(["bronze", "silver", "gold", "legendary"] as const).map((r) => (
           <div key={r} className="flex items-center gap-1.5">
@@ -1017,7 +1017,7 @@ export default function ConquistasPage() {
 
       {/* Tab Content */}
       {view === "badges" && (
-        <div className="space-y-10">
+        <div className="animate-in-up delay-2 space-y-10">
           {DISPLAY_ORDER.map((category) => {
             const items = grouped[category];
             if (items.length === 0) return null;
@@ -1053,9 +1053,9 @@ export default function ConquistasPage() {
         </div>
       )}
 
-      {view === "timeline" && <TimelineView unlocks={unlocks ?? []} />}
-      {view === "tree" && <SkillTreeView completedLessons={lessonsCompleted} />}
-      {view === "insights" && <InsightsView />}
+      {view === "timeline" && <div className="animate-in-up delay-2"><TimelineView unlocks={unlocks ?? []} /></div>}
+      {view === "tree" && <div className="animate-in-up delay-2"><SkillTreeView completedLessons={lessonsCompleted} /></div>}
+      {view === "insights" && <div className="animate-in-up delay-2"><InsightsView /></div>}
 
       {selected && (
         <AchievementModal

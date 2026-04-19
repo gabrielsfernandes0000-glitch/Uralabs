@@ -250,7 +250,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
               <div className="relative">
                 <input type={showSecret ? "text" : "password"} value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="Cole sua Secret Key aqui"
                   className="w-full px-4 py-3 pr-12 rounded-xl bg-black/20 border border-white/15 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-white/30 transition-colors font-mono" />
-                <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors">
+                <button type="button" onClick={() => setShowSecret(!showSecret)} className="interactive-tap absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors">
                   {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -278,7 +278,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
             )}
 
             <button onClick={handleConnect} disabled={loading}
-              className="w-full py-3.5 rounded-xl text-[14px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="interactive w-full py-3.5 rounded-xl text-[14px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: selected.color, color: selected.id === "binance" || selected.id === "bybit" ? "#000" : "#fff", boxShadow: `0 8px 24px ${selected.color}25` }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2"><RefreshCw className="w-4 h-4 animate-spin" /> Validando...</span>
@@ -316,7 +316,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Compact header */}
-      <div className="flex items-start justify-between gap-6 flex-wrap">
+      <div className="animate-in-up flex items-start justify-between gap-6 flex-wrap">
         <div>
           <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight">Conectar Corretora</h1>
           <p className="text-[13px] text-white/40 mt-1 max-w-xl">
@@ -340,7 +340,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
       </div>
 
       {/* Exchange grid — 2 columns on md, 3 on lg */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="animate-in-up delay-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {EXCHANGES.map((ex) => {
           const isConnected = connectedExchanges.includes(ex.id);
           return (
@@ -348,7 +348,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
               key={ex.id}
               onClick={() => !isConnected && setSelected(ex)}
               disabled={isConnected}
-              className={`w-full relative overflow-hidden rounded-2xl transition-all duration-300 p-[1px] text-left group ${
+              className={`interactive w-full relative overflow-hidden rounded-2xl transition-all duration-300 p-[1px] text-left group ${
                 isConnected ? "opacity-50 cursor-default" : "hover:scale-[1.01] active:scale-[0.99]"
               }`}
             >
@@ -437,8 +437,8 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           <h2 className="text-[20px] font-bold text-white mb-2">Erro na conexao com {exchange.name}</h2>
           <p className="text-[13px] text-white/40 mb-6 max-w-sm">{data.error}</p>
           <div className="flex gap-3">
-            <button onClick={onRefresh} className="px-5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] text-white/60 hover:text-white transition-all">Tentar novamente</button>
-            <button onClick={onDisconnect} className="px-5 py-2.5 rounded-xl bg-red-500/[0.06] border border-red-500/20 text-[13px] text-red-400 hover:bg-red-500/10 transition-all">Reconectar</button>
+            <button onClick={onRefresh} className="interactive-tap px-5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] text-white/60 hover:text-white transition-all">Tentar novamente</button>
+            <button onClick={onDisconnect} className="interactive-tap px-5 py-2.5 rounded-xl bg-red-500/[0.06] border border-red-500/20 text-[13px] text-red-400 hover:bg-red-500/10 transition-all">Reconectar</button>
           </div>
         </div>
       </div>
@@ -448,7 +448,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="animate-in-up flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
             {exchange.logo ? (
@@ -469,16 +469,16 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onAddMore} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-brand-500 transition-all" title="Adicionar corretora">
+          <button onClick={onAddMore} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-brand-500 transition-all" title="Adicionar corretora">
             <Plus className="w-4 h-4" />
           </button>
-          <button onClick={() => setHideBalance(!hideBalance)} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-white/60 transition-all" title={hideBalance ? "Mostrar valores" : "Ocultar valores"}>
+          <button onClick={() => setHideBalance(!hideBalance)} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-white/60 transition-all" title={hideBalance ? "Mostrar valores" : "Ocultar valores"}>
             {hideBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
-          <button onClick={onRefresh} disabled={refreshing} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-white/60 transition-all disabled:opacity-50" title="Atualizar">
+          <button onClick={onRefresh} disabled={refreshing} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-white/60 transition-all disabled:opacity-50" title="Atualizar">
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
-          <button onClick={() => setShowDisconnect(!showDisconnect)} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-red-400 transition-all" title="Desconectar">
+          <button onClick={() => setShowDisconnect(!showDisconnect)} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-red-400 transition-all" title="Desconectar">
             <Unlink className="w-4 h-4" />
           </button>
         </div>
@@ -488,8 +488,8 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         <div className="flex items-center justify-between px-5 py-4 rounded-xl bg-red-500/[0.04] border border-red-500/15">
           <p className="text-[13px] text-white/50">Desconectar {exchange.name}? Seus dados serao removidos.</p>
           <div className="flex gap-2">
-            <button onClick={() => setShowDisconnect(false)} className="px-4 py-2 rounded-lg text-[12px] text-white/40 hover:text-white transition-colors">Cancelar</button>
-            <button onClick={onDisconnect} className="px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[12px] text-red-400 font-medium hover:bg-red-500/20 transition-all">Desconectar</button>
+            <button onClick={() => setShowDisconnect(false)} className="interactive-tap px-4 py-2 rounded-lg text-[12px] text-white/40 hover:text-white transition-colors">Cancelar</button>
+            <button onClick={onDisconnect} className="interactive-tap px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[12px] text-red-400 font-medium hover:bg-red-500/20 transition-all">Desconectar</button>
           </div>
         </div>
       )}
@@ -497,7 +497,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {/* Balance cards */}
       {balance && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="animate-in-up delay-1 grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { icon: Wallet, label: "Patrimonio", value: fmtUsd(balance.totalEquity), color: "#ffffff" },
             { icon: Target, label: "Margem Disponivel", value: fmtUsd(balance.availableMargin), color: "#ffffff" },
@@ -516,7 +516,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {/* Metrics */}
       {metrics && metrics.totalTrades > 0 && (
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+        <div className="animate-in-up delay-2 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
           <div className="relative z-10 p-7">
             <div className="flex items-center gap-3 mb-5">
               <Trophy className="w-4 h-4 text-yellow-500/50" />
@@ -547,7 +547,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         )}
 
       {/* Open positions */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -595,7 +595,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       </div>
 
       {/* Recent trades */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-4 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -776,7 +776,7 @@ export default function CorretoraPage() {
               <button
                 key={conn.exchange}
                 onClick={() => switchExchange(conn.exchange)}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-[13px] font-medium transition-all whitespace-nowrap"
+                className="interactive-tap flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-[13px] font-medium transition-all whitespace-nowrap"
                 style={{
                   backgroundColor: isActive ? meta.bg : "transparent",
                   borderColor: isActive ? meta.color + "30" : "rgba(255,255,255,0.04)",

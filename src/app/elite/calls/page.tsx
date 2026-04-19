@@ -256,7 +256,7 @@ function CallsHero({ liveCall, upcomingCount }: { liveCall?: ScheduledCall; upco
               </p>
               <div className="flex items-center gap-3 flex-wrap">
                 <Link href="https://discord.com/channels/@me" target="_blank"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all hover:brightness-110 hover:-translate-y-0.5"
+                  className="interactive flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all hover:brightness-110 hover:-translate-y-0.5"
                   style={{ backgroundColor: accent, color: "white", boxShadow: `0 4px 20px ${accent}35` }}>
                   <Bell className="w-3.5 h-3.5" />
                   Ativar alerta
@@ -492,15 +492,15 @@ export default function CallsPage() {
 
   return (
     <div className="space-y-10">
-      <CallsHero liveCall={liveCall} upcomingCount={SCHEDULE.length} />
+      <div className="animate-in-up"><CallsHero liveCall={liveCall} upcomingCount={SCHEDULE.length} /></div>
 
       {/* Tabs — pill nav, premium feel */}
-      <div className="flex items-center gap-1.5 p-1 rounded-xl border border-white/[0.06] bg-[#0e0e10] w-fit">
+      <div className="animate-in-up delay-1 flex items-center gap-1.5 p-1 rounded-xl border border-white/[0.06] bg-[#0e0e10] w-fit">
         {TABS.map((t) => {
           const active = tab === t.id;
           return (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-semibold transition-all ${
+              className={`interactive-tap flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-semibold transition-all ${
                 active ? "bg-white/[0.06] text-white" : "text-white/40 hover:text-white/70"
               }`}>
               <t.icon className={`w-3.5 h-3.5 ${active ? "text-brand-500" : ""}`} />
@@ -512,7 +512,7 @@ export default function CallsPage() {
 
       {/* Agenda */}
       {tab === "agenda" && (
-        <div className="space-y-10">
+        <div className="animate-in-up delay-2 space-y-10">
           <section>
             <SectionHeader
               accent="#FF5500"
@@ -567,7 +567,7 @@ export default function CallsPage() {
                       Ative notificações no Discord pra saber quando o URA começar uma call ao vivo.
                     </p>
                     <Link href="https://discord.com/channels/@me" target="_blank"
-                      className="flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-lg border border-brand-500 text-[12px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors">
+                      className="interactive flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-lg border border-brand-500 text-[12px] font-bold text-brand-500 hover:bg-brand-500/[0.04] transition-colors">
                       Ativar no Discord
                       <ChevronRight className="w-3 h-3" />
                     </Link>
@@ -581,7 +581,7 @@ export default function CallsPage() {
 
       {/* Replays */}
       {tab === "replays" && (
-        <section>
+        <section className="animate-in-up delay-2">
           <SectionHeader
             accent="#EF4444"
             title="Replays"
@@ -596,7 +596,7 @@ export default function CallsPage() {
 
       {/* Mesa Prop */}
       {tab === "prop" && (
-        <div className="space-y-10">
+        <div className="animate-in-up delay-2 space-y-10">
           <section>
             <SectionHeader
               accent="#A855F7"

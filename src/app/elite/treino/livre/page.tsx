@@ -306,10 +306,10 @@ function TreinoLivreInner() {
           <p className="text-[14px] text-white/40 mb-8">{stats.correct} de {stats.total} decisões corretas</p>
 
           <div className="flex gap-3 justify-center">
-            <button onClick={handleRestart} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] text-white/60 font-medium hover:bg-white/[0.06] transition-all">
+            <button onClick={handleRestart} className="interactive-tap flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] text-white/60 font-medium hover:bg-white/[0.06] transition-all">
               <RotateCcw className="w-4 h-4" /> Nova sessão
             </button>
-            <button onClick={() => router.push("/elite/pratica")} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-[13px] font-bold text-white transition-all hover:brightness-110">
+            <button onClick={() => router.push("/elite/pratica")} className="interactive-tap flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-[13px] font-bold text-white transition-all hover:brightness-110">
               Voltar <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -321,7 +321,7 @@ function TreinoLivreInner() {
   return (
     <div className="max-w-7xl mx-auto py-4 space-y-5">
       {/* Header + badge — full width */}
-      <div className="space-y-4">
+      <div className="animate-in-up space-y-4">
         <div className="flex items-center justify-between">
           <button onClick={() => router.push("/elite/pratica")} className="text-[13px] text-white/30 hover:text-white/60 flex items-center gap-1">
             <ChevronLeft className="w-3.5 h-3.5" /> Voltar
@@ -351,7 +351,7 @@ function TreinoLivreInner() {
                 Filtro: {category}
                 <button
                   onClick={() => router.replace("/elite/treino/livre")}
-                  className="text-white/35 hover:text-white/70 ml-1"
+                  className="interactive-tap text-white/35 hover:text-white/70 ml-1"
                   title="Limpar filtro"
                 >
                   <X className="w-3 h-3" />
@@ -363,7 +363,7 @@ function TreinoLivreInner() {
       </div>
 
       {/* Split: visual à esquerda · pergunta + opções à direita (desktop lg+) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-5 items-start">
+      <div className="animate-in-up delay-1 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-5 items-start">
         {/* LEFT — Visual (gráfico ou cartão conceitual) */}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={`visual-${scenario.id}`} {...SCENARIO_TRANSITION}>
@@ -417,7 +417,7 @@ function TreinoLivreInner() {
                   key={idx}
                   onClick={() => handleAnswer(idx)}
                   disabled={answered}
-                  className={`w-full text-left px-4 py-3 rounded-lg border ${borderColor} ${bg} ${textColor} ${
+                  className={`interactive-tap w-full text-left px-4 py-3 rounded-lg border ${borderColor} ${bg} ${textColor} ${
                     !answered ? "hover:border-white/[0.15] hover:bg-white/[0.02] cursor-pointer" : ""
                   }`}
                 >
@@ -448,7 +448,7 @@ function TreinoLivreInner() {
               <p className="text-[10.5px] text-white/30 uppercase tracking-wider font-semibold mb-1.5">Explicação</p>
               <p className="text-[12px] text-white/55 leading-relaxed">{scenario.explanation}</p>
 
-              <button onClick={handleNext} className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-500 text-[12.5px] font-bold text-white hover:brightness-110">
+              <button onClick={handleNext} className="interactive-tap mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-500 text-[12.5px] font-bold text-white hover:brightness-110">
                 Próxima <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </motion.div>

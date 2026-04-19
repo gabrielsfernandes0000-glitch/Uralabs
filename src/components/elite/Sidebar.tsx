@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogOut, Lock, Radio, Search, ChevronDown,
   LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift, NotebookPen,
-  MessageCircle, Activity, type LucideIcon,
+  MessageCircle, Activity, Globe, type LucideIcon,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
@@ -27,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/elite/aulas",      icon: BookOpen,        label: "Aulas" },
   { href: "/elite/pratica",    icon: Crosshair,       label: "Prática",    eliteOnly: true },
   { href: "/elite/diario",     icon: NotebookPen,     label: "Diário",     eliteOnly: true },
+  { href: "/elite/noticias",   icon: Globe,           label: "Notícias" },
   {
     href: "/elite/turma",
     icon: Newspaper,

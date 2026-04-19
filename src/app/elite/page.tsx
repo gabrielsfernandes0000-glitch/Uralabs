@@ -1,12 +1,54 @@
 import { getSession } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
-import { Flame, ArrowRight, BookOpen, FileText, TrendingUp, Brain, Zap, ChevronRight, Target, Radio, PenLine, Users, Play } from "lucide-react";
+import { Flame, ArrowRight, BookOpen, FileText, TrendingUp, Brain, Zap, ChevronRight, Target, Radio, PenLine, Users, Play, CalendarClock } from "lucide-react";
 import Link from "next/link";
 import { getCurriculum } from "@/lib/curriculum.server";
 import { LiveStat } from "@/components/elite/ProgressStats";
 import { Avatar } from "@/components/elite/Avatar";
 import { GlowBorder } from "@/components/elite/GlowBorder";
 import { CountUp, ProgressFill } from "@/components/motion";
+import { getSupabaseAnon } from "@/lib/supabase";
+import { impactMeta, type EconomicEvent } from "@/lib/market-news";
+import { instrumentsForEvent } from "@/lib/economic-events";
+import { InstrumentFilterStyle } from "@/components/elite/InstrumentFilterStyle";
+
+/** Código curto PT-BR do país pro header da agenda (mesma convenção de /elite/noticias). */
+function countryCode(country: string): string {
+  const map: Record<string, string> = { US: "EUA", EU: "UE", BR: "BR", UK: "UK", CN: "CN", JP: "JP", CA: "CA", AU: "AU", NZ: "NZ" };
+  return map[country] ?? country;
+}
+
+function nyNowMinutes(): number {
+  const s = new Date().toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false });
+  const [h, m] = s.split(":").map(Number);
+  return h * 60 + m;
+}
+
+async function loadTodayEvents(): Promise<EconomicEvent[]> {
+  try {
+    const sb = getSupabaseAnon();
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const { data } = await sb
+      .from("economic_events")
+      .select("id, event_time, country, event, impact, previous, forecast, actual")
+      .eq("event_date", todayStr)
+      .in("impact", ["high", "medium"])
+      .order("event_time", { ascending: true })
+      .limit(6);
+    return (data ?? []).map((r: any) => ({
+      id: r.id,
+      time: r.event_time ?? "",
+      country: r.country,
+      event: r.event,
+      impact: r.impact,
+      previous: r.previous ?? undefined,
+      forecast: r.forecast ?? undefined,
+      actual: r.actual ?? undefined,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 /* ────────────────────────────────────────────
    Daily Steps — the 5 steps of a trading day
@@ -77,7 +119,10 @@ export default async function EliteDashboard() {
   };
   const completedSteps = steps.filter(s => s.done).length;
 
-  const curriculum = await getCurriculum();
+  const [curriculum, todayEvents] = await Promise.all([
+    getCurriculum(),
+    isElite ? loadTodayEvents() : Promise.resolve([] as EconomicEvent[]),
+  ]);
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   const stats = {
     lessonsCompleted: 0,
@@ -128,7 +173,7 @@ export default async function EliteDashboard() {
       {/* ── Primary Action + Rotina side by side on desktop ── */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Primary action — 2 cols */}
-        <Link href={currentStep.href} className="lg:col-span-2 animate-in-up delay-2 group block relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+        <Link href={currentStep.href} className="interactive lg:col-span-2 animate-in-up delay-2 group block relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
           <GlowBorder color={currentStep.accent} duration={8} />
           <div className="relative z-10 p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
@@ -184,7 +229,7 @@ export default async function EliteDashboard() {
                   </div>
                 )}
 
-                <Link href={step.href} className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                <Link href={step.href} className={`interactive-tap relative z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                   step.done
                     ? "border border-green-500/40"
                     : isCurrent
@@ -226,7 +271,7 @@ export default async function EliteDashboard() {
           { href: "/elite/conquistas",  icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Conquistas" },
           { href: "/elite/desbloquear", icon: Zap,      value: "Elite",                                               label: "Destravar calls" },
         ]).map((item, i) => (
-          <Link key={item.href} href={item.href} className={`animate-in-up delay-${5 + i} group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-4 hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300`}>
+          <Link key={item.href} href={item.href} className={`interactive animate-in-up delay-${5 + i} group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-4 hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300`}>
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
             <div className="flex items-center justify-between mb-2">
               <item.icon className="w-4 h-4 text-white/40" />
@@ -264,47 +309,11 @@ export default async function EliteDashboard() {
           </div>
         </div>
 
-        {/* Right panel: Atividade da Turma (Elite) or Upgrade CTA (VIP) */}
+        {/* Right panel: Agenda econômica (Elite) or Upgrade CTA (VIP) */}
         {isElite ? (
-          <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                  <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping opacity-60" />
-                </div>
-                <h3 className="text-[13px] font-bold text-white/85">Atividade da Turma</h3>
-              </div>
-              <Link href="/elite/turma" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
-                Ver tudo <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-
-            <div className="space-y-2">
-              {[
-                { initials: "MO", color: "#3B82F6", name: "Mateus",  action: "payout",  detail: "FundingPips $2.400", time: "2h" },
-                { initials: "JP", color: "#10B981", name: "JP",      action: "mesa",    detail: "Aprovado na 5%ers",  time: "5h" },
-                { initials: "BA", color: "#EC4899", name: "Bruna",   action: "badge",   detail: "Badge Trinity",       time: "1d" },
-                { initials: "LR", color: "#A855F7", name: "Lucas",   action: "payout",  detail: "TopStep $1.100",     time: "1d" },
-              ].map((a, i) => (
-                <div key={i} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border"
-                    style={{ color: a.color, borderColor: a.color + "40" }}>
-                    {a.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11.5px] text-white/80 leading-tight truncate">
-                      <span className="font-semibold">{a.name}</span>
-                      <span className="text-white/35"> · {a.detail}</span>
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-white/30 font-mono shrink-0">{a.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <DashboardAgenda events={todayEvents} />
         ) : (
-          <Link href="/elite/desbloquear" className="animate-in-up delay-8 group relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-[#1a0e05] to-[#0e0e10] p-5 hover:border-brand-500/40 transition-all">
+          <Link href="/elite/desbloquear" className="interactive animate-in-up delay-8 group relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-[#1a0e05] to-[#0e0e10] p-5 hover:border-brand-500/40 transition-all">
             <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.10] blur-[100px] pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
             <div className="relative z-10">
@@ -328,4 +337,101 @@ export default async function EliteDashboard() {
       </div>
     </div>
   );
+}
+
+/* ────────────────────────────────────────────
+   Dashboard Agenda — mini-versão dos eventos de hoje
+   ──────────────────────────────────────────── */
+
+function DashboardAgenda({ events }: { events: EconomicEvent[] }) {
+  const nowMins = nyNowMinutes();
+  const nextEvent = events.find((e) => {
+    const m = parseMins(e.time);
+    return m !== null && m >= nowMins;
+  });
+  const nextEta = nextEvent ? etaFromNow(nextEvent.time, nowMins) : null;
+
+  return (
+    <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="w-4 h-4 text-white/60" strokeWidth={1.8} />
+          <h3 className="text-[13px] font-bold text-white/85">Agenda de hoje</h3>
+          {nextEta && (
+            <>
+              <span className="text-white/15 text-[10px]">·</span>
+              <span className="text-[10px] font-mono tabular-nums text-white/55">próximo {nextEta}</span>
+            </>
+          )}
+        </div>
+        <Link href="/elite/noticias" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
+          Ver tudo <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
+
+      <InstrumentFilterStyle />
+      {events.length === 0 ? (
+        <div className="py-6 text-center">
+          <p className="text-[12.5px] font-semibold text-white/70 mb-1">Mercado calmo hoje</p>
+          <p className="text-[10.5px] text-white/35 leading-relaxed max-w-xs mx-auto">
+            Sem evento de alto/médio impacto na agenda. Dia pra operar o que o gráfico entrega.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-0.5">
+          {events.map((ev) => {
+            const m = impactMeta(ev.impact);
+            const mins = parseMins(ev.time);
+            const isPast = mins !== null && mins < nowMins;
+            const released = !!ev.actual;
+            const instruments = instrumentsForEvent(ev.event, ev.country).join(" ");
+            return (
+              <div
+                key={ev.id}
+                data-filterable-event
+                data-instruments={instruments}
+                className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-white/[0.02] ${isPast ? "opacity-45" : ""}`}
+              >
+                <div className="shrink-0 w-12 text-right">
+                  <p className="text-[12.5px] font-bold font-mono tabular-nums text-white/90 leading-none">{ev.time || "—"}</p>
+                  <p className="text-[9px] text-white/30 font-mono uppercase tracking-[0.15em] mt-1">{countryCode(ev.country)}</p>
+                </div>
+                <span
+                  className="shrink-0 w-1.5 h-1.5 rounded-full"
+                  style={{
+                    backgroundColor: m.dotBg,
+                    boxShadow: ev.impact === "high" && !isPast ? `0 0 0 3px ${m.dotBg}22` : undefined,
+                  }}
+                />
+                <p className="text-[11.5px] text-white/80 flex-1 truncate font-medium">{ev.event}</p>
+                {released && <span className="shrink-0 text-[9px] font-bold tracking-[0.18em] uppercase text-emerald-400/80">✓</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="text-[9px] font-mono uppercase tracking-[0.18em] text-white/25 mt-3 pt-3 border-t border-white/[0.04]">
+        ET (NY) · alto/médio impacto
+      </p>
+    </div>
+  );
+}
+
+function parseMins(time: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function etaFromNow(time: string, nowMins: number): string | null {
+  const m = parseMins(time);
+  if (m === null) return null;
+  const diff = m - nowMins;
+  if (diff < 0) return null;
+  if (diff < 1) return "agora";
+  if (diff < 60) return `em ${diff}min`;
+  const h = Math.floor(diff / 60);
+  const mm = diff % 60;
+  return mm > 0 ? `em ${h}h${String(mm).padStart(2, "0")}` : `em ${h}h`;
 }

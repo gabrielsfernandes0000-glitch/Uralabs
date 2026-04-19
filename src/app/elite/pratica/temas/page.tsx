@@ -10,7 +10,7 @@ export default function PraticaTemasPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="animate-in-up">
         <Link
           href="/elite/pratica"
           className="inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70 transition-colors mb-5"
@@ -45,7 +45,7 @@ export default function PraticaTemasPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="animate-in-up delay-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {TREINO_CATEGORIES.map((cat) => (
           <ThemeCard key={cat.key} category={cat} />
         ))}

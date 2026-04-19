@@ -78,7 +78,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           <div className="grid grid-cols-5 gap-1.5">
             {moods.map((e) => (
               <button key={e.v} onClick={() => setEmotional(e.v)}
-                className={`flex flex-col items-center gap-1 px-1 py-2 rounded-lg border ${
+                className={`interactive-tap flex flex-col items-center gap-1 px-1 py-2 rounded-lg border ${
                   emotional === e.v
                     ? "border-white/[0.14] bg-white/[0.05]"
                     : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
@@ -95,7 +95,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           <p className="text-[12px] text-white/70 font-semibold mb-2.5">Viés do dia</p>
           <div className="flex gap-2">
             <button onClick={() => setBias("bullish")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border ${
+              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border ${
                 bias === "bullish"
                   ? "border-green-500/45 bg-green-500/[0.10] text-green-400"
                   : "border-white/[0.05] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
@@ -104,7 +104,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
               <span className="text-[13px] font-bold">Bullish</span>
             </button>
             <button onClick={() => setBias("bearish")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border ${
+              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border ${
                 bias === "bearish"
                   ? "border-red-500/45 bg-red-500/[0.10] text-red-400"
                   : "border-white/[0.05] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
@@ -155,7 +155,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           }
         }}
         disabled={!isComplete}
-        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-bold ${
+        className={`interactive w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-bold ${
           isComplete ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <Check className="w-4 h-4" />
@@ -218,7 +218,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         <p className="text-[14px] text-white/70 font-semibold mb-4">Direção</p>
         <div className="flex gap-3">
           <button onClick={() => setDirection("long")}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 ${
+            className={`interactive-tap flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 ${
               direction === "long"
                 ? "border-green-500/40 bg-green-500/[0.08] text-green-400"
                 : "border-white/[0.04] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
@@ -226,7 +226,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
             <ArrowUp className="w-5 h-5" /> <span className="text-[15px] font-bold">Long</span>
           </button>
           <button onClick={() => setDirection("short")}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 ${
+            className={`interactive-tap flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 ${
               direction === "short"
                 ? "border-red-500/40 bg-red-500/[0.08] text-red-400"
                 : "border-white/[0.04] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
@@ -263,7 +263,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
             { id: "be" as const, label: "Breakeven", icon: Minus, color: "#F59E0B" },
           ]).map((r) => (
             <button key={r.id} onClick={() => setResult(r.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl border-2 ${
+              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-4 rounded-xl border-2 ${
                 result === r.id ? "" : "border-white/[0.04] text-white/35 hover:border-white/[0.10]"
               }`}
               style={result === r.id ? { borderColor: r.color + "40", backgroundColor: r.color + "08", color: r.color } : undefined}>
@@ -284,11 +284,11 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         <p className="text-[14px] text-white/70 font-semibold mb-4">Seguiu o plano do Prep Sheet?</p>
         <div className="flex gap-3">
           <button onClick={() => setFollowedPlan(true)}
-            className={`flex-1 py-4 rounded-xl border-2 text-[14px] font-bold ${
+            className={`interactive-tap flex-1 py-4 rounded-xl border-2 text-[14px] font-bold ${
               followedPlan === true ? "border-green-500/40 bg-green-500/[0.08] text-green-400" : "border-white/[0.04] text-white/35 hover:border-green-500/15"
             }`}>Sim</button>
           <button onClick={() => setFollowedPlan(false)}
-            className={`flex-1 py-4 rounded-xl border-2 text-[14px] font-bold ${
+            className={`interactive-tap flex-1 py-4 rounded-xl border-2 text-[14px] font-bold ${
               followedPlan === false ? "border-red-500/40 bg-red-500/[0.08] text-red-400" : "border-white/[0.04] text-white/35 hover:border-red-500/15"
             }`}>Não</button>
         </div>
@@ -305,7 +305,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
             { v: 5, label: "Excelente", color: "#FF5500" },
           ].map((e) => (
             <button key={e.v} onClick={() => setEmotionalAfter(e.v)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${
+              className={`interactive-tap flex items-center gap-3 px-4 py-3 rounded-xl border ${
                 emotionalAfter === e.v
                   ? "border-white/[0.12] bg-white/[0.05]"
                   : "border-white/[0.04] hover:border-white/[0.10] hover:bg-white/[0.02]"
@@ -335,7 +335,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
           }
         }}
         disabled={!direction || !result}
-        className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[15px] font-bold ${
+        className={`interactive w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[15px] font-bold ${
           direction && result ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <TrendingUp className="w-4 h-4" />
@@ -356,7 +356,7 @@ export default function DiarioPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="animate-in-up flex items-center gap-3">
         <div className="w-1 h-7 rounded-full bg-brand-500/60" />
         <div>
           <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">Diário</h1>
@@ -365,12 +365,12 @@ export default function DiarioPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="animate-in-up delay-1 flex gap-2 flex-wrap">
         {TABS.map((tab) => {
           const active = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-[13.5px] font-semibold ${
+              className={`interactive-tap flex items-center gap-2.5 px-5 py-3 rounded-xl border text-[13.5px] font-semibold ${
                 active
                   ? "border-white/[0.22] text-white"
                   : "border-white/[0.06] text-white/40 hover:text-white/65 hover:border-white/[0.12]"
@@ -384,8 +384,8 @@ export default function DiarioPage() {
       </div>
 
       {/* Content */}
-      {activeTab === "prep" && <PrepSheet onSave={savePrep} />}
-      {activeTab === "diario" && <TradeJournal onSave={saveTrade} />}
+      {activeTab === "prep" && <div className="animate-in-up delay-2"><PrepSheet onSave={savePrep} /></div>}
+      {activeTab === "diario" && <div className="animate-in-up delay-2"><TradeJournal onSave={saveTrade} /></div>}
     </div>
   );
 }

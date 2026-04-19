@@ -12,7 +12,7 @@ export default async function PerfilPage() {
   return (
     <div className="space-y-6">
       {/* ── Profile header ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
         {/* Cover gradient */}
         <div className="h-36 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500/15 via-purple-500/5 to-blue-500/10" />
@@ -68,7 +68,7 @@ export default async function PerfilPage() {
       </div>
 
       {/* ── Goal ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-1 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-r from-green-500/[0.02] to-transparent" />
 
         <div className="relative z-10 p-7">
@@ -85,7 +85,7 @@ export default async function PerfilPage() {
             <p className="text-[11px] text-white/30 mb-5 max-w-xs text-center">
               Ex: &quot;Aprovar mesa $25k&quot; · &quot;3 semanas no verde&quot;
             </p>
-            <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 font-medium hover:text-green-500 hover:border-green-500/20 transition-all">
+            <button className="interactive-tap inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 font-medium hover:text-green-500 hover:border-green-500/20 transition-all">
               <Zap className="w-3.5 h-3.5" />
               Definir Meta
             </button>
@@ -94,10 +94,10 @@ export default async function PerfilPage() {
       </div>
 
       {/* ── Personalização (cosméticos) ── */}
-      <PersonalizationSection />
+      <div className="animate-in-up delay-2"><PersonalizationSection /></div>
 
       {/* ── Badges showcase ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
