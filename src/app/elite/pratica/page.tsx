@@ -241,25 +241,16 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
   // Estado: já concluiu hoje
   if (doneToday) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-green-500/20 bg-[#0e0e10] p-5 flex items-center gap-5">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-green-500/40 to-transparent" />
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 50% 100% at 20% 50%, rgba(16,185,129,0.05), transparent 70%)"
-        }} />
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] p-5 flex items-center gap-5">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-green-500/35 to-transparent" />
 
-        <div className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-green-500/[0.08] border border-green-500/25 flex items-center justify-center">
+        <div className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-green-500/[0.06] border border-green-500/25 flex items-center justify-center">
           <Check className="w-7 h-7 text-green-400" strokeWidth={2} />
         </div>
 
         <div className="relative z-10 flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-green-400/80">Concluído</span>
-            <span className="text-white/15">·</span>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.15em] uppercase text-amber-300/90">
-              <Flame className="w-3 h-3" strokeWidth={2} /> Streak mantida
-            </span>
-          </div>
-          <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight">Missão do dia completa</h3>
+          <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-green-400/80">Concluído</span>
+          <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mt-0.5">Missão do dia completa</h3>
           <p className="text-[11.5px] text-white/45 mt-1 leading-relaxed">
             Hoje você treinou <span className="text-white/70 font-semibold">{theme}</span> — 3 cenários respondidos. Volte amanhã pra um novo tema.
           </p>
@@ -278,7 +269,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
                           "Dia de aprender. Revisita o conteúdo e tenta amanhã.";
 
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-brand-500/20 bg-[#0e0e10] min-h-[460px] p-8 flex flex-col items-center justify-center text-center">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] p-6 flex flex-col items-center justify-center text-center">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
         <div className="absolute inset-0 pointer-events-none" style={{
           background: `radial-gradient(ellipse 60% 50% at 50% 30%, ${catAccent}14, transparent 70%)`
@@ -315,24 +306,18 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
   if (!currentScenario) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-brand-500/25 bg-gradient-to-b from-[#15110e] to-[#0e0e10] min-h-[460px] flex flex-col">
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
-      <div className="absolute top-[-30%] right-[-10%] w-[300px] h-[200px] bg-brand-500/[0.08] blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[240px] h-[160px] pointer-events-none" style={{
-        background: `radial-gradient(ellipse, ${catAccent}18, transparent 70%)`,
-      }} />
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] flex flex-col">
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
+      <div className="absolute top-[-30%] right-[-10%] w-[260px] h-[160px] bg-brand-500/[0.04] blur-[110px] pointer-events-none" />
 
       {/* Header — missão + tema + progress */}
-      <div className="relative z-10 px-6 pt-5 pb-4 border-b border-white/[0.05]">
-        <div className="flex items-center justify-between mb-3">
+      <div className="relative z-10 px-5 pt-4 pb-3 border-b border-white/[0.05]">
+        <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-5 h-5 text-brand-500 shrink-0" strokeWidth={1.8} />
+            <Sparkles className="w-4.5 h-4.5 text-brand-500 shrink-0" strokeWidth={1.8} />
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-[14px] font-bold text-white tracking-tight">Missão do dia</h3>
-                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-brand-500/80">· Hoje</span>
-              </div>
-              <p className="text-[10.5px] text-white/40 mt-0.5">Tema: <span className="font-bold" style={{ color: catAccent }}>{theme}</span> · 3 cenários</p>
+              <h3 className="text-[13px] font-bold text-white tracking-tight">Missão do dia</h3>
+              <p className="text-[10.5px] text-white/40 mt-0.5">Tema: <span className="font-bold text-white/70">{theme}</span> · 3 cenários</p>
             </div>
           </div>
           <p className="text-[11px] font-mono text-white/45">{currentIdx + 1}/{scenarios.length}</p>
@@ -354,7 +339,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
       </div>
 
       {/* Body */}
-      <div className="relative z-10 flex-1 p-6">
+      <div className="relative z-10 p-5">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIdx}
