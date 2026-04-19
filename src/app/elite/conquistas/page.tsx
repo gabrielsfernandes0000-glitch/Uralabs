@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, TrendingUp, Brain, Target, ChevronRight, ArrowUp, ArrowRight, Sparkles, X, Check, Trophy } from "lucide-react";
+import { Lock, TrendingUp, Brain, Flame, Target, ChevronRight, ArrowUp, Sparkles, X, Check, Trophy } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import Link from "next/link";
 import {
@@ -65,49 +65,104 @@ function unlockHint(a: Achievement): string {
 const DISPLAY_ORDER: Category[] = ["og", "trading", "learning", "practice", "milestone", "community"];
 
 /* ────────────────────────────────────────────
-   Skill Tree — mapa do currículo real (5 módulos, 14 aulas)
-   Progresso e unlock vêm do completedLessons. Módulo N destravado
-   quando N-1 está 100% concluído. Nodes clicáveis abrem o módulo
-   em /elite/aulas#module-{id}.
+   Skill Tree — árvore ramificada com dados REAIS do currículo.
+   Cada node agrupa 1–3 aulas do CURRICULUM. Progresso = aulas
+   concluídas / total do node. Unlock = todas as aulas dos nodes
+   `requires` foram concluídas. Cor por módulo. Clique → primeira
+   aula não-concluída em /elite/aulas/{id}.
    ──────────────────────────────────────────── */
 
-interface ModuleSkill {
+interface SkillNode {
   id: string;
-  number: string;
-  title: string;
-  subtitle: string;
+  name: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   accentHex: string;
-  lessons: { id: string; title: string }[];
-  completed: number;
-  total: number;
-  progress: number; // 0-100
-  unlocked: boolean;
+  lessons: string[]; // IDs reais do CURRICULUM
+  requires: string[]; // IDs de outros nodes
 }
 
-function buildModuleSkills(completedLessons: string[]): ModuleSkill[] {
+const MODULE_ACCENT = {
+  base:         "#FF5500",
+  smc:          "#3B82F6",
+  estrategia:   "#A855F7",
+  execucao:     "#10B981",
+  operacao:     "#EF4444",
+} as const;
+
+const SKILL_TREE: SkillNode[][] = [
+  // Row 0 — Fundamento
+  [
+    { id: "mindset", name: "Mindset", desc: "Mentalidade profissional",
+      icon: Brain, accentHex: MODULE_ACCENT.base,
+      lessons: ["intro"], requires: [] },
+  ],
+  // Row 1 — Base
+  [
+    { id: "leitura-preco", name: "Leitura de Preço", desc: "Candles, TFs, contexto",
+      icon: TrendingUp, accentHex: MODULE_ACCENT.base,
+      lessons: ["leitura-candle"], requires: ["mindset"] },
+    { id: "risco", name: "Gestão de Risco", desc: "1% diário, 2.5% semanal",
+      icon: Target, accentHex: MODULE_ACCENT.base,
+      lessons: ["risco"], requires: ["mindset"] },
+  ],
+  // Row 2 — SMC
+  [
+    { id: "smc-core", name: "Smart Money", desc: "Order Blocks, FVG, Breakers",
+      icon: Brain, accentHex: MODULE_ACCENT.smc,
+      lessons: ["order-blocks", "fvg-breaker"], requires: ["leitura-preco"] },
+    { id: "pd-liquidez", name: "P&D · Liquidez", desc: "Premium/Discount, BSL, SSL",
+      icon: TrendingUp, accentHex: MODULE_ACCENT.smc,
+      lessons: ["premium-discount", "liquidez"], requires: ["leitura-preco", "risco"] },
+  ],
+  // Row 3 — Estratégia
+  [
+    { id: "amd-sessoes", name: "AMD & Sessões", desc: "Acumulação, manipulação, Kill Zones",
+      icon: Target, accentHex: MODULE_ACCENT.estrategia,
+      lessons: ["sessoes", "amd"], requires: ["smc-core", "pd-liquidez"] },
+    { id: "bias-smt", name: "Bias & SMT", desc: "Daily Bias, Judas Swing, divergência",
+      icon: Flame, accentHex: MODULE_ACCENT.estrategia,
+      lessons: ["daily-bias", "smt"], requires: ["smc-core"] },
+  ],
+  // Row 4 — Execução
+  [
+    { id: "execucao-real", name: "Execução Real", desc: "Entrada, saída, mesas prop",
+      icon: TrendingUp, accentHex: MODULE_ACCENT.execucao,
+      lessons: ["entrada-saida", "mesas-prop", "gerenciamento-contas"],
+      requires: ["amd-sessoes", "bias-smt"] },
+  ],
+];
+
+interface ResolvedNode extends SkillNode {
+  completed: number;
+  total: number;
+  progress: number;
+  unlocked: boolean;
+  /** próxima aula não-concluída (ou a primeira se todas feitas) */
+  targetLessonId: string;
+}
+
+/** Resolve progresso e unlock de todos os nodes dado completedLessons. */
+function resolveSkillTree(completedLessons: string[]): ResolvedNode[][] {
   const done = new Set(completedLessons);
-  let prevComplete = true; // primeiro módulo sempre destravado
-  return CURRICULUM.map((mod) => {
-    const total = mod.lessons.length;
-    const completed = mod.lessons.filter((l) => done.has(l.id)).length;
-    const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
-    const unlocked = prevComplete;
-    // módulo "lives" (Operação, 0 aulas) nunca destrava por quiz — sempre acessível como aviso.
-    const moduleComplete = total === 0 ? false : completed === total;
-    prevComplete = moduleComplete;
-    return {
-      id: mod.id,
-      number: mod.number,
-      title: mod.title,
-      subtitle: mod.subtitle,
-      accentHex: mod.accentHex,
-      lessons: mod.lessons.map((l) => ({ id: l.id, title: l.title })),
-      completed,
-      total,
-      progress,
-      unlocked,
-    };
-  });
+  const allNodes = SKILL_TREE.flat();
+  const nodeComplete = new Map<string, boolean>();
+
+  // Pre-compute completion por node
+  for (const n of allNodes) {
+    nodeComplete.set(n.id, n.lessons.every((l) => done.has(l)));
+  }
+
+  return SKILL_TREE.map((row) =>
+    row.map((n) => {
+      const total = n.lessons.length;
+      const completed = n.lessons.filter((l) => done.has(l)).length;
+      const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+      const unlocked = n.requires.length === 0 || n.requires.every((r) => nodeComplete.get(r));
+      const targetLessonId = n.lessons.find((l) => !done.has(l)) ?? n.lessons[0];
+      return { ...n, completed, total, progress, unlocked, targetLessonId };
+    })
+  );
 }
 
 /* ────────────────────────────────────────────
@@ -406,20 +461,20 @@ function TimelineView({ unlocks }: { unlocks: UnlockMeta[] }) {
 /* ── Skill Tree ── */
 
 function SkillTreeView({ completedLessons }: { completedLessons: string[] }) {
-  const modules = buildModuleSkills(completedLessons);
-  const totalLessons = modules.reduce((s, m) => s + m.total, 0);
-  const doneLessons = modules.reduce((s, m) => s + m.completed, 0);
-  const currentIdx = modules.findIndex((m) => m.unlocked && m.progress < 100 && m.total > 0);
-  const allDone = modules.every((m) => m.total === 0 || m.progress === 100);
+  const tree = resolveSkillTree(completedLessons);
+  const flat = tree.flat();
+  const totalLessons = flat.reduce((s, n) => s + n.total, 0);
+  const doneLessons = flat.reduce((s, n) => s + n.completed, 0);
+  const currentNode = flat.find((n) => n.unlocked && n.progress < 100);
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h2 className="text-[18px] font-bold text-white/90 mb-1">Mapa do Currículo</h2>
-          <p className="text-[12px] text-white/45 leading-relaxed max-w-xl">
-            As 14 aulas do Elite 4.0 em 5 módulos sequenciais. Cada módulo destrava o próximo quando 100% completo.
-            Clique pra abrir a aula.
+        <div className="min-w-0 max-w-xl">
+          <h2 className="text-[18px] font-bold text-white/90 mb-1">Árvore de Habilidades</h2>
+          <p className="text-[12px] text-white/45 leading-relaxed">
+            Cada node agrupa aulas relacionadas do currículo Elite. Complete as aulas de um node
+            pra destravar os que dependem dele. Clique pra ir direto pra próxima aula.
           </p>
         </div>
         <div className="flex items-center gap-4 shrink-0">
@@ -429,160 +484,170 @@ function SkillTreeView({ completedLessons }: { completedLessons: string[] }) {
             </p>
             <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">aulas</p>
           </div>
-          {currentIdx !== -1 && !allDone && (
-            <div className="pl-4 border-l border-white/[0.06]">
-              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-0.5">Módulo atual</p>
-              <p className="text-[13px] font-bold text-white/80">{modules[currentIdx].number}. {modules[currentIdx].title}</p>
+          {currentNode && (
+            <div className="pl-4 border-l border-white/[0.06] max-w-[180px]">
+              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-0.5">Próximo node</p>
+              <p className="text-[13px] font-bold truncate" style={{ color: currentNode.accentHex }}>
+                {currentNode.name}
+              </p>
             </div>
           )}
         </div>
       </div>
 
-      <ol className="relative space-y-3">
-        {/* linha conectora vertical à esquerda */}
-        <div className="absolute left-[27px] top-8 bottom-8 w-px bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-transparent pointer-events-none" aria-hidden />
+      {/* Legenda de módulos */}
+      <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.015]">
+        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Módulos</span>
+        {[
+          { label: "Base", hex: MODULE_ACCENT.base },
+          { label: "SMC", hex: MODULE_ACCENT.smc },
+          { label: "Estratégia", hex: MODULE_ACCENT.estrategia },
+          { label: "Execução", hex: MODULE_ACCENT.execucao },
+        ].map((m) => (
+          <div key={m.label} className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: m.hex }} />
+            <span className="text-[11px] text-white/55">{m.label}</span>
+          </div>
+        ))}
+      </div>
 
-        {modules.map((mod, idx) => {
-          const isCurrent = idx === currentIdx;
-          const isComplete = mod.total > 0 && mod.progress === 100;
-          const hasLessons = mod.total > 0;
+      <div className="relative overflow-x-auto pb-2">
+        <div className="min-w-[680px]">
+          {tree.map((row, rowIdx) => (
+            <div key={rowIdx}>
+              {/* Connectors — branching SVG */}
+              {rowIdx > 0 && (
+                <div className="flex justify-center py-2">
+                  <svg width="260" height="32" viewBox="0 0 260 32" fill="none" className="text-white/[0.08]">
+                    <line x1="65"  y1="0" x2="130" y2="32" stroke="currentColor" strokeWidth="1.5" />
+                    <line x1="195" y1="0" x2="130" y2="32" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+                </div>
+              )}
 
-          const clickable = mod.unlocked && hasLessons;
-          const wrapperClass = `group relative block rounded-xl border overflow-hidden transition-all duration-300 ${
-            mod.unlocked
-              ? "border-white/[0.07] bg-[#111114] hover:border-white/[0.18] hover:-translate-y-0.5"
-              : "border-white/[0.04] bg-[#0b0b0e] opacity-55"
-          } ${clickable ? "cursor-pointer" : ""}`;
+              <div className={`flex items-stretch justify-center gap-5 ${row.length === 1 ? "" : ""}`}>
+                {row.map((node) => {
+                  const Icon = node.icon;
+                  const isComplete = node.progress === 100;
+                  const clickable = node.unlocked;
+                  const wrapperClass = `group relative w-[250px] rounded-xl border p-4 transition-all duration-300 overflow-hidden ${
+                    node.unlocked
+                      ? isComplete
+                        ? "border-white/[0.10] bg-gradient-to-b from-[#16161a] to-[#111114] hover:-translate-y-0.5"
+                        : "border-white/[0.08] bg-gradient-to-b from-[#161619] to-[#111114] hover:-translate-y-0.5 hover:shadow-lg"
+                      : "border-white/[0.04] bg-[#0b0b0e] opacity-45"
+                  } ${clickable ? "cursor-pointer" : ""}`;
 
-          const inner = (<>
-                {/* Faixa accent à esquerda no módulo atual */}
-                {isCurrent && (
-                  <div
-                    className="absolute left-0 top-0 bottom-0 w-[3px]"
-                    style={{ backgroundColor: mod.accentHex }}
-                    aria-hidden
-                  />
-                )}
-
-                <div className="flex items-center gap-4 p-4 pl-5">
-                  {/* Progress ring com número do módulo */}
-                  <div className="relative w-[44px] h-[44px] shrink-0">
-                    <svg className="w-[44px] h-[44px] -rotate-90" viewBox="0 0 44 44">
-                      <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2.5" />
-                      {mod.progress > 0 && (
-                        <circle
-                          cx="22" cy="22" r="18" fill="none"
-                          stroke={mod.accentHex}
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeDasharray={`${(mod.progress / 100) * 113.1} 113.1`}
-                          className="transition-all duration-700"
+                  const inner = (
+                    <>
+                      {/* Faixa accent sutil no topo quando unlocked */}
+                      {node.unlocked && (
+                        <div
+                          className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
+                          style={{
+                            background: `linear-gradient(90deg, transparent, ${node.accentHex}, transparent)`,
+                          }}
+                          aria-hidden
                         />
                       )}
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {!mod.unlocked ? (
-                        <Lock className="w-4 h-4 text-white/25" />
-                      ) : isComplete ? (
-                        <Check className="w-4 h-4" style={{ color: mod.accentHex }} strokeWidth={2.5} />
-                      ) : (
-                        <span className="text-[12px] font-bold font-mono tabular-nums" style={{ color: mod.accentHex }}>
-                          {mod.number}
-                        </span>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Título + aulas */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2.5 flex-wrap mb-0.5">
-                      <h3 className={`text-[14px] font-bold tracking-tight ${mod.unlocked ? "text-white/90" : "text-white/40"}`}>
-                        {mod.title}
-                      </h3>
-                      <span className={`text-[10.5px] uppercase tracking-[0.15em] font-medium ${mod.unlocked ? "text-white/30" : "text-white/20"}`}>
-                        {mod.subtitle}
-                      </span>
-                    </div>
+                      {/* Header: ring + título */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="relative w-11 h-11 shrink-0">
+                          <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+                            <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+                            {node.progress > 0 && (
+                              <circle
+                                cx="22" cy="22" r="18" fill="none"
+                                stroke={node.accentHex}
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeDasharray={`${(node.progress / 100) * 113.1} 113.1`}
+                                className="transition-all duration-700"
+                              />
+                            )}
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            {!node.unlocked ? (
+                              <Lock className="w-3.5 h-3.5 text-white/20" />
+                            ) : isComplete ? (
+                              <Check className="w-4 h-4" style={{ color: node.accentHex }} strokeWidth={2.5} />
+                            ) : (
+                              <Icon className="w-4 h-4" style={{ color: node.accentHex }} />
+                            )}
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className={`text-[13px] font-bold leading-tight tracking-tight ${node.unlocked ? "text-white/90" : "text-white/30"}`}>
+                            {node.name}
+                          </h4>
+                          <p className={`text-[10.5px] leading-tight mt-0.5 ${node.unlocked ? "text-white/40" : "text-white/20"}`}>
+                            {node.desc}
+                          </p>
+                        </div>
+                      </div>
 
-                    {/* Lista de aulas inline com check/lock */}
-                    {hasLessons ? (
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-                        {mod.lessons.map((l) => {
-                          const done = completedLessons.includes(l.id);
+                      {/* Lista de aulas do node */}
+                      <div className="space-y-1 mb-3">
+                        {node.lessons.map((lessonId) => {
+                          const lesson = CURRICULUM.flatMap((m) => m.lessons).find((l) => l.id === lessonId);
+                          if (!lesson) return null;
+                          const done = completedLessons.includes(lessonId);
                           return (
-                            <span
-                              key={l.id}
-                              className={`inline-flex items-center gap-1 text-[11px] ${
-                                done ? "text-white/55" : mod.unlocked ? "text-white/30" : "text-white/20"
+                            <div
+                              key={lessonId}
+                              className={`flex items-center gap-1.5 text-[10.5px] ${
+                                done ? "text-white/60" : node.unlocked ? "text-white/35" : "text-white/20"
                               }`}
                             >
                               {done ? (
-                                <Check className="w-2.5 h-2.5 shrink-0" style={{ color: mod.accentHex }} strokeWidth={3} />
+                                <Check className="w-2.5 h-2.5 shrink-0" style={{ color: node.accentHex }} strokeWidth={3} />
                               ) : (
-                                <span className="w-[5px] h-[5px] rounded-full bg-white/15 shrink-0" />
+                                <span className="w-[5px] h-[5px] rounded-full bg-white/15 shrink-0 ml-[3px] mr-[3px]" />
                               )}
-                              <span className="truncate">{l.title}</span>
-                            </span>
+                              <span className="truncate">{lesson.title}</span>
+                            </div>
                           );
                         })}
                       </div>
-                    ) : (
-                      <p className="text-[11px] text-white/30 mt-1 italic">
-                        Conteúdo ao vivo — sem aulas gravadas. Participa pelas calls.
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Status + chevron */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right">
-                      <p className={`text-[13px] font-bold font-mono tabular-nums ${mod.unlocked ? "text-white/80" : "text-white/30"}`}>
-                        {hasLessons ? `${mod.completed}/${mod.total}` : "—"}
-                      </p>
-                      <p className="text-[9.5px] uppercase tracking-wider mt-0.5" style={{ color: mod.unlocked ? `${mod.accentHex}cc` : "rgba(255,255,255,0.2)" }}>
-                        {!mod.unlocked ? "Bloqueado" : isComplete ? "Completo" : isCurrent ? "Em curso" : hasLessons ? "A fazer" : "Ao vivo"}
-                      </p>
-                    </div>
-                    {mod.unlocked && hasLessons && (
-                      <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
-                    )}
-                  </div>
-                </div>
-          </>);
+                      {/* Footer: progress bar + % */}
+                      <div className="h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{ width: `${node.progress}%`, backgroundColor: node.accentHex }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <span className={`text-[9.5px] uppercase tracking-wider ${node.unlocked ? "text-white/40" : "text-white/20"}`}>
+                          {!node.unlocked ? "Bloqueado" : isComplete ? "Completo" : node.progress > 0 ? "Em curso" : "A fazer"}
+                        </span>
+                        <span className={`text-[10px] font-mono tabular-nums ${node.unlocked ? "text-white/50" : "text-white/20"}`}>
+                          {node.completed}/{node.total}
+                        </span>
+                      </div>
+                    </>
+                  );
 
-          return (
-            <li key={mod.id} className="relative">
-              {clickable ? (
-                <Link href={`/elite/aulas#module-${mod.id}`} className={wrapperClass}>{inner}</Link>
-              ) : (
-                <div className={wrapperClass}>{inner}</div>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+                  return clickable ? (
+                    <Link key={node.id} href={`/elite/aulas/${node.targetLessonId}`} className={wrapperClass}>
+                      {inner}
+                    </Link>
+                  ) : (
+                    <div key={node.id} className={wrapperClass}>{inner}</div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
-      {/* Legenda de como funciona */}
-      <div className="rounded-xl border border-white/[0.05] bg-white/[0.015] p-4">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-white/35 font-bold mb-2">Como funciona</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[12px] text-white/50">
-          <div className="flex items-start gap-2">
-            <span className="w-5 h-5 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-[10px] font-bold text-white/60">1</span>
-            </span>
-            <span>Assista a aula e marque como concluída.</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="w-5 h-5 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-[10px] font-bold text-white/60">2</span>
-            </span>
-            <span>Complete todas as aulas do módulo pra destravar o próximo.</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="w-5 h-5 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-[10px] font-bold text-white/60">3</span>
-            </span>
-            <span>Badges de conclusão aparecem automaticamente na aba Badges.</span>
+          {/* Flow direction label */}
+          <div className="flex justify-center mt-6">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: MODULE_ACCENT.base }} />
+              <span className="text-[10px] text-white/40 font-medium">Base → SMC → Estratégia → Execução</span>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: MODULE_ACCENT.execucao }} />
+            </div>
           </div>
         </div>
       </div>
