@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { CalendarClock, Check, Zap, BookOpen, TrendingUp, TrendingDown, Minus, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { eventExplanation, eventCategory, computeSurprise, lessonsForCategory, instrumentsForEvent, type Surprise } from "@/lib/economic-events";
@@ -219,14 +218,16 @@ export default async function NoticiasPage({
         />
       </div>
 
-      {/* ───── HERO: FEATURED EVENT + AGENDA ───── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
+      {/* ───── FEATURED EVENT (só quando faz sentido) ───── */}
+      {featuredEvent && (
         <div className="animate-in-up delay-1">
-          {featuredEvent ? <FeaturedEventCard event={featuredEvent} /> : <EmptyFeaturedEvent />}
+          <FeaturedEventCard event={featuredEvent} />
         </div>
-        <div className="animate-in-up delay-2">
-          <AgendaPanel events={events} today={today} calFilters={calFilters} />
-        </div>
+      )}
+
+      {/* ───── AGENDA ECONÔMICA full-width em grid ───── */}
+      <div className="animate-in-up delay-2">
+        <AgendaPanel events={events} today={today} calFilters={calFilters} />
       </div>
 
       {/* ───── FEED DE MANCHETES ───── */}
@@ -536,19 +537,6 @@ function StatBlock({ label, sublabel, value, highlight, surprise }: {
   );
 }
 
-function EmptyFeaturedEvent() {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-20 flex flex-col items-center text-center px-6">
-      <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-4">
-        <CalendarClock className="w-5 h-5 text-white/30" strokeWidth={1.8} />
-      </div>
-      <p className="text-[14px] font-semibold text-white/75 mb-1.5">Mercado calmo hoje</p>
-      <p className="text-[12px] text-white/40 max-w-sm leading-relaxed">
-        Sem evento relevante na agenda econômica. Confira a semana no painel ao lado — dia pra operar o que o gráfico entrega.
-      </p>
-    </div>
-  );
-}
 
 /* ────────────────────────────────────────────
    Agenda Panel (server component — estático)
@@ -612,143 +600,160 @@ function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; t
     return m !== null && isToday ? etaLabel(Math.max(0, m - nowMins)) : null;
   })() : null;
 
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+  const nextEvId = (isToday ? future[0]?.id : events[0]?.id) ?? null;
 
-      <div className="relative z-10 flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/[0.05]">
+  return (
+    <div className="relative">
+      {/* Header da agenda — horizontal clean */}
+      <div className="flex items-end justify-between gap-4 mb-3 flex-wrap">
         <div className="flex items-center gap-2.5">
-          <CalendarClock className="w-4 h-4 text-white/60" strokeWidth={1.8} />
+          <CalendarClock className="w-4 h-4 text-white/50" strokeWidth={1.8} />
           <h2 className="text-[13px] font-bold text-white/85 uppercase tracking-wider">{headerLabel}</h2>
+          <span className="text-white/15 text-[10px]">·</span>
+          <span className="text-[11px] font-mono tabular-nums text-white/40">{events.length} eventos</span>
+          {nextEta && (
+            <>
+              <span className="text-white/15 text-[10px]">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-[11px] font-mono tabular-nums text-amber-400/90">próximo {nextEta}</span>
+              </div>
+            </>
+          )}
         </div>
-        {nextEta ? (
-          <div className="flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[10px] font-mono tabular-nums text-white/60">próximo {nextEta}</span>
-          </div>
-        ) : (
-          <p className="text-[10.5px] text-white/35">{today}</p>
-        )}
+        <p className="text-[10.5px] text-white/30 font-mono uppercase tracking-[0.18em]">{today}</p>
       </div>
 
-      <div className="relative z-30 px-5 py-2.5 border-b border-white/[0.04]">
+      {/* Filtros + footer unificados num card fino */}
+      <div className="relative z-30 mb-3 rounded-lg border border-white/[0.05] bg-[#0c0c0e] px-4 py-2.5">
         <CalendarFiltersBar current={calFilters} />
       </div>
 
       <InstrumentFilterStyle />
-      <div className="relative z-0 max-h-[460px] overflow-y-auto">
-        {events.length === 0 ? (
-          <div className="flex flex-col items-center py-10 px-5 text-center">
-            <div className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-2.5">
-              <CalendarClock className="w-4 h-4 text-white/25" />
-            </div>
-            <p className="text-[12.5px] font-semibold text-white/70 mb-1">Mercado calmo</p>
-            <p className="text-[11px] text-white/40 max-w-xs leading-relaxed">
-              Sem evento relevante no filtro atual. Dia pra operar o que o gráfico entrega.
-            </p>
-          </div>
-        ) : (
-          <div className="relative py-1">
-            {/* Timeline rail vertical */}
-            <div className="absolute left-[64px] top-4 bottom-4 w-px bg-white/[0.04]" aria-hidden />
-            {ordered.map((ev, i) => {
-              const showNow = isToday && i === past.length && past.length > 0 && future.length > 0;
-              const isPast = isToday && past.includes(ev);
-              return (
-                <Fragment key={ev.id}>
-                  {showNow && <NowDivider />}
-                  <EventRow event={ev} isPast={isPast} />
-                </Fragment>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      <div className="relative z-10 px-5 py-2 border-t border-white/[0.05] flex items-center justify-between">
-        <p className="text-[9.5px] font-mono text-white/30 tracking-wider uppercase">ET (NY) · impacto ≥ médio</p>
-      </div>
+      {/* Grid de cards — 4 cols wide, 3/2/1 responsivo */}
+      {events.length === 0 ? (
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-12 flex flex-col items-center text-center px-6">
+          <div className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-2.5">
+            <CalendarClock className="w-4 h-4 text-white/25" />
+          </div>
+          <p className="text-[13px] font-semibold text-white/70 mb-1">Mercado calmo</p>
+          <p className="text-[11.5px] text-white/40 max-w-sm leading-relaxed">
+            Sem evento relevante no filtro atual. Dia pra operar o que o gráfico entrega.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {ordered.map((ev) => {
+            const isEvPast = isToday && past.includes(ev);
+            const isNext = ev.id === nextEvId && !isEvPast;
+            return <EventCard key={ev.id} event={ev} isPast={isEvPast} isNext={isNext} />;
+          })}
+        </div>
+      )}
+
+      <p className="text-[9.5px] font-mono text-white/25 tracking-[0.18em] uppercase mt-3">
+        ET (NY) · impacto ≥ médio
+      </p>
     </div>
   );
 }
 
-function NowDivider() {
-  return (
-    <div className="relative flex items-center gap-3 px-5 py-2.5" aria-label="Agora">
-      <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-amber-400/80 w-16 text-right pr-2">agora</span>
-      <span className="relative flex-1 h-px bg-gradient-to-r from-amber-400/40 via-amber-400/10 to-transparent">
-        <span className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-      </span>
-    </div>
-  );
-}
-
-function EventRow({ event: ev, isPast }: { event: EconomicEvent; isPast: boolean }) {
+function EventCard({ event: ev, isPast, isNext }: { event: EconomicEvent; isPast: boolean; isNext: boolean }) {
   const m = impactMeta(ev.impact);
-  const isHigh = ev.impact === "high";
   const released = !!ev.actual;
   const hasValues = ev.previous || ev.forecast || ev.actual;
   const instruments = instrumentsForEvent(ev.event, ev.country).join(" ");
+  const surprise = released ? computeSurprise(ev.actual, ev.forecast) : null;
+
+  const evMins = parseEventMinutes(ev.time);
+  const nowMins = nyNowMinutes();
+  const diff = evMins !== null ? evMins - nowMins : null;
+  const eta = isNext && diff !== null && diff >= 0 ? etaLabel(diff) : null;
 
   return (
     <div
       data-filterable-event
       data-instruments={instruments}
-      className={`relative px-5 py-3 transition-colors hover:bg-white/[0.02] ${isPast ? "opacity-45" : ""}`}
+      className={`relative rounded-xl border bg-[#0e0e10] p-3.5 transition-all hover:bg-white/[0.015] ${
+        isNext ? "border-white/[0.18]" : "border-white/[0.05] hover:border-white/[0.12]"
+      } ${isPast ? "opacity-45" : ""}`}
+      style={isNext ? { boxShadow: `0 0 0 1px ${m.dotBg}22, 0 8px 24px -12px ${m.dotBg}30` } : undefined}
     >
-      <div className="flex items-start gap-3">
-        {/* Coluna time + country — mais prominente */}
-        <div className="shrink-0 w-16 text-right pt-0.5">
-          <p className="text-[17px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
-          <p className="text-[9.5px] text-white/40 font-mono uppercase tracking-[0.18em] mt-2">{countryCode(ev.country)}</p>
-        </div>
+      {/* Subtle top accent só pro "próximo" */}
+      {isNext && (
+        <div
+          className="absolute top-0 left-2 right-2 h-px rounded-full opacity-70"
+          style={{ background: `linear-gradient(90deg, transparent, ${m.dotBg}, transparent)` }}
+          aria-hidden
+        />
+      )}
 
-        {/* Dot no rail */}
-        <div className="shrink-0 relative w-4 pt-2 flex justify-center">
-          <span
-            className="w-2 h-2 rounded-full shrink-0 relative z-10"
-            style={{
-              backgroundColor: m.dotBg,
-              boxShadow: isHigh && !isPast ? `0 0 0 3px ${m.dotBg}22` : undefined,
-            }}
-          />
-        </div>
+      {/* Top row: dot + impact label + next badge / released check */}
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: m.dotBg }} />
+        <span className={`text-[8.5px] font-bold tracking-[0.22em] uppercase ${m.color}`}>
+          {m.label}
+        </span>
+        {released && (
+          <span className="inline-flex items-center gap-1 text-[8.5px] font-bold tracking-[0.2em] uppercase text-emerald-400/80 ml-auto">
+            <Check className="w-2.5 h-2.5" strokeWidth={2.6} />
+            divulgado
+          </span>
+        )}
+        {isNext && !released && eta && (
+          <span className="ml-auto text-[9.5px] font-mono tabular-nums text-amber-400/90">{eta}</span>
+        )}
+      </div>
 
-        {/* Evento + valores */}
-        <div className="min-w-0 flex-1 pr-1 pt-0.5">
-          <div className="flex items-start gap-2">
-            <h4 className="text-[12.5px] font-semibold text-white/90 leading-tight flex-1">{ev.event}</h4>
-            {released && (
-              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.2em] uppercase text-emerald-400/80 mt-0.5">
-                <Check className="w-2.5 h-2.5" strokeWidth={2.6} />
-              </span>
-            )}
-          </div>
+      {/* Time + country stacked */}
+      <div className="mb-2.5">
+        <p className="text-[24px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
+        <p className="text-[9px] text-white/35 font-mono uppercase tracking-[0.2em] mt-1.5">{countryCode(ev.country)} · ET</p>
+      </div>
 
-          {hasValues && (
-            <div className="flex items-center gap-3 text-[10.5px] font-mono mt-1">
-              {ev.previous && (
-                <span className="inline-flex items-baseline gap-1">
-                  <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/25">ant</span>
-                  <span className="text-white/55 tabular-nums">{ev.previous}</span>
+      {/* Event name — 2 linhas reservadas pra evitar jump de altura */}
+      <h4 className="text-[12.5px] font-semibold text-white/90 leading-snug line-clamp-2 min-h-[32px] mb-2.5">
+        {ev.event}
+      </h4>
+
+      {/* Valores — só se existir */}
+      {hasValues && (
+        <div className="flex items-center gap-2.5 text-[10.5px] font-mono pt-2.5 border-t border-white/[0.04] flex-wrap">
+          {ev.previous && (
+            <span className="inline-flex items-baseline gap-1">
+              <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/25">ant</span>
+              <span className="text-white/55 tabular-nums">{ev.previous}</span>
+            </span>
+          )}
+          {ev.forecast && (
+            <span className="inline-flex items-baseline gap-1">
+              <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/25">prev</span>
+              <span className="text-white/55 tabular-nums">{ev.forecast}</span>
+            </span>
+          )}
+          {ev.actual && (
+            <span className="inline-flex items-baseline gap-1 ml-auto">
+              <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/40">real</span>
+              <span className="text-white font-semibold tabular-nums">{ev.actual}</span>
+              {surprise && (
+                <span
+                  className={`text-[9.5px] font-semibold ml-0.5 ${
+                    surprise.direction === "up"
+                      ? "text-emerald-400"
+                      : surprise.direction === "down"
+                      ? "text-red-400"
+                      : "text-white/40"
+                  }`}
+                >
+                  {surprise.direction === "up" ? "↑" : surprise.direction === "down" ? "↓" : "≈"}
                 </span>
               )}
-              {ev.forecast && (
-                <span className="inline-flex items-baseline gap-1">
-                  <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/25">prev</span>
-                  <span className="text-white/55 tabular-nums">{ev.forecast}</span>
-                </span>
-              )}
-              {ev.actual && (
-                <span className="inline-flex items-baseline gap-1">
-                  <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/40">real</span>
-                  <span className="text-white font-semibold tabular-nums">{ev.actual}</span>
-                </span>
-              )}
-            </div>
+            </span>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
+

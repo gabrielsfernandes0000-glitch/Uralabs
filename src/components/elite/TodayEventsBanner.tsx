@@ -13,14 +13,10 @@ export function TodayEventsBanner({
   title = "Eventos hoje",
   subtitle,
   accent = "#FF5500",
-  compact: _compact = false,
-  maxItems = 4,
 }: {
   title?: string;
   subtitle?: string;
   accent?: string;
-  compact?: boolean;
-  maxItems?: number;
 }) {
   const [events, setEvents] = useState<EconomicEvent[] | null>(null);
 
@@ -41,7 +37,7 @@ export function TodayEventsBanner({
 
   if (events === null || events.length === 0) return null;
 
-  // Prioriza high > medium, depois por time ascending
+  // Ordenação: high > medium > low, depois por time ascending
   const sorted = [...events].sort((a, b) => {
     const impactOrder = { high: 0, medium: 1, low: 2 };
     const ia = impactOrder[a.impact] ?? 3;
@@ -49,8 +45,6 @@ export function TodayEventsBanner({
     if (ia !== ib) return ia - ib;
     return (a.time || "").localeCompare(b.time || "");
   });
-  const visible = sorted.slice(0, maxItems);
-  const hidden = sorted.length - visible.length;
 
   const countryCode = (c: string): string =>
     ({ US: "EUA", EU: "UE", BR: "BR", UK: "UK", CN: "CN", JP: "JP", CA: "CA", NZ: "NZ" } as Record<string, string>)[c] ?? c;
@@ -81,7 +75,7 @@ export function TodayEventsBanner({
       </div>
 
       <div className="px-4 pb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
-        {visible.map((ev) => (
+        {sorted.map((ev) => (
           <Link
             key={ev.id}
             href="/elite/noticias"
@@ -105,14 +99,6 @@ export function TodayEventsBanner({
             </div>
           </Link>
         ))}
-        {hidden > 0 && (
-          <Link
-            href="/elite/noticias"
-            className="interactive-tap flex items-center justify-center px-3 py-2 rounded-lg border border-dashed border-white/[0.06] hover:border-white/[0.14] transition-colors text-[11px] font-semibold text-white/40 hover:text-white/70"
-          >
-            +{hidden} {hidden === 1 ? "evento" : "eventos"}
-          </Link>
-        )}
       </div>
     </div>
   );

@@ -500,7 +500,6 @@ export default function CallsPage() {
           title={liveCall ? "Saindo durante/depois da call" : "Eventos que podem virar tema da call"}
           subtitle="acompanhe com o URA"
           accent="#EF4444"
-          compact
         />
       </div>
 
