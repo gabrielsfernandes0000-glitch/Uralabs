@@ -120,6 +120,74 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     autoDistribute: true,
   },
 
+  /* ─── Discipline (auto) — followedPlan=true no diário ─── */
+  "disciplined-5": {
+    id: "disciplined-5",
+    rarity: "bronze",
+    category: "milestone",
+    label: "Disciplina Bronze",
+    detail: "Seguiu o plano em 5 trades",
+    autoDistribute: true,
+  },
+  "disciplined-25": {
+    id: "disciplined-25",
+    rarity: "silver",
+    category: "milestone",
+    label: "Disciplina Prata",
+    detail: "Seguiu o plano em 25 trades",
+    autoDistribute: true,
+  },
+  "disciplined-100": {
+    id: "disciplined-100",
+    rarity: "gold",
+    category: "milestone",
+    label: "Disciplina Ouro",
+    detail: "Seguiu o plano em 100 trades — hábito formado",
+    autoDistribute: true,
+  },
+
+  /* ─── Event-driven (auto) — interação com calendário econômico ─── */
+  "news-reader": {
+    id: "news-reader",
+    rarity: "bronze",
+    category: "practice",
+    label: "Bem informado",
+    detail: "Leu 10 notícias no painel",
+    autoDistribute: true,
+  },
+  "newshound": {
+    id: "newshound",
+    rarity: "silver",
+    category: "practice",
+    label: "Radar de Mercado",
+    detail: "50 notícias lidas — tá sempre por dentro",
+    autoDistribute: true,
+  },
+  "watchlist-set": {
+    id: "watchlist-set",
+    rarity: "bronze",
+    category: "practice",
+    label: "Foco definido",
+    detail: "Configurou sua watchlist de ativos",
+    autoDistribute: true,
+  },
+  "event-prepared": {
+    id: "event-prepared",
+    rarity: "silver",
+    category: "practice",
+    label: "Preparado pro Evento",
+    detail: "Estudou a aula recomendada antes de um evento high-impact",
+    autoDistribute: false,
+  },
+  "fomc-survivor": {
+    id: "fomc-survivor",
+    rarity: "gold",
+    category: "trading",
+    label: "FOMC Survivor",
+    detail: "Passou por 5 FOMCs sem queimar conta",
+    autoDistribute: false,
+  },
+
   /* ─── Trading (manual) — requer validação URA ─── */
   "mesa-fp": {
     id: "mesa-fp",

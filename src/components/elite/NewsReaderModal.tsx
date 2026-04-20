@@ -45,11 +45,23 @@ export function NewsReaderModal({
     const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
     document.body.style.overflow = "hidden";
+    // Counter de notícias lidas (achievement tracking). Contamos 1 por artigo único
+    // aberto por sessão — evita inflar com múltiplos abres do mesmo item.
+    try {
+      const sessionKey = "elite_news_read_session";
+      const readThisSession = JSON.parse(sessionStorage.getItem(sessionKey) ?? "[]") as string[];
+      if (!readThisSession.includes(item.id)) {
+        readThisSession.push(item.id);
+        sessionStorage.setItem(sessionKey, JSON.stringify(readThisSession));
+        const total = parseInt(localStorage.getItem("elite_news_read_count") ?? "0", 10);
+        localStorage.setItem("elite_news_read_count", String(total + 1));
+      }
+    } catch { /* ignore storage errors */ }
     return () => {
       window.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, item.id]);
 
   useEffect(() => {
     let cancelled = false;

@@ -872,6 +872,17 @@ export default function ConquistasPage() {
     if (!unlockedIds) return; // ainda carregando DB state
     if (!progress) return;     // sem progress local
 
+    const disciplinedCount = trades.filter((t: { followedPlan?: boolean }) => t.followedPlan === true).length;
+    const newsReadCount = typeof window !== "undefined" ? parseInt(localStorage.getItem("elite_news_read_count") ?? "0", 10) : 0;
+    const watchlistConfigured = typeof window !== "undefined"
+      ? (() => {
+          try {
+            const raw = localStorage.getItem("elite_watchlist_v1");
+            return raw !== null && JSON.parse(raw).length > 0;
+          } catch { return false; }
+        })()
+      : false;
+
     function qualifies(id: string): boolean {
       switch (id) {
         case "first-lesson":  return lessonsCompleted.length >= 1;
@@ -887,6 +898,16 @@ export default function ConquistasPage() {
         case "streak-30":     return serverStreak >= 30;
         case "streak-100":    return serverStreak >= 100;
         case "trades-100":    return trades.length >= 100;
+        // Disciplina (followedPlan=true count). Client-side, pode ser fraudado mas
+        // edge function valida achievement_id (auto_distribute check).
+        case "disciplined-5":   return disciplinedCount >= 5;
+        case "disciplined-25":  return disciplinedCount >= 25;
+        case "disciplined-100": return disciplinedCount >= 100;
+        // Event-driven (localStorage): news reads, watchlist setup.
+        // TODO edge function: adicionar esses IDs na whitelist do achievement-auto-grant.
+        case "news-reader":   return newsReadCount >= 10;
+        case "newshound":     return newsReadCount >= 50;
+        case "watchlist-set": return watchlistConfigured;
         default:              return false;
       }
     }

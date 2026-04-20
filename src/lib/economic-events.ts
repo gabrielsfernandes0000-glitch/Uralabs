@@ -367,6 +367,31 @@ export function eventCategoriesForLesson(lessonId: string): EventCategory[] {
 }
 
 /* ────────────────────────────────────────────
+   Bridge — eventos ↔ categorias de treino (prática)
+   ──────────────────────────────────────────── */
+
+/**
+ * Mapa: categoria de evento → [treinoCategory] que fazem sentido treinar antes.
+ * Usa as chaves reais de TREINO_CATEGORIES em lib/treino-scenarios.ts.
+ * Events de alto impacto (FOMC/CPI/NFP) priorizam AMD + Gestão + Viés.
+ */
+const CATEGORY_TO_TREINO: Record<EventCategory, string[]> = {
+  "banco central":  ["AMD", "Gestão", "Liquidez", "Viés", "Psicologia"],
+  "inflação":       ["AMD", "Gestão", "Timing"],
+  "empregos":       ["Sessões", "AMD", "Gestão"],
+  "atividade":      ["Viés", "Gestão"],
+  "consumo":        ["Estrutura"],
+  "imobiliário":    [],
+  "comércio":       ["SMT"],
+  "outros":         [],
+};
+
+/** Categorias de treino recomendadas pro evento. Primeira = mais relevante. */
+export function treinoCategoriesForEvent(cat: EventCategory): string[] {
+  return CATEGORY_TO_TREINO[cat] ?? [];
+}
+
+/* ────────────────────────────────────────────
    Bridge — eventos ↔ instrumentos afetados
    ──────────────────────────────────────────── */
 
