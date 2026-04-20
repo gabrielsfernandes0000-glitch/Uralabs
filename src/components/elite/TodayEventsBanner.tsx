@@ -74,29 +74,28 @@ export function TodayEventsBanner({
         </Link>
       </div>
 
-      <div className="px-4 pb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+      <div className="px-4 pb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {sorted.map((ev) => (
           <Link
             key={ev.id}
             href="/elite/noticias"
-            className="interactive-tap group relative flex items-baseline gap-2.5 px-3 py-2 rounded-lg border border-white/[0.04] hover:border-white/[0.14] hover:bg-white/[0.015] transition-colors"
+            className="interactive-tap group flex items-center gap-2 px-2.5 py-2 rounded-md border border-white/[0.04] hover:border-white/[0.14] hover:bg-white/[0.015] transition-colors"
           >
             <span
-              className={`shrink-0 w-1 h-1 rounded-full self-center ${
+              className={`shrink-0 w-1.5 h-1.5 rounded-full ${
                 ev.impact === "high" ? "bg-red-400" : ev.impact === "medium" ? "bg-amber-400" : "bg-white/25"
               }`}
+              aria-hidden
             />
-            <span className="text-[15px] font-bold font-mono tabular-nums text-white leading-none shrink-0">
+            <span className="text-[13.5px] font-bold font-mono tabular-nums text-white leading-none shrink-0">
               {ev.time || "—"}
             </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11.5px] font-semibold text-white/80 leading-tight truncate group-hover:text-white">
-                {ev.event}
-              </p>
-              <p className="text-[9.5px] font-mono uppercase tracking-wider text-white/30 mt-0.5">
-                {countryCode(ev.country)}
-              </p>
-            </div>
+            <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-white/30 leading-none shrink-0">
+              {countryCode(ev.country)}
+            </span>
+            <span className="text-[11.5px] font-semibold text-white/80 leading-tight truncate min-w-0 flex-1 group-hover:text-white">
+              {ev.event}
+            </span>
           </Link>
         ))}
       </div>
