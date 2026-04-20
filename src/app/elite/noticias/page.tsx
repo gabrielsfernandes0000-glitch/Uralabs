@@ -261,6 +261,94 @@ function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
     .filter((x): x is { id: string; title: string; moduleAccent: string } => x !== null)
     .slice(0, 3);
 
+  // Densidade de informação: sem explicação + sem valores meaningful = card compacto.
+  // Evita espaço vazio quando evento obscuro (ex: Loan Prime Rate sem descrição).
+  const hasValues = !!(ev.previous || ev.forecast || ev.actual);
+  const isSparse = !explanation && !released;
+
+  // ── Modo compacto — pouco info, card minimal ──
+  if (isSparse) {
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
+        <div
+          className="absolute top-0 left-0 right-0 h-[2px]"
+          style={{ background: `linear-gradient(90deg, transparent, ${m.dotBg}55, transparent)` }}
+        />
+        <div className="relative z-10 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="w-3.5 h-3.5" strokeWidth={2} style={{ color: m.dotBg }} />
+            <span className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: m.dotBg }}>
+              Próximo evento
+            </span>
+            {isUpcoming && diffMins !== null && (
+              <>
+                <span className="text-white/15 text-[10px]">·</span>
+                <div className="flex items-center gap-1.5">
+                  {isNow && <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />}
+                  <span className="text-[11px] font-mono tabular-nums text-white/60">{etaLabel(diffMins)}</span>
+                </div>
+              </>
+            )}
+            <span className={`ml-auto text-[9.5px] font-bold tracking-[0.22em] uppercase ${m.color}`}>
+              · {m.label}
+            </span>
+          </div>
+
+          <div className="flex items-end gap-5">
+            <div className="shrink-0">
+              <p className="text-[44px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
+              <p className="text-[10px] text-white/35 font-mono uppercase tracking-[0.22em] mt-2">
+                {countryCode(ev.country)} · ET
+              </p>
+            </div>
+            <div className="h-[70px] w-px bg-white/[0.06]" />
+            <div className="min-w-0 flex-1 pb-0.5">
+              <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/30 mb-1.5">
+                {category === "outros" ? "Indicador" : category}
+              </p>
+              <h3 className="text-[18px] font-bold text-white leading-[1.2] tracking-tight">{ev.event}</h3>
+              {hasValues && (
+                <div className="flex items-center gap-4 mt-2.5 text-[10.5px] font-mono">
+                  {ev.previous && (
+                    <span className="inline-flex items-baseline gap-1">
+                      <span className="uppercase tracking-wider text-[8.5px] text-white/25">ant</span>
+                      <span className="text-white/55 tabular-nums">{ev.previous}</span>
+                    </span>
+                  )}
+                  {ev.forecast && (
+                    <span className="inline-flex items-baseline gap-1">
+                      <span className="uppercase tracking-wider text-[8.5px] text-white/25">prev</span>
+                      <span className="text-white/55 tabular-nums">{ev.forecast}</span>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {relatedLessons.length > 0 && (
+            <div className="mt-5 pt-4 border-t border-white/[0.04] flex flex-wrap items-center gap-2">
+              <BookOpen className="w-3 h-3 text-white/30 shrink-0" strokeWidth={2} />
+              <span className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-white/35 mr-1">Prepare-se:</span>
+              {relatedLessons.map((l) => (
+                <Link
+                  key={l.id}
+                  href={`/elite/aulas/${l.id}`}
+                  className="interactive-tap inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-white/[0.06] hover:border-white/[0.18] transition-colors text-[10.5px] font-semibold text-white/65 hover:text-white group"
+                >
+                  <span className="w-1 h-1 rounded-full" style={{ backgroundColor: l.moduleAccent }} />
+                  {l.title}
+                  <ArrowUpRight className="w-2.5 h-2.5 opacity-30 group-hover:opacity-80 transition-opacity" strokeWidth={2.2} />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Modo completo — evento com explicação, valores, ou released ──
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
       {/* Glow sutil no canto superior direito */}
@@ -562,7 +650,7 @@ function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; t
         ) : (
           <div className="relative py-1">
             {/* Timeline rail vertical */}
-            <div className="absolute left-[56px] top-4 bottom-4 w-px bg-white/[0.04]" aria-hidden />
+            <div className="absolute left-[64px] top-4 bottom-4 w-px bg-white/[0.04]" aria-hidden />
             {ordered.map((ev, i) => {
               const showNow = isToday && i === past.length && past.length > 0 && future.length > 0;
               const isPast = isToday && past.includes(ev);
@@ -587,7 +675,7 @@ function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; t
 function NowDivider() {
   return (
     <div className="relative flex items-center gap-3 px-5 py-2.5" aria-label="Agora">
-      <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-amber-400/80 w-14 text-right pr-2">agora</span>
+      <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-amber-400/80 w-16 text-right pr-2">agora</span>
       <span className="relative flex-1 h-px bg-gradient-to-r from-amber-400/40 via-amber-400/10 to-transparent">
         <span className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
       </span>
@@ -606,17 +694,17 @@ function EventRow({ event: ev, isPast }: { event: EconomicEvent; isPast: boolean
     <div
       data-filterable-event
       data-instruments={instruments}
-      className={`relative px-5 py-2.5 transition-colors hover:bg-white/[0.02] ${isPast ? "opacity-45" : ""}`}
+      className={`relative px-5 py-3 transition-colors hover:bg-white/[0.02] ${isPast ? "opacity-45" : ""}`}
     >
       <div className="flex items-start gap-3">
-        {/* Coluna time + country */}
-        <div className="shrink-0 w-14 text-right pt-0.5">
-          <p className="text-[14.5px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
-          <p className="text-[9px] text-white/40 font-mono uppercase tracking-[0.18em] mt-1.5">{countryCode(ev.country)}</p>
+        {/* Coluna time + country — mais prominente */}
+        <div className="shrink-0 w-16 text-right pt-0.5">
+          <p className="text-[17px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
+          <p className="text-[9.5px] text-white/40 font-mono uppercase tracking-[0.18em] mt-2">{countryCode(ev.country)}</p>
         </div>
 
         {/* Dot no rail */}
-        <div className="shrink-0 relative w-4 pt-1.5 flex justify-center">
+        <div className="shrink-0 relative w-4 pt-2 flex justify-center">
           <span
             className="w-2 h-2 rounded-full shrink-0 relative z-10"
             style={{
@@ -627,7 +715,7 @@ function EventRow({ event: ev, isPast }: { event: EconomicEvent; isPast: boolean
         </div>
 
         {/* Evento + valores */}
-        <div className="min-w-0 flex-1 pr-1">
+        <div className="min-w-0 flex-1 pr-1 pt-0.5">
           <div className="flex items-start gap-2">
             <h4 className="text-[12.5px] font-semibold text-white/90 leading-tight flex-1">{ev.event}</h4>
             {released && (

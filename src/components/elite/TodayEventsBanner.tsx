@@ -2,24 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, Zap } from "lucide-react";
 import type { EconomicEvent } from "@/lib/market-news";
 
 /**
- * Banner compacto com eventos econômicos de HOJE.
- * Fetch async, não bloqueia render. Se sem eventos, não renderiza nada.
- * Usado no Diário (prep sheet), Calls, etc — reusável.
+ * Banner enxuto com eventos econômicos de HOJE.
+ * Máximo 4 eventos visíveis (prioriza high-impact). "+N mais" linka pra agenda.
+ * Time grande (anchor visual), evento pequeno embaixo, country discreto.
  */
 export function TodayEventsBanner({
-  title = "Eventos econômicos hoje",
-  subtitle = "considere na hora de montar o plano",
+  title = "Eventos hoje",
+  subtitle,
   accent = "#FF5500",
-  compact = false,
+  compact: _compact = false,
+  maxItems = 4,
 }: {
   title?: string;
   subtitle?: string;
   accent?: string;
   compact?: boolean;
+  maxItems?: number;
 }) {
   const [events, setEvents] = useState<EconomicEvent[] | null>(null);
 
@@ -38,53 +39,80 @@ export function TodayEventsBanner({
     };
   }, []);
 
-  // Não renderiza enquanto carrega ou se não tem eventos
   if (events === null || events.length === 0) return null;
+
+  // Prioriza high > medium, depois por time ascending
+  const sorted = [...events].sort((a, b) => {
+    const impactOrder = { high: 0, medium: 1, low: 2 };
+    const ia = impactOrder[a.impact] ?? 3;
+    const ib = impactOrder[b.impact] ?? 3;
+    if (ia !== ib) return ia - ib;
+    return (a.time || "").localeCompare(b.time || "");
+  });
+  const visible = sorted.slice(0, maxItems);
+  const hidden = sorted.length - visible.length;
 
   const countryCode = (c: string): string =>
     ({ US: "EUA", EU: "UE", BR: "BR", UK: "UK", CN: "CN", JP: "JP", CA: "CA", NZ: "NZ" } as Record<string, string>)[c] ?? c;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] ${compact ? "" : "mb-4"}`}>
-      <div
-        className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent}55, transparent)` }}
-      />
-      <div className="relative z-10 p-4">
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <Zap className="w-3.5 h-3.5" style={{ color: accent }} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: accent + "CC" }}>
-            {title}
-          </span>
-          <span className="text-white/15 text-[10px]">·</span>
-          <span className="text-[10.5px] text-white/40">{subtitle}</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {events.map((ev) => (
-            <Link
-              key={ev.id}
-              href="/elite/noticias"
-              className="interactive-tap inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] transition-colors text-[11px] group"
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  ev.impact === "high" ? "bg-red-400" : ev.impact === "medium" ? "bg-amber-400" : "bg-white/30"
-                }`}
-              />
-              <span className="font-mono text-white/60 tabular-nums">{ev.time || "—"}</span>
-              <span className="text-white/20">·</span>
-              <span className="font-mono text-white/40 text-[10px] uppercase tracking-wider">{countryCode(ev.country)}</span>
-              <span className="text-white/20">·</span>
-              <span className="font-semibold text-white/80 group-hover:text-white max-w-[220px] truncate">{ev.event}</span>
-            </Link>
-          ))}
-        </div>
-        <div className="mt-3 flex items-center gap-1.5">
-          <CalendarClock className="w-3 h-3 text-white/25" strokeWidth={1.8} />
-          <Link href="/elite/noticias" className="text-[10.5px] text-white/35 hover:text-white/60 transition-colors">
-            Ver agenda completa →
+    <div className="relative rounded-xl border border-white/[0.05] bg-[#0c0c0e]">
+      <div className="px-4 pt-3 pb-3 flex items-center gap-2">
+        <span
+          className="text-[9.5px] font-bold tracking-[0.22em] uppercase"
+          style={{ color: accent + "CC" }}
+        >
+          {title}
+        </span>
+        <span className="text-white/15 text-[10px]">·</span>
+        <span className="text-[10.5px] font-mono tabular-nums text-white/45">{sorted.length}</span>
+        {subtitle && (
+          <>
+            <span className="text-white/15 text-[10px]">·</span>
+            <span className="text-[10.5px] text-white/35">{subtitle}</span>
+          </>
+        )}
+        <Link
+          href="/elite/noticias"
+          className="ml-auto text-[10.5px] text-white/30 hover:text-white/70 transition-colors"
+        >
+          Agenda →
+        </Link>
+      </div>
+
+      <div className="px-4 pb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+        {visible.map((ev) => (
+          <Link
+            key={ev.id}
+            href="/elite/noticias"
+            className="interactive-tap group relative flex items-baseline gap-2.5 px-3 py-2 rounded-lg border border-white/[0.04] hover:border-white/[0.14] hover:bg-white/[0.015] transition-colors"
+          >
+            <span
+              className={`shrink-0 w-1 h-1 rounded-full self-center ${
+                ev.impact === "high" ? "bg-red-400" : ev.impact === "medium" ? "bg-amber-400" : "bg-white/25"
+              }`}
+            />
+            <span className="text-[15px] font-bold font-mono tabular-nums text-white leading-none shrink-0">
+              {ev.time || "—"}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11.5px] font-semibold text-white/80 leading-tight truncate group-hover:text-white">
+                {ev.event}
+              </p>
+              <p className="text-[9.5px] font-mono uppercase tracking-wider text-white/30 mt-0.5">
+                {countryCode(ev.country)}
+              </p>
+            </div>
           </Link>
-        </div>
+        ))}
+        {hidden > 0 && (
+          <Link
+            href="/elite/noticias"
+            className="interactive-tap flex items-center justify-center px-3 py-2 rounded-lg border border-dashed border-white/[0.06] hover:border-white/[0.14] transition-colors text-[11px] font-semibold text-white/40 hover:text-white/70"
+          >
+            +{hidden} {hidden === 1 ? "evento" : "eventos"}
+          </Link>
+        )}
       </div>
     </div>
   );
