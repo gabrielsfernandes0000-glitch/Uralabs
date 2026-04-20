@@ -6,6 +6,7 @@ import {
   Radio, Play, Clock, Calendar, ChevronRight, Trophy, BookOpen,
   TrendingUp, Award, Video, Bell, MessageCircle,
 } from "lucide-react";
+import { TodayEventsBanner } from "@/components/elite/TodayEventsBanner";
 
 /* ────────────────────────────────────────────
    Mock data — replace with live sources (Discord voice state + Supabase)
@@ -493,6 +494,15 @@ export default function CallsPage() {
   return (
     <div className="space-y-10">
       <div className="animate-in-up"><CallsHero liveCall={liveCall} upcomingCount={SCHEDULE.length} /></div>
+
+      <div className="animate-in-up delay-1">
+        <TodayEventsBanner
+          title={liveCall ? "Saindo durante/depois da call" : "Eventos que podem virar tema da call"}
+          subtitle="acompanhe com o URA"
+          accent="#EF4444"
+          compact
+        />
+      </div>
 
       {/* Tabs — pill nav, premium feel */}
       <div className="animate-in-up delay-1 flex items-center gap-1.5 p-1 rounded-xl border border-white/[0.06] bg-[#0e0e10] w-fit">

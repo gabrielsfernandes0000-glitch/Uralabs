@@ -7,10 +7,11 @@ import { LiveStat } from "@/components/elite/ProgressStats";
 import { Avatar } from "@/components/elite/Avatar";
 import { GlowBorder } from "@/components/elite/GlowBorder";
 import { CountUp, ProgressFill } from "@/components/motion";
-import { getSupabaseAnon } from "@/lib/supabase";
 import { impactMeta, type EconomicEvent } from "@/lib/market-news";
 import { instrumentsForEvent } from "@/lib/economic-events";
 import { InstrumentFilterStyle } from "@/components/elite/InstrumentFilterStyle";
+import { RecentSurpriseCard } from "@/components/elite/RecentSurpriseCard";
+import { loadLastReleasedEvent, loadTodayEvents } from "@/lib/events-today";
 
 /** Código curto PT-BR do país pro header da agenda (mesma convenção de /elite/noticias). */
 function countryCode(country: string): string {
@@ -22,32 +23,6 @@ function nyNowMinutes(): number {
   const s = new Date().toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false });
   const [h, m] = s.split(":").map(Number);
   return h * 60 + m;
-}
-
-async function loadTodayEvents(): Promise<EconomicEvent[]> {
-  try {
-    const sb = getSupabaseAnon();
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const { data } = await sb
-      .from("economic_events")
-      .select("id, event_time, country, event, impact, previous, forecast, actual")
-      .eq("event_date", todayStr)
-      .in("impact", ["high", "medium"])
-      .order("event_time", { ascending: true })
-      .limit(6);
-    return (data ?? []).map((r: any) => ({
-      id: r.id,
-      time: r.event_time ?? "",
-      country: r.country,
-      event: r.event,
-      impact: r.impact,
-      previous: r.previous ?? undefined,
-      forecast: r.forecast ?? undefined,
-      actual: r.actual ?? undefined,
-    }));
-  } catch {
-    return [];
-  }
 }
 
 /* ────────────────────────────────────────────
@@ -119,9 +94,10 @@ export default async function EliteDashboard() {
   };
   const completedSteps = steps.filter(s => s.done).length;
 
-  const [curriculum, todayEvents] = await Promise.all([
+  const [curriculum, todayEvents, lastReleased] = await Promise.all([
     getCurriculum(),
     isElite ? loadTodayEvents() : Promise.resolve([] as EconomicEvent[]),
+    isElite ? loadLastReleasedEvent() : Promise.resolve(null),
   ]);
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   const stats = {
@@ -311,7 +287,10 @@ export default async function EliteDashboard() {
 
         {/* Right panel: Agenda econômica (Elite) or Upgrade CTA (VIP) */}
         {isElite ? (
-          <DashboardAgenda events={todayEvents} />
+          <div className="space-y-4">
+            <DashboardAgenda events={todayEvents} />
+            {lastReleased && <RecentSurpriseCard event={lastReleased} />}
+          </div>
         ) : (
           <Link href="/elite/desbloquear" className="interactive animate-in-up delay-8 group relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-[#1a0e05] to-[#0e0e10] p-5 hover:border-brand-500/40 transition-all">
             <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.10] blur-[100px] pointer-events-none" />

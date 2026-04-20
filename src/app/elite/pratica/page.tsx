@@ -16,6 +16,7 @@ import {
   type Scenario,
 } from "@/lib/treino-scenarios";
 import { GUIDED_TREINOS } from "@/lib/pratica-treinos";
+import { TodayEventsBanner } from "@/components/elite/TodayEventsBanner";
 
 /* ────────────────────────────────────────────
    Prática — hub enxuto: Hero · Missão do dia · Streak · 3 atalhos.
@@ -460,6 +461,14 @@ export default function PraticaPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
         {/* Coluna esquerda — missão do dia + 3 modos de treino */}
         <div className="space-y-3">
+          <div className="animate-in-up delay-0">
+            <TodayEventsBanner
+              title="Mercado hoje"
+              subtitle="se for operar, treine o que vai precisar"
+              compact
+            />
+          </div>
+
           <div className="animate-in-up delay-1">
             <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
           </div>

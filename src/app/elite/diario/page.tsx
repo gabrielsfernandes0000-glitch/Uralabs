@@ -6,6 +6,7 @@ import {
   ArrowUp, ArrowDown, Minus,
 } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
+import { TodayEventsBanner } from "@/components/elite/TodayEventsBanner";
 
 /* ────────────────────────────────────────────
    Diário — Prep Sheet (pré-mercado) + Diário de Trade (pós-mercado).
@@ -71,6 +72,11 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           <p className="text-[11.5px] text-white/40">Preencha antes do mercado abrir</p>
         </div>
       </div>
+
+      <TodayEventsBanner
+        title="Eventos econômicos hoje"
+        subtitle="considere na hora de montar o plano"
+      />
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
