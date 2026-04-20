@@ -61,10 +61,8 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
-          <FileText className="w-4 h-4 text-white/50" />
-        </div>
+      <div className="flex items-center gap-2.5">
+        <FileText className="w-4 h-4 text-white/50" strokeWidth={2} />
         <div>
           <h3 className="text-[16px] font-bold text-white tracking-tight leading-tight">Plano Pré-Mercado</h3>
           <p className="text-[11.5px] text-white/40">Preencha antes do mercado abrir</p>
@@ -160,7 +158,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
         }}
         disabled={!isComplete}
         className={`interactive w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-bold ${
-          isComplete ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
+          isComplete ? "border border-brand-500/60 text-brand-500 hover:bg-brand-500/[0.04] hover:border-brand-500" : "border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <Check className="w-4 h-4" />
         Salvar Prep Sheet
@@ -206,13 +204,11 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
       <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#151518] to-[#111114] p-6">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-white/50" />
-            </div>
+          <div className="flex items-center gap-2.5 mb-2">
+            <TrendingUp className="w-5 h-5 text-white/55" strokeWidth={1.8} />
             <h3 className="text-[20px] font-bold text-white tracking-tight">Registrar Trade</h3>
           </div>
-          <p className="text-[13px] text-white/40 ml-11">Documente cada trade. Com o tempo, a plataforma identifica padrões no seu operacional.</p>
+          <p className="text-[13px] text-white/40 ml-8">Documente cada trade. Com o tempo, a plataforma identifica padrões no seu operacional.</p>
         </div>
       </div>
 
@@ -265,11 +261,11 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
             { id: "be" as const, label: "Breakeven", icon: Minus, color: "#F59E0B" },
           ]).map((r) => (
             <button key={r.id} onClick={() => setResult(r.id)}
-              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-4 rounded-xl border-2 ${
-                result === r.id ? "" : "border-white/[0.04] text-white/35 hover:border-white/[0.10]"
+              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-4 rounded-xl border transition-colors ${
+                result === r.id ? "" : "border-white/[0.04] text-white/35 hover:border-white/[0.14] hover:text-white/60"
               }`}
-              style={result === r.id ? { borderColor: r.color + "40", backgroundColor: r.color + "08", color: r.color } : undefined}>
-              <r.icon className="w-5 h-5" />
+              style={result === r.id ? { borderColor: r.color + "66", color: r.color } : undefined}>
+              <r.icon className="w-5 h-5" strokeWidth={2} />
               <span className="text-[14px] font-bold">{r.label}</span>
             </button>
           ))}
@@ -338,7 +334,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         }}
         disabled={!direction || !result}
         className={`interactive w-full flex items-center justify-center gap-2 py-4 rounded-xl text-[15px] font-bold ${
-          direction && result ? "bg-brand-500 text-white hover:brightness-110 shadow-lg shadow-brand-500/20" : "bg-white/[0.03] border border-white/[0.06] text-white/25 cursor-not-allowed"
+          direction && result ? "border border-brand-500/60 text-brand-500 hover:bg-brand-500/[0.04] hover:border-brand-500" : "border border-white/[0.06] text-white/25 cursor-not-allowed"
         }`}>
         <TrendingUp className="w-4 h-4" />
         Registrar Trade

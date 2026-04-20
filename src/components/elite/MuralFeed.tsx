@@ -127,10 +127,12 @@ export function MuralFeed({ channelId }: { channelId?: string }) {
       )}
 
       {!loading && !error && filtered.length === 0 && (
-        <div className="px-5 py-12 text-center">
-          <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-3">
-            {filter === "images" ? <ImageOff className="w-5 h-5 text-white/25" /> : <MessageSquare className="w-5 h-5 text-white/25" />}
-          </div>
+        <div className="px-5 py-14 text-center">
+          {filter === "images" ? (
+            <ImageOff className="w-8 h-8 text-white/25 mx-auto mb-3.5" strokeWidth={1.5} />
+          ) : (
+            <MessageSquare className="w-8 h-8 text-white/25 mx-auto mb-3.5" strokeWidth={1.5} />
+          )}
           <p className="text-[13px] text-white/40 mb-1">
             {filter === "images" ? "Sem posts com imagem ainda" : "Sem posts sincronizados ainda"}
           </p>

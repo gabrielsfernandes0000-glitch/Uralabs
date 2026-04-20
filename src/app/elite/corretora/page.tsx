@@ -556,10 +556,8 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           </div>
 
           {positions.length === 0 ? (
-            <div className="flex flex-col items-center py-8">
-              <div className="w-12 h-12 rounded-xl bg-white/[0.02] border border-dashed border-white/[0.06] flex items-center justify-center mb-3">
-                <Target className="w-5 h-5 text-white/15" />
-              </div>
+            <div className="flex flex-col items-center py-10">
+              <Target className="w-8 h-8 text-white/20 mb-3" strokeWidth={1.5} />
               <p className="text-[12px] text-white/30">Nenhuma posicao aberta</p>
             </div>
           ) : (
@@ -604,10 +602,8 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           </div>
 
           {trades.length === 0 ? (
-            <div className="flex flex-col items-center py-8">
-              <div className="w-12 h-12 rounded-xl bg-white/[0.02] border border-dashed border-white/[0.06] flex items-center justify-center mb-3">
-                <BarChart3 className="w-5 h-5 text-white/15" />
-              </div>
+            <div className="flex flex-col items-center py-10">
+              <BarChart3 className="w-8 h-8 text-white/20 mb-3" strokeWidth={1.5} />
               <p className="text-[12px] text-white/30">Nenhum trade nos ultimos 30 dias</p>
             </div>
           ) : (

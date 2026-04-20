@@ -44,9 +44,9 @@ export default async function DesbloquearPage() {
             <a
               href="https://uralabs.com.br/elite"
               target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-white text-[14px] font-bold hover:brightness-110 transition-all shadow-lg shadow-brand-500/20"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-brand-500/60 text-brand-500 text-[14px] font-bold hover:bg-brand-500/[0.04] hover:border-brand-500 transition-colors"
             >
-              <Zap className="w-4 h-4 fill-white" />
+              <Zap className="w-4 h-4" strokeWidth={2} />
               Fazer upgrade pra Elite
               <ArrowRight className="w-3.5 h-3.5" />
             </a>

@@ -382,9 +382,7 @@ function TimelineView({ unlocks }: { unlocks: UnlockMeta[] }) {
   if (sorted.length === 0) {
     return (
       <div className="flex flex-col items-center py-16 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
-          <Trophy className="w-6 h-6 text-white/20" />
-        </div>
+        <Trophy className="w-10 h-10 text-white/20 mb-4" strokeWidth={1.5} />
         <h3 className="text-[15px] font-bold text-white/70 mb-2">Ainda sem conquistas</h3>
         <p className="text-[12px] text-white/35 max-w-sm">
           Complete aulas, mantenha streak e participe de calls. Cada conquista desbloqueada aparece aqui com data e recompensa.

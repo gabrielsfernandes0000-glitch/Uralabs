@@ -633,10 +633,8 @@ function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; t
 
       {/* Grid de cards — 4 cols wide, 3/2/1 responsivo */}
       {events.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-12 flex flex-col items-center text-center px-6">
-          <div className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-2.5">
-            <CalendarClock className="w-4 h-4 text-white/25" />
-          </div>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-14 flex flex-col items-center text-center px-6">
+          <CalendarClock className="w-8 h-8 text-white/25 mb-3.5" strokeWidth={1.5} />
           <p className="text-[13px] font-semibold text-white/70 mb-1">Mercado calmo</p>
           <p className="text-[11.5px] text-white/40 max-w-sm leading-relaxed">
             Sem evento relevante no filtro atual. Dia pra operar o que o gráfico entrega.

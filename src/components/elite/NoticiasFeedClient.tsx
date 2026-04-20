@@ -80,10 +80,8 @@ export function NoticiasFeedClient({
 function EmptyFeed({ filtersActive }: { filtersActive: boolean }) {
   if (filtersActive) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-10 flex flex-col items-center text-center px-6">
-        <div className="w-11 h-11 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-3">
-          <SearchX className="w-5 h-5 text-white/25" strokeWidth={1.8} />
-        </div>
+      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-12 flex flex-col items-center text-center px-6">
+        <SearchX className="w-8 h-8 text-white/25 mb-3.5" strokeWidth={1.5} />
         <p className="text-[13px] font-semibold text-white/70 mb-1">Sem resultados pros filtros atuais</p>
         <p className="text-[11px] text-white/40 max-w-sm leading-relaxed mb-4">
           Alargue o período, mude a categoria ou limpe a busca pra ver mais.
@@ -98,10 +96,8 @@ function EmptyFeed({ filtersActive }: { filtersActive: boolean }) {
     );
   }
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-12 flex flex-col items-center text-center">
-      <div className="w-11 h-11 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-3">
-        <Newspaper className="w-5 h-5 text-white/25" />
-      </div>
+    <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-14 flex flex-col items-center text-center">
+      <Newspaper className="w-8 h-8 text-white/25 mb-3.5" strokeWidth={1.5} />
       <p className="text-[13px] font-semibold text-white/70 mb-1">Feed vazio por enquanto</p>
       <p className="text-[11px] text-white/40 max-w-sm leading-relaxed">
         Próxima sincronização em até 15min.
