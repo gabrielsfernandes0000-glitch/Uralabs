@@ -261,7 +261,8 @@ function MarkdownContent({ text, source, fetching = false }: { text: string; sou
   return (
     <div className="space-y-4">
       {showFallbackNotice && (
-        <div className="px-3 py-2 rounded-md border border-amber-500/[0.15] bg-amber-500/[0.04] text-[11px] text-amber-200/70">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-amber-400/20 text-[11px] text-amber-200/80">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" aria-hidden />
           Artigo completo não disponível aqui. Veja o resumo abaixo ou abra o original.
         </div>
       )}

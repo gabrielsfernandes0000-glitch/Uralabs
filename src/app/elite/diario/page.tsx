@@ -38,9 +38,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
   if (submitted) {
     return (
       <div className="flex flex-col items-center py-12">
-        <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-5">
-          <Check className="w-7 h-7 text-green-400" />
-        </div>
+        <Check className="w-10 h-10 text-green-400 mb-4" strokeWidth={1.5} />
         <h3 className="text-[20px] font-bold text-white mb-2">Prep Sheet salvo</h3>
         <p className="text-[13px] text-white/35 mb-6 text-center max-w-sm">
           Seu plano pra hoje está registrado. Depois do mercado fechar, volte pra revisar o que aconteceu.
@@ -101,19 +99,19 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           <p className="text-[12px] text-white/70 font-semibold mb-2.5">Viés do dia</p>
           <div className="flex gap-2">
             <button onClick={() => setBias("bullish")}
-              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border ${
+              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border transition-colors ${
                 bias === "bullish"
-                  ? "border-green-500/45 bg-green-500/[0.10] text-green-400"
-                  : "border-white/[0.05] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
+                  ? "border-green-400/40 text-green-400"
+                  : "border-white/[0.05] text-white/35 hover:border-white/[0.14] hover:text-white/60"
               }`}>
               <ArrowUp className="w-4 h-4" />
               <span className="text-[13px] font-bold">Bullish</span>
             </button>
             <button onClick={() => setBias("bearish")}
-              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border ${
+              className={`interactive-tap flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border transition-colors ${
                 bias === "bearish"
-                  ? "border-red-500/45 bg-red-500/[0.10] text-red-400"
-                  : "border-white/[0.05] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
+                  ? "border-red-400/40 text-red-400"
+                  : "border-white/[0.05] text-white/35 hover:border-white/[0.14] hover:text-white/60"
               }`}>
               <ArrowDown className="w-4 h-4" />
               <span className="text-[13px] font-bold">Bearish</span>
@@ -190,9 +188,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
   if (submitted) {
     return (
       <div className="flex flex-col items-center py-12">
-        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-5">
-          <Check className="w-7 h-7 text-blue-400" />
-        </div>
+        <Check className="w-10 h-10 text-blue-400 mb-4" strokeWidth={1.5} />
         <h3 className="text-[20px] font-bold text-white mb-2">Trade registrado</h3>
         <p className="text-[13px] text-white/35 mb-2">Seus dados são salvos e geram insights ao longo do tempo.</p>
         <div className="flex gap-3 mt-4">
@@ -224,18 +220,18 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         <p className="text-[14px] text-white/70 font-semibold mb-4">Direção</p>
         <div className="flex gap-3">
           <button onClick={() => setDirection("long")}
-            className={`interactive-tap flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 ${
+            className={`interactive-tap flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border transition-colors ${
               direction === "long"
-                ? "border-green-500/40 bg-green-500/[0.08] text-green-400"
-                : "border-white/[0.04] text-white/35 hover:border-green-500/15 hover:text-green-400/60"
+                ? "border-green-400/40 text-green-400"
+                : "border-white/[0.04] text-white/35 hover:border-white/[0.14] hover:text-white/60"
             }`}>
             <ArrowUp className="w-5 h-5" /> <span className="text-[15px] font-bold">Long</span>
           </button>
           <button onClick={() => setDirection("short")}
-            className={`interactive-tap flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border-2 ${
+            className={`interactive-tap flex-1 flex items-center justify-center gap-3 py-4 rounded-xl border transition-colors ${
               direction === "short"
-                ? "border-red-500/40 bg-red-500/[0.08] text-red-400"
-                : "border-white/[0.04] text-white/35 hover:border-red-500/15 hover:text-red-400/60"
+                ? "border-red-400/40 text-red-400"
+                : "border-white/[0.04] text-white/35 hover:border-white/[0.14] hover:text-white/60"
             }`}>
             <ArrowDown className="w-5 h-5" /> <span className="text-[15px] font-bold">Short</span>
           </button>
@@ -290,12 +286,12 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         <p className="text-[14px] text-white/70 font-semibold mb-4">Seguiu o plano do Prep Sheet?</p>
         <div className="flex gap-3">
           <button onClick={() => setFollowedPlan(true)}
-            className={`interactive-tap flex-1 py-4 rounded-xl border-2 text-[14px] font-bold ${
-              followedPlan === true ? "border-green-500/40 bg-green-500/[0.08] text-green-400" : "border-white/[0.04] text-white/35 hover:border-green-500/15"
+            className={`interactive-tap flex-1 py-4 rounded-xl border text-[14px] font-bold transition-colors ${
+              followedPlan === true ? "border-green-400/40 text-green-400" : "border-white/[0.04] text-white/35 hover:border-white/[0.14] hover:text-white/60"
             }`}>Sim</button>
           <button onClick={() => setFollowedPlan(false)}
-            className={`interactive-tap flex-1 py-4 rounded-xl border-2 text-[14px] font-bold ${
-              followedPlan === false ? "border-red-500/40 bg-red-500/[0.08] text-red-400" : "border-white/[0.04] text-white/35 hover:border-red-500/15"
+            className={`interactive-tap flex-1 py-4 rounded-xl border text-[14px] font-bold transition-colors ${
+              followedPlan === false ? "border-red-400/40 text-red-400" : "border-white/[0.04] text-white/35 hover:border-white/[0.14] hover:text-white/60"
             }`}>Não</button>
         </div>
       </div>

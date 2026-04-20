@@ -794,21 +794,21 @@ function InsightsView() {
         ) : (
           <div className="space-y-3">
             {disciplineRate >= 80 && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-500/[0.05] border border-green-500/10">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.06]">
                 <div className="w-2 h-2 rounded-full bg-green-400" />
-                <p className="text-[12px] text-white/50">Disciplina alta — você segue o plano {disciplineRate}% das vezes</p>
+                <p className="text-[12px] text-white/60">Disciplina alta — você segue o plano {disciplineRate}% das vezes</p>
               </div>
             )}
             {disciplineRate < 50 && totalTrades >= 3 && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/[0.05] border border-red-500/10">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.06]">
                 <div className="w-2 h-2 rounded-full bg-red-400" />
-                <p className="text-[12px] text-white/50">Atenção: apenas {disciplineRate}% dos trades seguiram o plano. Revise seu Prep Sheet.</p>
+                <p className="text-[12px] text-white/60">Atenção: apenas {disciplineRate}% dos trades seguiram o plano. Revise seu Prep Sheet.</p>
               </div>
             )}
             {winRate >= 60 && totalTrades >= 5 && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-500/[0.05] border border-green-500/10">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.06]">
                 <div className="w-2 h-2 rounded-full bg-green-400" />
-                <p className="text-[12px] text-white/50">Win rate de {winRate}% — consistência acima da média</p>
+                <p className="text-[12px] text-white/60">Win rate de {winRate}% — consistência acima da média</p>
               </div>
             )}
           </div>

@@ -111,13 +111,13 @@ export function OpenOverlay({
   if (phase === "error") {
     return (
       <Overlay onClose={onClose}>
-        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 max-w-md w-full text-center">
-          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+        <div className="rounded-2xl border border-red-400/30 bg-[#0e0e10] p-8 max-w-md w-full text-center">
+          <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" strokeWidth={1.5} />
           <h3 className="text-xl font-bold mb-2">Não foi possível abrir a caixa</h3>
           <p className="text-sm text-white/60 mb-6">{error}</p>
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-lg bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+            className="px-5 py-2.5 rounded-lg border border-white/[0.18] text-white font-semibold text-sm hover:border-white/[0.35] transition-colors"
           >
             Fechar
           </button>

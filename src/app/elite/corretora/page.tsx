@@ -271,8 +271,8 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/[0.06] border border-red-500/20">
-                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-red-400/25">
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" strokeWidth={2} />
                 <p className="text-[12px] text-red-400">{error}</p>
               </div>
             )}
@@ -376,8 +376,8 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
                     </div>
                   </div>
                   {isConnected ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/15 border border-green-500/25 text-[9px] font-bold text-green-400 uppercase tracking-wider shrink-0">
-                      <Check className="w-2.5 h-2.5" /> OK
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-400 uppercase tracking-[0.22em] shrink-0">
+                      <Check className="w-2.5 h-2.5" strokeWidth={2.6} /> conectado
                     </span>
                   ) : (
                     <ChevronRight className="w-4 h-4 shrink-0 transition-all group-hover:translate-x-0.5" style={{ color: ex.textColor + "50" }} />
@@ -424,21 +424,19 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
   };
 
   const pnlColor = (n: number) => n > 0 ? "text-green-400" : n < 0 ? "text-red-400" : "text-white/40";
-  const pnlBg = (n: number) => n > 0 ? "bg-green-500/10 border-green-500/20" : n < 0 ? "bg-red-500/10 border-red-500/20" : "bg-white/[0.03] border-white/[0.06]";
+  const pnlBg = (n: number) => n > 0 ? "border-green-400/25" : n < 0 ? "border-red-400/25" : "border-white/[0.06]";
   const PnlIcon = (n: number) => n > 0 ? ArrowUp : n < 0 ? ArrowDown : Minus;
 
   if (data.error) {
     return (
       <div className="max-w-lg mx-auto pt-12">
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
-            <AlertCircle className="w-7 h-7 text-red-400" />
-          </div>
+          <AlertCircle className="w-10 h-10 text-red-400 mb-4" strokeWidth={1.5} />
           <h2 className="text-[20px] font-bold text-white mb-2">Erro na conexao com {exchange.name}</h2>
           <p className="text-[13px] text-white/40 mb-6 max-w-sm">{data.error}</p>
           <div className="flex gap-3">
-            <button onClick={onRefresh} className="interactive-tap px-5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] text-white/60 hover:text-white transition-all">Tentar novamente</button>
-            <button onClick={onDisconnect} className="interactive-tap px-5 py-2.5 rounded-xl bg-red-500/[0.06] border border-red-500/20 text-[13px] text-red-400 hover:bg-red-500/10 transition-all">Reconectar</button>
+            <button onClick={onRefresh} className="interactive-tap px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/60 hover:text-white hover:border-white/[0.18] transition-colors">Tentar novamente</button>
+            <button onClick={onDisconnect} className="interactive-tap px-5 py-2.5 rounded-xl border border-red-400/25 text-[13px] text-red-400 hover:border-red-400/50 transition-colors">Reconectar</button>
           </div>
         </div>
       </div>
@@ -461,7 +459,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-[20px] font-bold text-white tracking-tight">{exchange.name}</h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[9px] font-bold text-green-400 uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-green-400 uppercase tracking-[0.22em]">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Conectada
               </span>
             </div>
@@ -485,11 +483,11 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       </div>
 
       {showDisconnect && (
-        <div className="flex items-center justify-between px-5 py-4 rounded-xl bg-red-500/[0.04] border border-red-500/15">
+        <div className="flex items-center justify-between px-5 py-4 rounded-xl border border-red-400/20">
           <p className="text-[13px] text-white/50">Desconectar {exchange.name}? Seus dados serao removidos.</p>
           <div className="flex gap-2">
             <button onClick={() => setShowDisconnect(false)} className="interactive-tap px-4 py-2 rounded-lg text-[12px] text-white/40 hover:text-white transition-colors">Cancelar</button>
-            <button onClick={onDisconnect} className="interactive-tap px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[12px] text-red-400 font-medium hover:bg-red-500/20 transition-all">Desconectar</button>
+            <button onClick={onDisconnect} className="interactive-tap px-4 py-2 rounded-lg border border-red-400/30 text-[12px] text-red-400 font-medium hover:border-red-400/60 transition-colors">Desconectar</button>
           </div>
         </div>
       )}
@@ -571,7 +569,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
                 return (
                   <div key={i} className={`flex items-center justify-between px-4 py-3 rounded-xl ${pnlBg(pos.unrealizedPnL)} border transition-all`}>
                     <div className="flex items-center gap-3">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${pos.side === "LONG" ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${pos.side === "LONG" ? "text-green-400" : "text-red-400"}`}>
                         {pos.side}
                       </span>
                       <div>

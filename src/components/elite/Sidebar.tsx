@@ -354,10 +354,10 @@ export function EliteSidebar({
             <Link
               href="/elite/loja"
               onClick={() => setMobileOpen(false)}
-              className="mx-4 mb-2 flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-500/[0.04] border border-amber-500/20 hover:bg-amber-500/[0.08] hover:border-amber-500/30 transition-all"
+              className="mx-4 mb-2 flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/[0.08] hover:border-white/[0.18] transition-colors"
             >
               <UraCoinIcon className="w-4 h-4" />
-              <span className="text-[12px] font-semibold tabular-nums text-amber-200">
+              <span className="text-[12px] font-semibold tabular-nums text-amber-300">
                 {coinBalance.toLocaleString("pt-BR")}
               </span>
               <span className="text-[10px] uppercase tracking-[0.16em] text-white/30 ml-auto">
