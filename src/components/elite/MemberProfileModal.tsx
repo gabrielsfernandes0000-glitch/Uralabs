@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Flame, Zap, Calendar, ExternalLink, Trophy, Mic } from "lucide-react";
+import { X, Flame, Zap, Calendar, ExternalLink, Trophy, Mic, Loader2 } from "lucide-react";
 import type { DiscordMember } from "@/lib/discord-members";
 import { UraCoinIcon } from "./UraCoinIcon";
 import {
@@ -11,6 +11,7 @@ import {
   type Achievement,
 } from "@/lib/achievements";
 import { AchievementBadge } from "./AchievementBadge";
+import { CosmeticBanner, isBannerSlug } from "./CosmeticBanner";
 
 /**
  * MemberProfileModal — puxa estado real via /api/members/[id]/profile:
@@ -75,6 +76,7 @@ function ProfileAchievement({ achievement }: { achievement: Achievement }) {
 export function MemberProfileModal({ member, onClose }: { member: DiscordMember | null; onClose: () => void }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bannerReady, setBannerReady] = useState(true);
 
   useEffect(() => {
     if (!member) return;
@@ -90,16 +92,31 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
   useEffect(() => {
     if (!member) {
       setProfile(null);
+      setBannerReady(true);
       return;
     }
     let cancelled = false;
     setLoading(true);
+    setBannerReady(false);
     (async () => {
       try {
         const res = await fetch(`/api/members/${member.id}/profile`, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as ProfileResponse;
-        if (!cancelled) setProfile(data);
+        if (!cancelled) {
+          setProfile(data);
+          // Preload do banner: se tem slug equipado, espera o PNG baixar
+          // antes de liberar o gate — evita flash de banner vazio.
+          const slug = data.cosmetics?.banner?.prize_slug;
+          if (slug && isBannerSlug(slug)) {
+            const img = new Image();
+            img.onload = () => { if (!cancelled) setBannerReady(true); };
+            img.onerror = () => { if (!cancelled) setBannerReady(true); };
+            img.src = `/cosmetics/banners/${slug}.webp`;
+          } else {
+            setBannerReady(true);
+          }
+        }
       } catch (err) {
         console.warn("[profile] failed:", err);
         // Degrada graceful — modal ainda abre com 0 achievements
@@ -115,6 +132,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             claims_today: 0,
             cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
           });
+        if (!cancelled) setBannerReady(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -139,6 +157,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
   const streakDays = profile?.streak_days ?? 0;
   const claimsToday = profile?.claims_today ?? 0;
   const daysSinceLastMsg = daysSince(profile?.last_message_at ?? null);
+  const equippedBannerSlug = profile?.cosmetics?.banner?.prize_slug ?? null;
+  const hasBanner = isBannerSlug(equippedBannerSlug);
 
   return (
     <div
@@ -158,11 +178,39 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           <X className="w-4 h-4" />
         </button>
 
-        {/* Header — tier accent simples (sem cosméticos) */}
+        {/* Loading gate — segura a UI até o /profile responder E o PNG do
+            banner terminar de baixar, pra não renderizar banner vazio no
+            fade in. Quando ambos chegam, tudo aparece junto. */}
+        {(loading || !profile || !bannerReady) && (
+          <div className="flex flex-col items-center justify-center gap-3 py-28">
+            <Loader2 className="w-7 h-7 animate-spin text-white/25" strokeWidth={1.5} />
+            <p className="text-[10.5px] uppercase tracking-[0.22em] text-white/35">Carregando perfil</p>
+          </div>
+        )}
+
+        {!loading && profile && bannerReady && <>
+
+        {/* Header — banner cosmético (se equipado) + tier accent */}
         <div className="relative overflow-hidden border-b border-white/[0.05] min-h-[200px]">
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: `radial-gradient(ellipse 60% 80% at 75% 30%, ${tierAccent}18, transparent 65%)`,
-          }} />
+          {hasBanner && (
+            <div className="absolute inset-0 pointer-events-none">
+              <CosmeticBanner slug={equippedBannerSlug} variant="full" />
+              {/* Fade inferior dupla camada: linear forte na base pra separar
+                  o avatar/nome do banner + radial sutil atrás do avatar pra
+                  dar profundidade sem esconder a cena do topo. */}
+              <div className="absolute inset-0" style={{
+                background: "linear-gradient(to bottom, rgba(20,20,23,0) 0%, rgba(20,20,23,0.12) 55%, rgba(20,20,23,0.5) 85%, rgba(20,20,23,0.8) 100%)",
+              }} />
+              <div className="absolute inset-0" style={{
+                background: "radial-gradient(ellipse 45% 65% at 22% 80%, rgba(0,0,0,0.55), transparent 70%)",
+              }} />
+            </div>
+          )}
+          {!hasBanner && (
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: `radial-gradient(ellipse 60% 80% at 75% 30%, ${tierAccent}18, transparent 65%)`,
+            }} />
+          )}
           <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none" style={{
             background: `linear-gradient(90deg, transparent, ${tierAccent}80, transparent)`,
           }} />
@@ -173,32 +221,39 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
               <img
                 src={member.avatarUrl}
                 alt={member.globalName}
-                className="w-20 h-20 rounded-full object-cover"
-                style={{ border: `2px solid #141417`, boxShadow: `0 0 0 2px ${tierAccent}50` }}
+                className="w-20 h-20 rounded-full object-cover relative"
+                style={{
+                  border: "2px solid #141417",
+                  // Em vez do ring colorido (tier accent), glow preto suave
+                  // que amarra com o fade escuro da base do banner.
+                  boxShadow: "0 0 0 2px rgba(0,0,0,0.55), 0 6px 28px 8px rgba(0,0,0,0.65)",
+                }}
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-[20px] font-bold text-white tracking-tight leading-tight truncate">
+            <div className="flex-1 min-w-0 pb-1">
+              <h2 className="text-[20px] font-bold text-white tracking-tight leading-tight truncate drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                 {member.globalName || member.username}
               </h2>
-              <p className="text-[12px] text-white/40 truncate">@{member.username}</p>
-              <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider"
-                  style={{
-                    backgroundColor: tierAccent + "18",
-                    color: tierAccent,
-                    border: `1px solid ${tierAccent}35`,
-                  }}>
-                  {member.tier === "elite" ? <Flame className="w-3 h-3 fill-current" /> : <Zap className="w-3 h-3" />}
-                  {tierLabel}
-                </span>
-                <span className="flex items-center gap-1 text-[10.5px] text-white/35">
-                  <Calendar className="w-3 h-3" />
-                  Desde {formatJoined(member.joinedAt)}
-                </span>
-              </div>
+              <p className="text-[12px] text-white/55 truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">@{member.username}</p>
             </div>
           </div>
+        </div>
+
+        {/* Strip tier + joined — fora do banner pra não competir com a arte */}
+        <div className="px-5 py-2.5 border-b border-white/[0.05] bg-[#0e0e10] flex items-center gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider"
+            style={{
+              backgroundColor: tierAccent + "18",
+              color: tierAccent,
+              border: `1px solid ${tierAccent}35`,
+            }}>
+            {member.tier === "elite" ? <Flame className="w-3 h-3 fill-current" /> : <Zap className="w-3 h-3" />}
+            {tierLabel}
+          </span>
+          <span className="flex items-center gap-1 text-[10.5px] text-white/40">
+            <Calendar className="w-3 h-3" />
+            Desde {formatJoined(member.joinedAt)}
+          </span>
         </div>
 
         {/* Stats */}
@@ -340,6 +395,8 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>
+
+        </>}
       </div>
     </div>
   );

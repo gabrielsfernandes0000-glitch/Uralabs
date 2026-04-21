@@ -6,7 +6,7 @@ import type { EconomicEvent } from "@/lib/market-news";
  * Reusado por dashboard, diário (prep autopopulate), calls, etc.
  * Fallback silencioso: array vazio em caso de erro (nunca quebra a página).
  */
-export async function loadTodayEvents(limit = 8): Promise<EconomicEvent[]> {
+export async function loadTodayEvents(limit = 25): Promise<EconomicEvent[]> {
   try {
     const sb = getSupabaseAnon();
     const todayStr = new Date().toISOString().slice(0, 10);

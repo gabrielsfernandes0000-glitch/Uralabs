@@ -5,6 +5,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export async function GET() {
-  const events = await loadTodayEvents(8);
+  const events = await loadTodayEvents(25);
   return NextResponse.json({ events });
 }

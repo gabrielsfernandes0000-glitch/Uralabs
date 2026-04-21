@@ -39,11 +39,13 @@ export async function createSession(payload: SessionPayload) {
 /** Read and verify the session from cookies. Returns null if invalid/expired. */
 export async function getSession(): Promise<SessionPayload | null> {
   // TEMP: dev bypass — REMOVER ANTES DE COMMITAR
+  // userId = Discord ID do URA pra bater com as RPCs que exigem /^[0-9]{5,30}$/
+  // (cosmetics-manager, ura-coin-user-state) e puxar o preview dele em localhost.
   if (process.env.NODE_ENV === "development") {
     return {
-      userId: "dev-user",
-      username: "dev",
-      globalName: "Dev User",
+      userId: "580162059078074420",
+      username: "uranick",
+      globalName: "URA",
       avatar: null,
       roles: [],
       isElite: true,

@@ -13,7 +13,6 @@ import {
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
 import { Avatar } from "@/components/elite/Avatar";
-import { CosmeticBanner, isBannerSlug } from "@/components/elite/CosmeticBanner";
 import { AvatarWithCosmetics } from "@/components/elite/AvatarCosmetics";
 import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 
@@ -293,7 +292,6 @@ export function EliteSidebar({
   }, []);
   const avatar = avatarUrl(session.userId, session.avatar, 64);
   const displayName = session.globalName || session.username;
-  const hasBanner = isBannerSlug(bannerSlug);
 
   return (
     <>
@@ -315,14 +313,6 @@ export function EliteSidebar({
         {/* Background */}
         <div className="absolute inset-0 bg-[#0a0a0c] border-r border-white/[0.04]" />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-500/[0.03] via-transparent to-transparent" />
-        {hasBanner && (
-          <div
-            className="absolute top-0 left-0 right-0 h-[220px] pointer-events-none opacity-50"
-            style={{ maskImage: "linear-gradient(to bottom, black 30%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)" }}
-          >
-            <CosmeticBanner slug={bannerSlug} variant="sidebar" animated="always" />
-          </div>
-        )}
 
         <div className="relative z-10 flex flex-col h-full">
           {/* Logo */}

@@ -156,7 +156,16 @@ export function PersonalizationSection() {
                 <p className="text-[11px] text-white/30">Nenhum ainda. Abre caixas na <a className="text-brand-500/70 hover:text-brand-500" href="/elite/loja">Loja</a> pra conseguir.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+                style={{
+                  // Browser pula render de cards fora do viewport. Reserva 180px
+                  // por card (altura real ~160px + gap) pra scrollbar não pular
+                  // quando o grid ultrapassar ~40 itens.
+                  contentVisibility: "auto",
+                  containIntrinsicSize: "180px",
+                }}
+              >
                 {list.map((c) => (
                   <CosmeticCard
                     key={c.cosmetic_id}
@@ -175,6 +184,17 @@ export function PersonalizationSection() {
   );
 }
 
+// Cache global pra não disparar prefetch duplicado no mesmo slug —
+// hover em cima de 10 cards diferentes = 10 prefetches, sem repetir.
+const prefetchedFulls = new Set<string>();
+
+function prefetchFull(slug: string) {
+  if (prefetchedFulls.has(slug)) return;
+  prefetchedFulls.add(slug);
+  const img = new Image();
+  img.src = `/cosmetics/banners/${slug}.webp`;
+}
+
 function CosmeticCard({
   cosmetic, type, onEquip, pending,
 }: {
@@ -190,8 +210,13 @@ function CosmeticCard({
   const frameSlug = type === "avatar_frame" ? normalizeFrameSlug(cosmetic.prize_slug) : null;
   const auraSlug = type === "avatar_effect" ? normalizeAuraSlug(cosmetic.prize_slug) : null;
 
+  // Prefetch full do banner no hover — quando URA equipar e for pro /perfil,
+  // o full já tá cacheado no browser.
+  const onPointerEnter = bannerOK ? () => prefetchFull(cosmetic.prize_slug) : undefined;
+
   return (
     <div
+      onPointerEnter={onPointerEnter}
       className={`group relative overflow-hidden rounded-xl border bg-[#0e0e10] transition-all duration-200 ${
         cosmetic.equipped ? "border-brand-500/40 ring-1 ring-brand-500/20" : "border-white/[0.06] hover:border-white/[0.15] hover:-translate-y-0.5"
       }`}
