@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogOut, Lock, Radio, Search, ChevronDown,
   LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift, NotebookPen,
-  MessageCircle, Activity, Globe, GraduationCap, type LucideIcon,
+  MessageCircle, Activity, Globe, GraduationCap, LineChart, type LucideIcon,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
@@ -24,11 +24,12 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Dia a dia",
     items: [
-      { href: "/elite",         icon: LayoutDashboard, label: "Dashboard",  exact: true },
-      { href: "/elite/calls",   icon: Radio,           label: "Calls",      eliteOnly: true },
-      { href: "/elite/aulas",   icon: BookOpen,        label: "Aulas" },
-      { href: "/elite/pratica", icon: Crosshair,       label: "Prática",    eliteOnly: true },
-      { href: "/elite/diario",  icon: NotebookPen,     label: "Diário",     eliteOnly: true },
+      { href: "/elite",          icon: LayoutDashboard, label: "Dashboard",  exact: true },
+      { href: "/elite/calls",    icon: Radio,           label: "Calls",      eliteOnly: true },
+      { href: "/elite/aulas",    icon: BookOpen,        label: "Aulas" },
+      { href: "/elite/graficos", icon: LineChart,       label: "Gráficos" },
+      { href: "/elite/pratica",  icon: Crosshair,       label: "Prática",    eliteOnly: true },
+      { href: "/elite/diario",   icon: NotebookPen,     label: "Diário",     eliteOnly: true },
     ],
   },
   {

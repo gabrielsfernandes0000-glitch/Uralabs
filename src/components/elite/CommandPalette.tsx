@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search, LayoutDashboard, Users, Radio, BookOpen, Crosshair, Newspaper,
-  Trophy, Gift, BarChart3, Target, NotebookPen, Globe, type LucideIcon,
+  Trophy, Gift, BarChart3, Target, NotebookPen, Globe, LineChart, type LucideIcon,
 } from "lucide-react";
 import { CURRICULUM } from "@/lib/curriculum";
 import { MODULE_TREINOS } from "@/lib/module-treinos";
@@ -31,6 +31,7 @@ const PAGES: Item[] = [
   { id: "page-membros",    label: "Membros",    hint: "Todos membros",       href: "/elite/membros",    group: "Páginas", icon: Users,           keywords: "turma community comunidade" },
   { id: "page-calls",      label: "Calls",      hint: "Ao vivo",             href: "/elite/calls",      group: "Páginas", icon: Radio,           keywords: "live ao vivo transmissao" },
   { id: "page-aulas",      label: "Aulas",      hint: "Currículo Elite",     href: "/elite/aulas",      group: "Páginas", icon: BookOpen,        keywords: "curso curriculo" },
+  { id: "page-graficos",   label: "Gráficos",   hint: "TradingView real-time",href: "/elite/graficos",   group: "Páginas", icon: LineChart,       keywords: "chart grafico btc nasdaq ibov ouro forex" },
   { id: "page-pratica",    label: "Prática",    hint: "Treinos e cenários",  href: "/elite/pratica",    group: "Páginas", icon: Crosshair,       keywords: "treino cenario scenarios" },
   { id: "page-diario",     label: "Diário",     hint: "Prep Sheet + review", href: "/elite/diario",     group: "Páginas", icon: NotebookPen,     keywords: "prep sheet diario trade journal plano" },
   { id: "page-noticias",   label: "Notícias",   hint: "Agenda + manchetes",  href: "/elite/noticias",   group: "Páginas", icon: Globe,           keywords: "news calendario cpi fomc nfp fed economia agenda" },
