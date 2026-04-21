@@ -273,6 +273,7 @@ function TreinoLivreInner() {
   };
 
   const handleFinish = () => {
+    if (stats.total > 0 && !window.confirm(`Encerrar sessão agora? Você fez ${stats.correct}/${stats.total} até aqui — o resumo vai fechar a sessão.`)) return;
     setSessionDone(true);
   };
 
@@ -294,11 +295,11 @@ function TreinoLivreInner() {
           <ChevronLeft className="w-3.5 h-3.5" /> Voltar
         </button>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-10 text-center">
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-10 text-center">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
 
-          <div className="w-20 h-20 rounded-2xl bg-brand-500/10 mx-auto mb-6 flex items-center justify-center">
-            <Trophy className="w-9 h-9 text-brand-500" />
+          <div className="mx-auto mb-6 flex items-center justify-center">
+            <Trophy className="w-14 h-14 text-brand-500" strokeWidth={1.5} />
           </div>
 
           <h2 className="text-[28px] font-bold text-white mb-2">Sessão Encerrada</h2>
@@ -384,7 +385,7 @@ function TreinoLivreInner() {
             className="lg:sticky lg:top-4 space-y-3 self-start"
           >
           {/* Pergunta compacta — altura mínima pra não pular layout entre cenários */}
-          <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5 min-h-[140px]">
+          <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-5 min-h-[140px]">
             <h3 className="text-[16px] font-bold text-white mb-2 leading-tight">{scenario.title}</h3>
             <p className="text-[12.5px] text-white/50 leading-relaxed">{scenario.context}</p>
           </div>
@@ -443,7 +444,7 @@ function TreinoLivreInner() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="rounded-xl border border-white/[0.06] bg-[#141417] p-4"
+              className="rounded-xl bg-white/[0.02] p-4"
             >
               <p className="text-[10.5px] text-white/30 uppercase tracking-wider font-semibold mb-1.5">Explicação</p>
               <p className="text-[12px] text-white/55 leading-relaxed">{scenario.explanation}</p>

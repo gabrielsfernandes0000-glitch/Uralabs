@@ -22,36 +22,25 @@ export function ThemeCard({ category }: { category: ThemeCategory }) {
   return (
     <Link
       href={`/elite/treino/livre?category=${encodeURIComponent(category.key)}`}
-      className="interactive group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] min-h-[180px] flex flex-col"
+      className="interactive group relative overflow-hidden rounded-2xl bg-white/[0.02] min-h-[180px] flex flex-col transition-colors"
     >
+      {/* Wash da cor da categoria só no hover — reveal subtle de identidade como feedback da inten\u00e7\u00e3o */}
       <div
-        className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-100 transition-opacity"
-        style={{ background: `linear-gradient(90deg, transparent, ${a}80 50%, transparent)` }}
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${a}14, ${a}05 60%, transparent)` }}
       />
-      <div
-        className="absolute top-[-30%] right-[-20%] w-[200px] h-[140px] pointer-events-none opacity-40 group-hover:opacity-70 transition-opacity"
-        style={{ background: `radial-gradient(ellipse, ${a}22, transparent 70%)` }}
-      />
-      <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
-        <span
-          className="font-black tracking-tighter whitespace-nowrap select-none pr-4"
-          style={{ fontSize: "90px", color: a, opacity: 0.035, letterSpacing: "-0.05em", lineHeight: 1 }}
-        >
-          {category.key.toUpperCase()}
-        </span>
-      </div>
 
       <div className="relative z-10 p-5 flex-1 flex flex-col">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-0.5 h-5 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: a }} />
-          <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase" style={{ color: a }}>
-            {category.tagline}
-          </p>
-        </div>
+        <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/35 mb-3">
+          {category.tagline}
+        </p>
 
-        <h3 className="text-[22px] font-bold text-white tracking-tight leading-[1.05] mb-3">
-          {category.key}
-        </h3>
+        <div className="mb-3">
+          <h3 className="text-[22px] font-bold text-white tracking-tight leading-[1.05] mb-1.5">
+            {category.key}
+          </h3>
+          <span className="block h-[2px] w-8 rounded-full transition-all group-hover:w-12" style={{ backgroundColor: a }} />
+        </div>
 
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-4">
           {category.keyTerms.slice(0, 3).map((term, i) => (
@@ -66,12 +55,10 @@ export function ThemeCard({ category }: { category: ThemeCategory }) {
 
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[20px] font-bold font-mono" style={{ color: a }}>
-              {count}
-            </span>
+            <span className="text-[20px] font-bold font-mono text-white">{count}</span>
             <span className="text-[11px] text-white/35">cenários</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
         </div>
       </div>
     </Link>

@@ -1,12 +1,12 @@
 import { getSession } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
-import { Flame, ArrowRight, BookOpen, FileText, TrendingUp, Brain, Zap, ChevronRight, Target, Radio, PenLine, Users, Play, CalendarClock } from "lucide-react";
+import { Flame, ArrowRight, BookOpen, FileText, Brain, Zap, ChevronRight, Target, Radio, PenLine, Users, Play, CalendarClock, Moon, Check } from "lucide-react";
 import Link from "next/link";
 import { getCurriculum } from "@/lib/curriculum.server";
 import { LiveStat } from "@/components/elite/ProgressStats";
 import { Avatar } from "@/components/elite/Avatar";
 import { GlowBorder } from "@/components/elite/GlowBorder";
-import { CountUp, ProgressFill } from "@/components/motion";
+import { CountUp } from "@/components/motion";
 import { impactMeta, type EconomicEvent } from "@/lib/market-news";
 import { instrumentsForEvent } from "@/lib/economic-events";
 import { InstrumentFilterStyle } from "@/components/elite/InstrumentFilterStyle";
@@ -26,39 +26,161 @@ function nyNowMinutes(): number {
 }
 
 /* ────────────────────────────────────────────
-   Daily Steps — the 5 steps of a trading day
+   Daily Steps — the 5 phases of a trading day (macro structure)
    ──────────────────────────────────────────── */
 
 interface DayStep {
-  id: string;
+  id: "prep" | "call" | "trade" | "study" | "review";
   label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-  href: string;
-  accent: string;
-  timeHint: string;
   done: boolean;
 }
 
 function getDaySteps(): DayStep[] {
   return [
-    { id: "prep", label: "Prep Sheet", description: "Monte o plano do dia", icon: FileText, href: "/elite/pratica", accent: "#FF5500", timeHint: "Antes do mercado", done: false },
-    { id: "call", label: "Call de Operação", description: "Participe da call com o URA", icon: Radio, href: "#", accent: "#FF5500", timeHint: "10:30 — 12:30", done: false },
-    { id: "trade", label: "Registrar Trade", description: "Documente o que aconteceu", icon: PenLine, href: "/elite/pratica", accent: "#FF5500", timeHint: "Depois do mercado", done: false },
-    { id: "study", label: "Aula do Dia", description: "Continue o currículo", icon: Play, href: "/elite/aulas", accent: "#FF5500", timeHint: "Quando quiser", done: false },
-    { id: "review", label: "Revisão", description: "Revise o dia e treine", icon: Brain, href: "/elite/pratica", accent: "#FF5500", timeHint: "Final do dia", done: false },
+    { id: "prep",   label: "Prep",    done: false },
+    { id: "call",   label: "Call",    done: false },
+    { id: "trade",  label: "Trade",   done: false },
+    { id: "study",  label: "Aula",    done: false },
+    { id: "review", label: "Revisão", done: false },
   ];
 }
 
-function getCurrentStepIndex(steps: DayStep[]): number {
+/**
+ * Estado do dia em BRT: posição na rotina + flag se a call está ao vivo agora.
+ * Seg-Qui 10:30–12:30 BRT = call ao vivo. Fora disso a posição varia por hora.
+ */
+function getDayContext(): { currentIdx: number; isCallLive: boolean; brHour: number } {
   const now = new Date();
-  const brHour = (now.getUTCHours() - 3 + 24) % 24;
+  const brTotalMins = ((now.getUTCHours() - 3 + 24) % 24) * 60 + now.getUTCMinutes();
+  const brHour = Math.floor(brTotalMins / 60);
+  const weekday = now.getUTCDay(); // 0=dom..6=sáb
+  const isCallDay = weekday >= 1 && weekday <= 4; // seg-qui
+  const isCallLive = isCallDay && brTotalMins >= 10 * 60 + 30 && brTotalMins < 12 * 60 + 30;
 
-  if (brHour < 10) return steps.findIndex(s => s.id === "prep");
-  if (brHour < 13) return steps.findIndex(s => s.id === "call");
-  if (brHour < 16) return steps.findIndex(s => s.id === "trade");
-  if (brHour < 20) return steps.findIndex(s => s.id === "study");
-  return steps.findIndex(s => s.id === "review");
+  let currentIdx = 0;
+  if (brHour >= 10 && brHour < 13) currentIdx = 1; // call window
+  else if (brHour >= 13 && brHour < 17) currentIdx = 2; // registrar trade
+  else if (brHour >= 17 && brHour < 20) currentIdx = 3; // aula
+  else if (brHour >= 20 && brHour < 24) currentIdx = 4; // revisão
+  // 0-10 fica no Prep (default 0)
+  return { currentIdx, isCallLive, brHour };
+}
+
+/**
+ * Card primário contextual por horário + live state.
+ * Responde à pergunta: "O que eu deveria fazer AGORA?".
+ */
+interface PrimaryAction {
+  label: string;
+  description: string;
+  tag: string;
+  icon: typeof Play;
+  href: string;
+  accent: string;
+  isLive?: boolean;
+  target?: string;
+}
+
+function getPrimaryAction(isElite: boolean, ctx: { isCallLive: boolean; brHour: number; weekday: number }): PrimaryAction {
+  if (!isElite) {
+    return {
+      label: "Continuar aula",
+      description: "Próxima aula do currículo Elite",
+      tag: "Quando quiser",
+      icon: Play,
+      href: "/elite/aulas",
+      accent: "#60A5FA",
+    };
+  }
+
+  if (ctx.isCallLive) {
+    return {
+      label: "Call de Operação rolando",
+      description: "AMD na sessão NY · análise ao vivo + entradas com o URA",
+      tag: "Ao vivo agora",
+      icon: Radio,
+      href: "https://discord.com/channels/@me",
+      accent: "#EF4444",
+      isLive: true,
+      target: "_blank",
+    };
+  }
+
+  if (ctx.brHour < 9) {
+    return {
+      label: "Prep Sheet do dia",
+      description: "Monte o plano antes do mercado abrir",
+      tag: "Antes do open",
+      icon: FileText,
+      href: "/elite/diario",
+      accent: "#FF5500",
+    };
+  }
+
+  if (ctx.brHour < 10 || (ctx.brHour === 10 && ctx.weekday >= 1 && ctx.weekday <= 4)) {
+    const isCallDay = ctx.weekday >= 1 && ctx.weekday <= 4;
+    return {
+      label: "Últimos ajustes no Prep",
+      description: isCallDay ? "Call do URA começa 10:30 BRT" : "Hoje não tem call — olhe a agenda",
+      tag: isCallDay ? "Call em breve" : "Pré-open",
+      icon: FileText,
+      href: "/elite/diario",
+      accent: "#F59E0B",
+    };
+  }
+
+  if (ctx.brHour < 13) {
+    return {
+      label: "Revise a call",
+      description: "Anote insights da call enquanto tá fresco",
+      tag: "Pós-call",
+      icon: PenLine,
+      href: "/elite/diario",
+      accent: "#FF5500",
+    };
+  }
+
+  if (ctx.brHour < 17) {
+    return {
+      label: "Registrar Trade",
+      description: "Documente o que aconteceu na sessão",
+      tag: "Sessão em curso",
+      icon: PenLine,
+      href: "/elite/diario",
+      accent: "#FF5500",
+    };
+  }
+
+  if (ctx.brHour < 20) {
+    return {
+      label: "Aula do Dia",
+      description: "Continue o currículo Elite",
+      tag: "Hora de estudar",
+      icon: Play,
+      href: "/elite/aulas",
+      accent: "#FF5500",
+    };
+  }
+
+  if (ctx.brHour < 23) {
+    return {
+      label: "Revisão do dia",
+      description: "Treine decisões no modo prática",
+      tag: "Fim do dia",
+      icon: Brain,
+      href: "/elite/pratica",
+      accent: "#FF5500",
+    };
+  }
+
+  return {
+    label: "Descanse",
+    description: "Amanhã o dia começa no Prep. Durma bem.",
+    tag: "Madrugada",
+    icon: Moon,
+    href: "/elite/aulas",
+    accent: "#6366F1",
+  };
 }
 
 /* ────────────────────────────────────────────
@@ -76,23 +198,15 @@ export default async function EliteDashboard() {
 
   const now = new Date();
   const brHour = (now.getUTCHours() - 3 + 24) % 24;
+  const weekday = now.getUTCDay();
   const greeting = brHour < 12 ? "Bom dia" : brHour < 18 ? "Boa tarde" : "Boa noite";
   const dateStr = now.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
   const steps = getDaySteps();
-  const currentIdx = getCurrentStepIndex(steps);
-  // For VIPs, the "next step" is always continuing a lesson (no live calls / pratica access)
-  const currentStep = isElite ? (steps[currentIdx] || steps[0]) : {
-    id: "study",
-    label: "Continuar aula",
-    description: "Próxima aula do currículo",
-    icon: Play,
-    href: "/elite/aulas",
-    accent: "#FF5500",
-    timeHint: "Quando quiser",
-    done: false,
-  };
+  const { currentIdx, isCallLive } = getDayContext();
+  const primaryAction = getPrimaryAction(isElite, { isCallLive, brHour, weekday });
   const completedSteps = steps.filter(s => s.done).length;
+  const tierAccent = isElite ? "#FF5500" : "#60A5FA";
 
   const [curriculum, todayEvents, lastReleased] = await Promise.all([
     getCurriculum(),
@@ -110,9 +224,9 @@ export default async function EliteDashboard() {
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl border border-brand-500/10 bg-[#0e0e10]">
+      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]">
         <div className="absolute top-0 right-0 w-[500px] h-[300px] blur-[120px] pointer-events-none"
-          style={{ backgroundColor: currentStep.accent + "08" }} />
+          style={{ backgroundColor: tierAccent + "08" }} />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_60%_at_70%_20%,#000_40%,transparent_100%)]" />
 
         <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
@@ -122,110 +236,100 @@ export default async function EliteDashboard() {
               <p className="text-[11px] text-white/30 font-medium">{greeting},</p>
               <h1 className="text-[26px] md:text-[30px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
               <div className="flex items-center gap-2 mt-1.5">
-                <Flame className={`w-3 h-3 ${isElite ? "text-brand-500/80" : "text-blue-400/80"}`} strokeWidth={2} />
-                <span className={`text-[9.5px] font-bold tracking-[0.25em] uppercase ${isElite ? "text-brand-500/80" : "text-blue-400/80"}`}>
+                <span className="w-1 h-1 rounded-full" style={{ backgroundColor: tierAccent }} />
+                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase" style={{ color: tierAccent + "CC" }}>
                   {tierLabelText}
                 </span>
                 <span className="text-white/20">·</span>
-                <span className="text-[10px] text-white/30 capitalize">{dateStr}</span>
+                <span className="text-[10px] text-white/30">{dateStr}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-end gap-6">
+          {/* Streak — reactive state */}
+          {stats.streak > 0 ? (
             <div className="text-right">
-              <p className="text-[32px] md:text-[38px] font-bold text-white leading-none font-mono"><CountUp end={stats.streak} duration={1} /></p>
-              <p className="text-[10px] text-brand-500/50 uppercase tracking-[0.2em] mt-1.5">streak</p>
+              <div className="flex items-baseline gap-3 justify-end">
+                <Flame className="w-6 h-6 shrink-0 text-amber-400" strokeWidth={1.5} />
+                <p className="text-[44px] md:text-[54px] font-bold text-white leading-none font-mono tabular-nums"><CountUp end={stats.streak} duration={1} /></p>
+              </div>
+              <p className="text-[10px] text-amber-400/70 uppercase tracking-[0.22em] mt-1">dias seguidos</p>
+              <p className="text-[10px] text-white/25 mt-2">
+                <span className="font-mono font-semibold tabular-nums text-white/35"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></span>
+                {" dias na temporada"}
+              </p>
             </div>
-            <div className="h-10 w-px bg-white/[0.08]" />
+          ) : (
             <div className="text-right">
-              <p className="text-[32px] md:text-[38px] font-bold text-white leading-none font-mono"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></p>
-              <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1.5">dias rest.</p>
+              <div className="flex items-baseline gap-2 justify-end">
+                <Flame className="w-4 h-4 shrink-0 text-white/15" strokeWidth={1.5} />
+                <p className="text-[22px] font-semibold text-white/50 leading-none">Primeiro dia</p>
+              </div>
+              <p className="text-[10px] text-white/25 mt-1.5 max-w-[200px] leading-relaxed">
+                Comece a construir seu streak <span className="text-white/40">hoje</span>. São {stats.daysRemaining} dias na temporada.
+              </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* ── Primary Action + Rotina side by side on desktop ── */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Primary action — 2 cols */}
-        <Link href={currentStep.href} className="interactive lg:col-span-2 animate-in-up delay-2 group block relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
-          <GlowBorder color={currentStep.accent} duration={8} />
-          <div className="relative z-10 p-5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
-              <currentStep.icon className="w-8 h-8 shrink-0" style={{ color: currentStep.accent }} strokeWidth={1.5} />
-              <div className="min-w-0">
-                <p className="text-[10px] text-white/40 uppercase tracking-wider font-semibold mb-0.5">Próximo · {currentStep.timeHint}</p>
-                <h2 className="text-[18px] font-bold text-white leading-tight">{currentStep.label}</h2>
-                <p className="text-[12px] text-white/40 mt-0.5 truncate">{currentStep.description}</p>
+      {/* ── Primary Action — context-aware (hour-of-day + live state) ── */}
+      <Link
+        href={primaryAction.href}
+        target={primaryAction.target}
+        rel={primaryAction.target === "_blank" ? "noreferrer" : undefined}
+        className="interactive animate-in-up delay-1 group block relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.035] transition-all duration-300"
+      >
+        <div className="relative z-10 p-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <primaryAction.icon className="w-8 h-8 shrink-0" style={{ color: primaryAction.accent }} strokeWidth={1.5} />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                {primaryAction.isLive && (
+                  <span className="relative flex w-1.5 h-1.5 shrink-0">
+                    <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: primaryAction.accent, opacity: 0.5 }} />
+                    <span className="relative w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryAction.accent }} />
+                  </span>
+                )}
+                <p className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: primaryAction.accent + "CC" }}>
+                  {primaryAction.tag}
+                </p>
               </div>
+              <h2 className="text-[18px] font-bold text-white leading-tight">{primaryAction.label}</h2>
+              <p className="text-[12px] text-white/40 mt-0.5">{primaryAction.description}</p>
             </div>
-            <div className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-[12.5px] font-bold transition-all group-hover:scale-105 shrink-0"
-              style={{ borderColor: currentStep.accent, color: currentStep.accent }}>
-              Ir agora
+          </div>
+          {primaryAction.id !== "rest" && (
+            <div className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-[12.5px] font-bold transition-colors shrink-0"
+              style={{ borderColor: primaryAction.accent, color: primaryAction.accent }}>
+              {primaryAction.isLive ? "Entrar" : "Ir agora"}
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
-          </div>
-        </Link>
-
-        {/* Progress summary — 1 col */}
-        <div className="animate-in-up delay-3 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5 flex flex-col justify-center">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">Rotina hoje</p>
-            <span className="text-[12px] text-white/50 font-mono font-bold">{completedSteps}/{steps.length}</span>
-          </div>
-          <div className="h-[4px] bg-white/[0.04] rounded-full overflow-hidden mb-2">
-            <div className="h-full bg-brand-500 rounded-full transition-all duration-700" style={{ width: `${(completedSteps / steps.length) * 100}%` }} />
-          </div>
-          <p className="text-[11px] text-white/35 leading-relaxed">
-            {completedSteps === 0 ? "Comece o dia pelo Prep Sheet." : completedSteps === steps.length ? "Dia completo! Excelente disciplina." : `${steps.length - completedSteps} passos restantes hoje.`}
-          </p>
+          )}
         </div>
-      </div>
+      </Link>
 
-      {/* ── Day Timeline — Elite-only (VIPs don't have live calls / pratica) ── */}
+      {/* ── Day Progress — compact bar-segments (not expanded; hero carries the "now" focus) ── */}
       {isElite && (
-      <div className="animate-in-up delay-4 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-[12px] font-bold uppercase tracking-wider text-white/40">Rotina do Dia</h3>
-          <span className="text-[10px] text-white/30 font-mono">{completedSteps}/{steps.length}</span>
+      <div className="animate-in-up delay-2">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <h3 className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/30">Rotina do dia</h3>
+          <span className="text-[9.5px] text-white/25 font-mono tabular-nums">{completedSteps}/{steps.length}</span>
         </div>
-
-        <div className="flex items-start gap-0">
+        <div className="flex items-center gap-2">
           {steps.map((step, i) => {
             const isCurrent = i === currentIdx;
             const isPast = i < currentIdx;
-            const StepIcon = step.icon;
-
             return (
-              <div key={step.id} className="flex-1 flex flex-col items-center relative">
-                {i < steps.length - 1 && (
-                  <div className="absolute top-[18px] h-[2px] z-0" style={{ left: "calc(50% + 22px)", right: "calc(-50% + 22px)" }}>
-                    <div className={`h-full rounded-full ${isPast || step.done ? "bg-green-500/30" : "bg-white/[0.06]"}`} />
-                  </div>
-                )}
-
-                <Link href={step.href} className={`interactive-tap relative z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                  step.done
-                    ? "border border-green-500/40"
-                    : isCurrent
-                    ? "border-2"
-                    : "border border-white/[0.08] hover:border-white/[0.15]"
-                }`} style={isCurrent && !step.done ? { borderColor: step.accent + "60", boxShadow: `0 0 18px ${step.accent}20` } : undefined}>
-                  {step.done ? (
-                    <span className="text-green-400 text-[12px] font-bold">✓</span>
-                  ) : (
-                    <StepIcon className="w-4 h-4" style={{ color: isCurrent ? step.accent : "rgba(255,255,255,0.20)" }} />
-                  )}
-                </Link>
-
-                <p className={`text-[10px] mt-1.5 text-center leading-tight ${
-                  isCurrent ? "text-white/70 font-semibold" : step.done ? "text-green-400/50" : "text-white/30"
-                }`}>
+              <div key={step.id} className="flex-1 flex flex-col items-center gap-1.5">
+                <div
+                  className="w-full h-[3px] rounded-full transition-all"
+                  style={{
+                    backgroundColor: step.done || isPast ? "rgba(74, 222, 128, 0.45)" : isCurrent ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.06)",
+                  }}
+                />
+                <p className={`text-[9.5px] leading-none ${isCurrent ? "text-white/70 font-semibold" : step.done || isPast ? "text-green-400/40" : "text-white/25"}`}>
                   {step.label}
-                </p>
-                <p className={`text-[9px] mt-0.5 ${isCurrent ? "text-white/30" : "text-white/20"}`}>
-                  {step.timeHint}
                 </p>
               </div>
             );
@@ -234,63 +338,127 @@ export default async function EliteDashboard() {
       </div>
       )}
 
-      {/* ── Quick access grid ── */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        {(isElite ? [
-          { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
-          { href: "/elite/calls",       icon: Radio,    value: "Live",                                                label: "Calls ao vivo" },
-          { href: "/elite/pratica",     icon: Zap,      value: "Treino",                                              label: "Pratique o que aprendeu" },
-          { href: "/elite/turma",       icon: Users,    value: "Turma",                                               label: "Comunidade" },
+      {/* ── Quick access: 1 primary (Aulas) + 3 secondary links ── */}
+      {(() => {
+        const secondary = isElite ? [
+          { href: "/elite/calls",   icon: Radio, label: "Calls ao vivo" },
+          { href: "/elite/pratica", icon: Zap,   label: "Treino" },
+          { href: "/elite/turma",   icon: Users, label: "Turma" },
         ] : [
-          { href: "/elite/aulas",       icon: BookOpen, value: <><LiveStat type="lessons" />/{stats.totalLessons}</>, label: "Aulas" },
-          { href: "/elite/turma",       icon: Users,    value: "Turma",                                               label: "Ver comunidade" },
-          { href: "/elite/conquistas",  icon: Target,   value: <LiveStat type="progress" totalLessons={stats.totalLessons} />, label: "Conquistas" },
-          { href: "/elite/desbloquear", icon: Zap,      value: "Elite",                                               label: "Destravar calls" },
-        ]).map((item, i) => (
-          <Link key={item.href} href={item.href} className={`interactive animate-in-up delay-${5 + i} group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-[#0e0e10] p-4 hover:border-white/[0.15] hover:-translate-y-0.5 transition-all duration-300`}>
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-            <div className="flex items-center justify-between mb-2">
-              <item.icon className="w-4 h-4 text-white/40" />
-              <ChevronRight className="w-3 h-3 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
-            </div>
-            <p className="text-[14px] text-white/85 font-bold leading-tight">{item.value}</p>
-            <p className="text-[10.5px] text-white/30 mt-0.5">{item.label}</p>
-          </Link>
-        ))}
-      </div>
+          { href: "/elite/turma",       icon: Users,  label: "Turma" },
+          { href: "/elite/conquistas",  icon: Target, label: "Conquistas" },
+          { href: "/elite/desbloquear", icon: Zap,    label: "Destravar Elite" },
+        ];
+        const progressPct = stats.totalLessons > 0 ? (stats.lessonsCompleted / stats.totalLessons) * 100 : 0;
+
+        return (
+          <div className="grid lg:grid-cols-5 gap-3">
+            {/* Primary: Aulas */}
+            <Link href="/elite/aulas" className="interactive animate-in-up delay-5 group lg:col-span-2 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-colors flex items-center gap-4">
+              <BookOpen className="w-6 h-6 text-white/60 shrink-0" strokeWidth={1.5} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-3 mb-2">
+                  <h3 className="text-[14px] font-bold text-white">Aulas</h3>
+                  <span className="text-[11px] font-mono text-white/50 font-semibold tabular-nums">
+                    <LiveStat type="lessons" />/{stats.totalLessons}
+                  </span>
+                </div>
+                <div className="h-[3px] bg-white/[0.05] rounded-full overflow-hidden">
+                  <div className="h-full bg-white/40 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 transition-all shrink-0" />
+            </Link>
+
+            {/* Secondary: 3 compact links */}
+            {secondary.map((item, i) => (
+              <Link key={item.href} href={item.href} className={`interactive animate-in-up delay-${6 + i} group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-colors flex items-center gap-3`}>
+                <item.icon className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors shrink-0" strokeWidth={1.5} />
+                <span className="text-[13px] font-semibold text-white/75 group-hover:text-white transition-colors flex-1">{item.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all shrink-0" />
+              </Link>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* ── Curriculum + Turma activity side by side ── */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        {/* Currículo */}
-        <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+      <div className="grid lg:grid-cols-2 gap-4 items-stretch">
+        {/* Currículo — warmer empty state when lessons=0, else module progress list */}
+        <div className="animate-in-up delay-3 rounded-2xl bg-white/[0.02] p-6 flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-5 rounded-full bg-brand-500/40" />
+              <div className="w-1 h-5 rounded-full" style={{ backgroundColor: tierAccent + "80" }} />
               <h3 className="text-[13px] font-bold text-white/85">Currículo</h3>
             </div>
-            <Link href="/elite/aulas" className="text-[10px] text-white/30 hover:text-brand-500/60 transition-colors flex items-center gap-1">
+            <Link href="/elite/aulas" className="text-[10px] text-white/30 hover:text-white/70 transition-colors flex items-center gap-1">
               Ver tudo <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          <div className="space-y-2.5">
-            {curriculum.filter(m => m.lessons.length > 0).map((mod, i) => (
-              <div key={mod.id} className="flex items-center gap-3">
-                <span className="text-[10px] font-mono w-5" style={{ color: mod.accentHex + "70" }}>{mod.number}</span>
-                <span className="text-[11px] text-white/50 flex-1 truncate">{mod.title}</span>
-                <ProgressFill value={0} color={mod.accentHex} delay={0.8 + i * 0.15} className="w-[120px]" />
-                <span className="text-[10px] text-white/30 font-mono w-8 text-right">0/{mod.lessons.length}</span>
+          {stats.lessonsCompleted === 0 && curriculum[0]?.lessons[0] ? (
+            <div className="space-y-4">
+              <Link
+                href={`/elite/aulas/${curriculum[0].lessons[0].id}`}
+                className="group relative block overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-4 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: tierAccent + "18" }}>
+                    <Play className="w-5 h-5" style={{ color: tierAccent }} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/35 mb-1">Comece por aqui</p>
+                    <h4 className="text-[15px] font-bold text-white leading-tight truncate">{curriculum[0].lessons[0].title}</h4>
+                    <p className="text-[11px] text-white/45 mt-1 line-clamp-1">{curriculum[0].lessons[0].subtitle}</p>
+                    <div className="flex items-center gap-3 mt-2.5 text-[10px] text-white/30">
+                      <span className="font-mono">{curriculum[0].lessons[0].duration}</span>
+                      <span className="text-white/15">·</span>
+                      <span>{curriculum.length} módulos · {totalLessons} aulas no total</span>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0 mt-2" />
+                </div>
+              </Link>
+
+              {/* Roadmap: módulos futuros — dá visão do caminho inteiro sem deixar vazio */}
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/30 mb-2.5 px-1">Caminho completo</p>
+                <div className="space-y-1.5">
+                  {curriculum.filter(m => m.lessons.length > 0).map((mod) => (
+                    <div key={mod.id} className="flex items-center gap-3 px-3 py-2 rounded-lg">
+                      <span className="text-[10px] font-mono w-5 text-white/25">{mod.number}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-semibold text-white/60 truncate leading-tight">{mod.title}</p>
+                        <p className="text-[10px] text-white/30 mt-0.5">{mod.subtitle}</p>
+                      </div>
+                      <span className="text-[10px] text-white/30 font-mono tabular-nums shrink-0">{mod.lessons.length} {mod.lessons.length === 1 ? "aula" : "aulas"}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {curriculum.filter(m => m.lessons.length > 0).map((mod) => {
+                const modPct = 0;
+                return (
+                  <div key={mod.id} className="flex items-center gap-3">
+                    <span className="text-[10px] font-mono w-5 text-white/30">{mod.number}</span>
+                    <span className="text-[11px] text-white/50 flex-1 truncate">{mod.title}</span>
+                    <div className="w-[120px] h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${modPct}%`, backgroundColor: "rgba(255,255,255,0.35)" }} />
+                    </div>
+                    <span className="text-[10px] text-white/30 font-mono w-8 text-right">0/{mod.lessons.length}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right panel: Agenda econômica (Elite) or Upgrade CTA (VIP) */}
         {isElite ? (
-          <div className="space-y-4">
-            <DashboardAgenda events={todayEvents} />
-            {lastReleased && <RecentSurpriseCard event={lastReleased} />}
-          </div>
+          <DashboardAgenda events={todayEvents} />
         ) : (
           <Link href="/elite/desbloquear" className="interactive animate-in-up delay-8 group relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-[#1a0e05] to-[#0e0e10] p-5 hover:border-brand-500/40 transition-all">
             <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.10] blur-[100px] pointer-events-none" />
@@ -314,6 +482,9 @@ export default async function EliteDashboard() {
           </Link>
         )}
       </div>
+
+      {/* ── Último release (full-width, compacto) — só quando existe ── */}
+      {isElite && lastReleased && <RecentSurpriseCard event={lastReleased} />}
     </div>
   );
 }
@@ -324,14 +495,17 @@ export default async function EliteDashboard() {
 
 function DashboardAgenda({ events }: { events: EconomicEvent[] }) {
   const nowMins = nyNowMinutes();
-  const nextEvent = events.find((e) => {
+  // Filtra só eventos que ainda não aconteceram (upcoming). Passados não agregam à decisão de "próximos passos" do dia.
+  const upcoming = events.filter((e) => {
     const m = parseMins(e.time);
     return m !== null && m >= nowMins;
   });
+  const nextEvent = upcoming[0];
   const nextEta = nextEvent ? etaFromNow(nextEvent.time, nowMins) : null;
+  const pastCount = events.length - upcoming.length;
 
   return (
-    <div className="animate-in-up delay-8 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+    <div className="animate-in-up delay-8 rounded-2xl bg-white/[0.02] p-6 flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-white/60" strokeWidth={1.8} />
@@ -358,17 +532,19 @@ function DashboardAgenda({ events }: { events: EconomicEvent[] }) {
         </div>
       ) : (
         <div className="space-y-0.5">
-          {events.map((ev) => {
+          {events.slice(0, 5).map((ev) => {
             const m = impactMeta(ev.impact);
             const mins = parseMins(ev.time);
             const isPast = mins !== null && mins < nowMins;
             const released = !!ev.actual;
-            const instruments = instrumentsForEvent(ev.event, ev.country).join(" ");
+            const instruments = instrumentsForEvent(ev.event, ev.country);
+            const instrumentsAttr = instruments.join(" ");
+            const instrumentsLabel = instruments.slice(0, 3).map(s => s.replace(/^\$/, "")).join(" · ");
             return (
               <div
                 key={ev.id}
                 data-filterable-event
-                data-instruments={instruments}
+                data-instruments={instrumentsAttr}
                 className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-white/[0.02] ${isPast ? "opacity-45" : ""}`}
               >
                 <div className="shrink-0 w-12 text-right">
@@ -382,15 +558,26 @@ function DashboardAgenda({ events }: { events: EconomicEvent[] }) {
                     boxShadow: ev.impact === "high" && !isPast ? `0 0 0 3px ${m.dotBg}22` : undefined,
                   }}
                 />
-                <p className="text-[11.5px] text-white/80 flex-1 truncate font-medium">{ev.event}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11.5px] text-white/80 truncate font-medium">{ev.event}</p>
+                  {instrumentsLabel && (
+                    <p className="text-[9px] text-white/30 font-mono uppercase tracking-[0.15em] mt-0.5">{instrumentsLabel}</p>
+                  )}
+                </div>
                 {released && <span className="shrink-0 text-[9px] font-bold tracking-[0.18em] uppercase text-emerald-400/80">✓</span>}
               </div>
             );
           })}
+          {events.length > 5 && (
+            <Link href="/elite/noticias" className="flex items-center justify-center gap-1.5 px-2 py-2 mt-1 rounded-lg text-[10.5px] text-white/35 hover:text-white/70 hover:bg-white/[0.02] transition-colors">
+              + {events.length - 5} eventos hoje
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          )}
         </div>
       )}
 
-      <p className="text-[9px] font-mono uppercase tracking-[0.18em] text-white/25 mt-3 pt-3 border-t border-white/[0.04]">
+      <p className="text-[9px] font-mono uppercase tracking-[0.18em] text-white/25 mt-auto pt-3 border-t border-white/[0.04]">
         ET (NY) · alto/médio impacto
       </p>
     </div>

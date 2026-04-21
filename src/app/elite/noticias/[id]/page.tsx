@@ -70,7 +70,7 @@ export default async function NewsReaderPage({ params }: { params: Promise<{ id:
         <span>Voltar pra Notícias</span>
       </Link>
 
-      <article className="animate-in-up relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
+      <article className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]">
         {/* Cover image */}
         {item.imageUrl && (
           <div className="relative aspect-[16/7] w-full overflow-hidden bg-[#0a0a0c]">

@@ -1,4 +1,4 @@
-import { CalendarClock, Check, Zap, BookOpen, TrendingUp, TrendingDown, Minus, ArrowUpRight } from "lucide-react";
+import { CalendarClock, Check, Zap, BookOpen, TrendingUp, TrendingDown, Minus, ArrowUpRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { eventExplanation, eventCategory, computeSurprise, lessonsForCategory, instrumentsForEvent, type Surprise } from "@/lib/economic-events";
 import { findLesson } from "@/lib/curriculum";
@@ -170,9 +170,9 @@ export default async function NoticiasPage({
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-1 h-1 rounded-full bg-[#C9A461] animate-pulse" />
-                <span className="text-[9.5px] font-bold tracking-[0.3em] uppercase text-[#C9A461]">
-                  Mercado · ao vivo
+                <span className="w-1 h-1 rounded-full bg-white/40" />
+                <span className="text-[9.5px] font-bold tracking-[0.3em] uppercase text-white/40">
+                  Agenda econômica
                 </span>
               </div>
               <h1 className="text-[26px] lg:text-[30px] font-bold text-white tracking-tight leading-[1.05]">
@@ -183,39 +183,25 @@ export default async function NoticiasPage({
                 Sem spam, sem clickbait, só o que movimenta preço.
               </p>
             </div>
-            <div className="flex items-end gap-5">
-              <div className="text-right">
-                <p className="text-[24px] lg:text-[28px] font-bold text-white leading-none font-mono tabular-nums">
-                  {events.length}
+            <div className="text-right">
+              <p className="text-[32px] lg:text-[40px] font-bold text-white leading-none font-mono tabular-nums">
+                {events.length}
+              </p>
+              <p className="text-[10px] text-white/40 uppercase tracking-[0.22em] mt-1.5">eventos hoje</p>
+              {counts.high > 0 && (
+                <p className="text-[10px] text-white/30 mt-2">
+                  <span className="font-mono font-semibold tabular-nums text-red-400/80">{counts.high}</span>
+                  {" alto impacto"}
+                  {highlights > 0 && <>
+                    <span className="text-white/15 mx-1.5">·</span>
+                    <span className="font-mono font-semibold tabular-nums text-white/50">{highlights}</span>
+                    {" manchetes"}
+                  </>}
                 </p>
-                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">eventos</p>
-              </div>
-              <div className="h-7 w-px bg-white/[0.08]" />
-              <div className="text-right">
-                <p className="text-[24px] lg:text-[28px] font-bold text-red-400/90 leading-none font-mono tabular-nums">
-                  {counts.high}
-                </p>
-                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">alto impacto</p>
-              </div>
-              <div className="h-7 w-px bg-white/[0.08]" />
-              <div className="text-right">
-                <p className="text-[24px] lg:text-[28px] font-bold text-white leading-none font-mono tabular-nums">
-                  {highlights}
-                </p>
-                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">top stories</p>
-              </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-
-      {/* ───── FILTROS de NEWS ───── */}
-      <div className="animate-in-up delay-1 rounded-xl border border-white/[0.05] bg-[#0e0e10]/50 p-3">
-        <NewsFiltersBar
-          current={newsFilters}
-          counts={catCounts}
-          resultLabel={news.length === catCounts.all ? `${news.length} manchetes` : `${news.length} de ${catCounts.all}`}
-        />
       </div>
 
       {/* ───── FEATURED EVENT (só quando faz sentido) ───── */}
@@ -230,8 +216,18 @@ export default async function NoticiasPage({
         <AgendaPanel events={events} today={today} calFilters={calFilters} />
       </div>
 
-      {/* ───── FEED DE MANCHETES ───── */}
-      <NoticiasFeedClient feed={news} filtersActive={filtersActive} />
+      {/* ───── FEED DE MANCHETES — filtros agora moram aqui, junto do conte\u00fado que filtram ───── */}
+      <NoticiasFeedClient
+        feed={news}
+        filtersActive={filtersActive}
+        filtersBar={
+          <NewsFiltersBar
+            current={newsFilters}
+            counts={catCounts}
+            resultLabel={news.length === catCounts.all ? `${news.length} manchetes` : `${news.length} de ${catCounts.all}`}
+          />
+        }
+      />
     </div>
   );
 }
@@ -270,7 +266,7 @@ function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
   // ── Modo compacto — pouco info, card minimal ──
   if (isSparse) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
+      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: `linear-gradient(90deg, transparent, ${m.dotBg}55, transparent)` }}
@@ -351,7 +347,7 @@ function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
 
   // ── Modo completo — evento com explicação, valores, ou released ──
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
+    <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
       {/* Glow sutil no canto superior direito */}
       <div className="absolute top-[-30%] right-[-10%] w-[400px] h-[240px] rounded-full opacity-[0.12] blur-[120px] pointer-events-none"
         style={{ backgroundColor: m.dotBg }} />
@@ -399,32 +395,26 @@ function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
           </div>
         </div>
 
-        {/* Explicação */}
+        {/* Explicação — collapsible por default (progressive disclosure) */}
         {explanation ? (
-          <div className="mt-5 space-y-4">
-            <div className="flex items-start gap-3">
-              <BookOpen className="w-4 h-4 text-white/30 mt-0.5 shrink-0" strokeWidth={1.8} />
+          <details className="group mt-4 [&[open]>summary>svg:last-child]:rotate-180">
+            <summary className="cursor-pointer list-none flex items-center gap-2 text-[11px] text-white/45 hover:text-white/75 transition-colors select-none">
+              <BookOpen className="w-3.5 h-3.5" strokeWidth={1.8} />
+              <span className="font-semibold">Entender esse evento</span>
+              <ChevronDown className="w-3.5 h-3.5 transition-transform ml-auto" strokeWidth={2} />
+            </summary>
+            <div className="mt-3 space-y-3 pl-5">
               <div>
-                <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/40 mb-1.5">o que é</p>
-                <p className="text-[13px] text-white/75 leading-relaxed">{explanation.what}</p>
+                <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/35 mb-1">o que é</p>
+                <p className="text-[12.5px] text-white/70 leading-relaxed">{explanation.what}</p>
+              </div>
+              <div>
+                <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/35 mb-1">por que importa</p>
+                <p className="text-[12.5px] text-white/70 leading-relaxed">{explanation.whyMatters}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-4 h-4 text-white/30 mt-0.5 shrink-0" strokeWidth={1.8} />
-              <div>
-                <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/40 mb-1.5">por que importa</p>
-                <p className="text-[13px] text-white/75 leading-relaxed">{explanation.whyMatters}</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-5 flex items-start gap-3">
-            <BookOpen className="w-4 h-4 text-white/25 mt-0.5 shrink-0" strokeWidth={1.8} />
-            <p className="text-[12.5px] text-white/50 leading-relaxed italic">
-              Indicador econômico sem descrição detalhada disponível. Acompanhe os valores (anterior/previsto/real) pra comparar com o consenso — surpresas vs. expectativa é o que move preço.
-            </p>
-          </div>
-        )}
+          </details>
+        ) : null}
 
         {/* Números — só renderiza se tem pelo menos um dado */}
         {(ev.previous || ev.forecast || ev.actual) && (
@@ -631,9 +621,12 @@ function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; t
 
       <InstrumentFilterStyle />
 
-      {/* Grid de cards — 4 cols wide, 3/2/1 responsivo */}
+      {/* Grid de cards — key baseado nos filtros força remount e replay da anima\u00e7\u00e3o fade-in quando user aplica filtro novo. */}
       {events.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] py-14 flex flex-col items-center text-center px-6">
+        <div
+          key={`empty-${calFilters.period}-${calFilters.country}-${calFilters.impact}`}
+          className="animate-in-fade rounded-2xl bg-white/[0.02] py-14 flex flex-col items-center text-center px-6"
+        >
           <CalendarClock className="w-8 h-8 text-white/25 mb-3.5" strokeWidth={1.5} />
           <p className="text-[13px] font-semibold text-white/70 mb-1">Mercado calmo</p>
           <p className="text-[11.5px] text-white/40 max-w-sm leading-relaxed">
@@ -641,11 +634,25 @@ function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; t
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {ordered.map((ev) => {
+        <div
+          key={`grid-${calFilters.period}-${calFilters.country}-${calFilters.impact}`}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+        >
+          {ordered.map((ev, i) => {
             const isEvPast = isToday && past.includes(ev);
             const isNext = ev.id === nextEvId && !isEvPast;
-            return <EventCard key={ev.id} event={ev} isPast={isEvPast} isNext={isNext} />;
+            const evInstruments = instrumentsForEvent(ev.event, ev.country).join(" ");
+            return (
+              <div
+                key={ev.id}
+                data-filterable-event
+                data-instruments={evInstruments}
+                className="animate-in-fade"
+                style={{ animationDelay: `${Math.min(i * 25, 250)}ms` }}
+              >
+                <EventCard event={ev} isPast={isEvPast} isNext={isNext} />
+              </div>
+            );
           })}
         </div>
       )}
@@ -690,17 +697,17 @@ function EventCard({ event: ev, isPast, isNext }: { event: EconomicEvent; isPast
       {/* Top row: dot + impact label + next badge / released check */}
       <div className="flex items-center gap-1.5 mb-2.5">
         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: m.dotBg }} />
-        <span className={`text-[8.5px] font-bold tracking-[0.22em] uppercase ${m.color}`}>
+        <span className="text-[8.5px] font-bold tracking-[0.22em] uppercase text-white/50">
           {m.label}
         </span>
         {released && (
-          <span className="inline-flex items-center gap-1 text-[8.5px] font-bold tracking-[0.2em] uppercase text-emerald-400/80 ml-auto">
-            <Check className="w-2.5 h-2.5" strokeWidth={2.6} />
+          <span className="inline-flex items-center gap-1 text-[8.5px] font-bold tracking-[0.2em] uppercase text-white/40 ml-auto">
+            <Check className="w-2.5 h-2.5 text-emerald-400/80" strokeWidth={2.6} />
             divulgado
           </span>
         )}
         {isNext && !released && eta && (
-          <span className="ml-auto text-[9.5px] font-mono tabular-nums text-amber-400/90">{eta}</span>
+          <span className="ml-auto text-[9.5px] font-mono tabular-nums text-white/60">{eta}</span>
         )}
       </div>
 

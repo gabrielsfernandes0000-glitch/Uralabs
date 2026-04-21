@@ -227,7 +227,7 @@ function BadgeCard({
     <button
       type="button"
       onClick={() => onOpen(achievement)}
-      className={`interactive group relative w-full text-left rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-1`}
+      className={`interactive group relative w-full text-left rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-0.5`}
     >
       {isLegendary && unlocked && (
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
@@ -687,7 +687,7 @@ function InsightsView() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Emotional avg */}
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
           <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Estado Emocional</p>
           <div className="flex items-end gap-2">
             <span className="text-[28px] leading-none">{avgEmotional > 0 ? emotionalEmojis[Math.round(avgEmotional)] : "—"}</span>
@@ -704,14 +704,14 @@ function InsightsView() {
         </div>
 
         {/* Discipline */}
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
           <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Disciplina</p>
           <p className="text-[28px] font-bold text-white leading-none">{totalTrades > 0 ? `${disciplineRate}%` : "—"}</p>
           <p className="text-[11px] text-white/35 mt-1">seguiu o plano</p>
         </div>
 
         {/* Win rate */}
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
           <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Win Rate</p>
           {totalTrades > 0 ? (
             <>
@@ -727,7 +727,7 @@ function InsightsView() {
         </div>
 
         {/* Streak */}
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12] transition-all duration-300">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
           <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Streak</p>
           <p className="text-[28px] font-bold text-white leading-none">{streak}</p>
           <p className="text-[11px] text-white/35 mt-1">dias · recorde: {bestStreak}</p>
@@ -735,7 +735,7 @@ function InsightsView() {
       </div>
 
       {/* Emotional week chart */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6 hover:border-white/[0.12] transition-all duration-300">
+      <div className="rounded-xl bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-all duration-300">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-[14px] font-semibold text-white/60">Emocional da Semana</h3>
           <span className="text-[10px] text-white/25 font-mono">últimos 7 dias</span>
@@ -775,7 +775,7 @@ function InsightsView() {
       </div>
 
       {/* Patterns & suggestions */}
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6 hover:border-white/[0.12] transition-all duration-300">
+      <div className="rounded-xl bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-all duration-300">
         <h3 className="text-[14px] font-semibold text-white/60 mb-4">Padrões Detectados</h3>
 
         {totalTrades === 0 ? (

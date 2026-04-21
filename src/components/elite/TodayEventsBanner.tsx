@@ -50,8 +50,8 @@ export function TodayEventsBanner({
     ({ US: "EUA", EU: "UE", BR: "BR", UK: "UK", CN: "CN", JP: "JP", CA: "CA", NZ: "NZ" } as Record<string, string>)[c] ?? c;
 
   return (
-    <div className="relative rounded-xl border border-white/[0.05] bg-[#0c0c0e]">
-      <div className="px-4 pt-3 pb-3 flex items-center gap-2">
+    <div className="relative">
+      <div className="px-1 pb-3 flex items-center gap-2">
         <span
           className="text-[9.5px] font-bold tracking-[0.22em] uppercase"
           style={{ color: accent + "CC" }}
@@ -74,12 +74,14 @@ export function TodayEventsBanner({
         </Link>
       </div>
 
-      <div className="px-4 pb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <div
+        className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {sorted.map((ev) => (
           <Link
             key={ev.id}
             href="/elite/noticias"
-            className="interactive-tap group flex items-center gap-2 px-2.5 py-2 rounded-md border border-white/[0.04] hover:border-white/[0.14] hover:bg-white/[0.015] transition-colors"
+            className="interactive-tap group shrink-0 snap-start flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
           >
             <span
               className={`shrink-0 w-1.5 h-1.5 rounded-full ${
@@ -93,7 +95,7 @@ export function TodayEventsBanner({
             <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-white/30 leading-none shrink-0">
               {countryCode(ev.country)}
             </span>
-            <span className="text-[11.5px] font-semibold text-white/80 leading-tight truncate min-w-0 flex-1 group-hover:text-white">
+            <span className="text-[11.5px] font-semibold text-white/80 leading-tight shrink-0 group-hover:text-white">
               {ev.event}
             </span>
           </Link>

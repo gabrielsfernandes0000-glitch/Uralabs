@@ -3,12 +3,12 @@
 import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogOut, Lock, Radio, Search, ChevronDown,
   LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift, NotebookPen,
-  MessageCircle, Activity, Globe, type LucideIcon,
+  MessageCircle, Activity, Globe, GraduationCap, type LucideIcon,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
@@ -19,28 +19,44 @@ import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 
 type NavChild = { href: string; label: string; icon: LucideIcon; queryKey?: string; queryValue?: string };
 type NavItem = { href: string; icon: LucideIcon; label: string; exact?: boolean; eliteOnly?: boolean; children?: NavChild[] };
+type NavSection = { label: string; items: NavItem[] };
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/elite",            icon: LayoutDashboard, label: "Dashboard",  exact: true },
-  { href: "/elite/membros",    icon: Users,           label: "Membros" },
-  { href: "/elite/calls",      icon: Radio,           label: "Calls",      eliteOnly: true },
-  { href: "/elite/aulas",      icon: BookOpen,        label: "Aulas" },
-  { href: "/elite/pratica",    icon: Crosshair,       label: "Prática",    eliteOnly: true },
-  { href: "/elite/diario",     icon: NotebookPen,     label: "Diário",     eliteOnly: true },
-  { href: "/elite/noticias",   icon: Globe,           label: "Notícias" },
+const NAV_SECTIONS: NavSection[] = [
   {
-    href: "/elite/turma",
-    icon: Newspaper,
-    label: "Mural",
-    children: [
-      { href: "/elite/turma?view=mural",   label: "Feed",        icon: Newspaper,      queryKey: "view", queryValue: "mural"   },
-      { href: "/elite/turma?view=review",  label: "Peer Review", icon: MessageCircle,  queryKey: "view", queryValue: "review"  },
-      { href: "/elite/turma?view=ranking", label: "Ranking",     icon: Activity,       queryKey: "view", queryValue: "ranking" },
+    label: "Dia a dia",
+    items: [
+      { href: "/elite",         icon: LayoutDashboard, label: "Dashboard",  exact: true },
+      { href: "/elite/calls",   icon: Radio,           label: "Calls",      eliteOnly: true },
+      { href: "/elite/aulas",   icon: BookOpen,        label: "Aulas" },
+      { href: "/elite/pratica", icon: Crosshair,       label: "Prática",    eliteOnly: true },
+      { href: "/elite/diario",  icon: NotebookPen,     label: "Diário",     eliteOnly: true },
     ],
   },
-  { href: "/elite/conquistas", icon: Trophy,          label: "Conquistas" },
-  { href: "/elite/loja",       icon: Gift,            label: "Loja" },
-  { href: "/elite/corretora",  icon: BarChart3,       label: "Corretora",  eliteOnly: true },
+  {
+    label: "Comunidade",
+    items: [
+      { href: "/elite/membros",  icon: Users,    label: "Membros" },
+      {
+        href: "/elite/turma",
+        icon: GraduationCap,
+        label: "Turma",
+        children: [
+          { href: "/elite/turma?view=mural",   label: "Mural",       icon: Newspaper,     queryKey: "view", queryValue: "mural"   },
+          { href: "/elite/turma?view=review",  label: "Peer Review", icon: MessageCircle, queryKey: "view", queryValue: "review"  },
+          { href: "/elite/turma?view=ranking", label: "Ranking",     icon: Activity,      queryKey: "view", queryValue: "ranking" },
+        ],
+      },
+      { href: "/elite/noticias", icon: Globe,    label: "Notícias" },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [
+      { href: "/elite/conquistas", icon: Trophy,    label: "Conquistas" },
+      { href: "/elite/loja",       icon: Gift,      label: "Loja" },
+      { href: "/elite/corretora",  icon: BarChart3, label: "Corretora",  eliteOnly: true },
+    ],
+  },
 ];
 
 /* ────────────────────────────────────────────
@@ -59,27 +75,36 @@ function NavMenu({
 }) {
   const searchParams = useSearchParams();
   return (
-    <nav className="flex-1 py-5 px-4 space-y-1 overflow-y-auto">
-      {NAV_ITEMS.map((item) =>
-        item.children ? (
-          <NavGroup
-            key={item.href}
-            item={item}
-            pathname={pathname}
-            searchParams={searchParams}
-            isElite={isElite}
-            onNavigate={onNavigate}
-          />
-        ) : (
-          <NavRow
-            key={item.href}
-            item={item}
-            pathname={pathname}
-            isElite={isElite}
-            onNavigate={onNavigate}
-          />
-        )
-      )}
+    <nav className="flex-1 py-5 px-4 overflow-y-auto">
+      {NAV_SECTIONS.map((section, idx) => (
+        <div key={section.label} className={idx > 0 ? "mt-4 pt-3 border-t border-white/[0.04]" : ""}>
+          <p className="px-4 mb-1 text-[9px] font-bold uppercase tracking-[0.22em] text-white/25">
+            {section.label}
+          </p>
+          <div className="space-y-0.5">
+            {section.items.map((item) =>
+              item.children ? (
+                <NavGroup
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  searchParams={searchParams}
+                  isElite={isElite}
+                  onNavigate={onNavigate}
+                />
+              ) : (
+                <NavRow
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  isElite={isElite}
+                  onNavigate={onNavigate}
+                />
+              )
+            )}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }
@@ -95,6 +120,7 @@ function NavRow({
   isElite: boolean;
   onNavigate: () => void;
 }) {
+  const router = useRouter();
   const isActive = item.exact
     ? pathname === item.href
     : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -106,7 +132,8 @@ function NavRow({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
+      onMouseEnter={() => router.prefetch(href)}
+      className={`relative flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
         isActive ? "text-white" : locked ? "text-white/25 hover:text-white/50 hover:bg-white/[0.02]" : "text-white/35 hover:text-white/70 hover:bg-white/[0.02]"
       }`}
     >
@@ -146,6 +173,7 @@ function NavGroup({
   isElite: boolean;
   onNavigate: () => void;
 }) {
+  const router = useRouter();
   const Icon = item.icon;
   const locked = Boolean(item.eliteOnly && !isElite);
   const href = locked ? "/elite/desbloquear" : item.href;
@@ -165,7 +193,8 @@ function NavGroup({
         <Link
           href={href}
           onClick={() => { toggle(); onNavigate(); }}
-          className={`flex-1 relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
+          onMouseEnter={() => router.prefetch(href)}
+          className={`flex-1 relative flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
             isActive ? "text-white" : locked ? "text-white/25 hover:text-white/50 hover:bg-white/[0.02]" : "text-white/35 hover:text-white/70 hover:bg-white/[0.02]"
           }`}
         >
@@ -257,6 +286,11 @@ export function EliteSidebar({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [kbdShortcut, setKbdShortcut] = useState("⌘K");
+  useEffect(() => {
+    const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+    setKbdShortcut(isMac ? "⌘K" : "Ctrl K");
+  }, []);
   const avatar = avatarUrl(session.userId, session.avatar, 64);
   const displayName = session.globalName || session.username;
   const hasBanner = isBannerSlug(bannerSlug);
@@ -334,7 +368,7 @@ export function EliteSidebar({
             >
               <Search className="w-3.5 h-3.5" />
               <span className="text-[12px] flex-1 text-left">Buscar…</span>
-              <kbd className="text-[9px] font-mono text-white/35 border border-white/[0.10] rounded px-1 py-0.5">⌘K</kbd>
+              <kbd className="text-[9px] font-mono text-white/35 border border-white/[0.10] rounded px-1 py-0.5">{kbdShortcut}</kbd>
             </button>
           </div>
 

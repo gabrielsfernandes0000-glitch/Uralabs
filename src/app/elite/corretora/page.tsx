@@ -290,7 +290,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
         </div>
 
         {/* Tutorial */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6">
+        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-6">
           <h3 className="text-[14px] font-semibold text-white/80 mb-4">Como gerar sua API Key na {selected.name}</h3>
           <ol className="space-y-3">
             {selected.tutorial.map((text, i) => (
@@ -514,7 +514,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {/* Metrics */}
       {metrics && metrics.totalTrades > 0 && (
-        <div className="animate-in-up delay-2 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+        <div className="animate-in-up delay-2 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
           <div className="relative z-10 p-7">
             <div className="flex items-center gap-3 mb-5">
               <Trophy className="w-4 h-4 text-yellow-500/50" />
@@ -545,7 +545,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         )}
 
       {/* Open positions */}
-      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -591,7 +591,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       </div>
 
       {/* Recent trades */}
-      <div className="animate-in-up delay-4 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-4 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">

@@ -40,7 +40,7 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
         className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
           lesson.locked
             ? "border-white/[0.04] opacity-45"
-            : "border-white/[0.08] hover:border-white/[0.18] hover:-translate-y-1"
+            : "border-white/[0.08] hover:border-white/[0.18] hover:-translate-y-0.5"
         }`}
         style={
           hovered && !lesson.locked
@@ -98,22 +98,15 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
             {lesson.subtitle}
           </p>
 
-          <div className="flex items-center gap-3">
-            <div className={`flex items-center gap-1.5 ${lesson.locked ? "text-white/20" : "text-white/35"}`}>
+          <div className="flex items-center gap-2.5">
+            <div className={`flex items-center gap-1.5 ${lesson.locked ? "text-white/20" : "text-white/45"}`}>
               <Clock className="w-3 h-3" />
               <span className="text-[10px] font-medium">{lesson.duration}</span>
             </div>
-            <div className={`w-px h-3 ${lesson.locked ? "bg-white/5" : "bg-white/10"}`} />
-            {lesson.hasQuiz && (
-              <div className={`flex items-center gap-1 ${lesson.locked ? "text-white/20" : "text-white/30"}`}>
-                <BookOpen className="w-3 h-3" />
-                <span className="text-[10px]">Quiz</span>
-              </div>
-            )}
-            {lesson.hasPdf && (
-              <div className={`flex items-center gap-1 ${lesson.locked ? "text-white/20" : "text-white/30"}`}>
-                <FileText className="w-3 h-3" />
-                <span className="text-[10px]">PDF</span>
+            {(lesson.hasQuiz || lesson.hasPdf) && (
+              <div className={`flex items-center gap-1.5 ml-auto ${lesson.locked ? "text-white/15" : "text-white/25"}`}>
+                {lesson.hasQuiz && <BookOpen className="w-3 h-3" />}
+                {lesson.hasPdf && <FileText className="w-3 h-3" />}
               </div>
             )}
           </div>

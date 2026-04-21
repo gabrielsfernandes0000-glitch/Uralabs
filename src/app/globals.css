@@ -110,20 +110,26 @@ body {
 }
 
 /* Apply via class: animate-in + variant — `backwards` aplica o from-state antes
-   da animação começar (evita flicker) mas não persiste transform depois do fim. */
-.animate-in-up { animation: animate-in-up 0.5s ease-out backwards; }
-.animate-in-scale { animation: animate-in-scale 0.5s ease-out backwards; }
-.animate-in-fade { animation: animate-in-fade 0.5s ease-out backwards; }
+   da animação começar (evita flicker) mas não persiste transform depois do fim.
+   Duration reduzida pra 0.3s (antes 0.5s) e stagger cap em 120ms pra navegação rápida. */
+.animate-in-up { animation: animate-in-up 0.3s ease-out backwards; }
+.animate-in-scale { animation: animate-in-scale 0.3s ease-out backwards; }
+.animate-in-fade { animation: animate-in-fade 0.3s ease-out backwards; }
 
-/* Stagger delays — apply on children */
-.delay-1 { animation-delay: 0.05s; }
-.delay-2 { animation-delay: 0.1s; }
-.delay-3 { animation-delay: 0.15s; }
-.delay-4 { animation-delay: 0.2s; }
-.delay-5 { animation-delay: 0.25s; }
-.delay-6 { animation-delay: 0.3s; }
-.delay-7 { animation-delay: 0.35s; }
-.delay-8 { animation-delay: 0.4s; }
+/* Stagger delays — cascata curta. Delay 4+ fica colado em delay-3 pra evitar onda longa. */
+.delay-1 { animation-delay: 0.04s; }
+.delay-2 { animation-delay: 0.08s; }
+.delay-3 { animation-delay: 0.12s; }
+.delay-4 { animation-delay: 0.12s; }
+.delay-5 { animation-delay: 0.12s; }
+.delay-6 { animation-delay: 0.12s; }
+.delay-7 { animation-delay: 0.12s; }
+.delay-8 { animation-delay: 0.12s; }
+
+/* Respect user's prefers-reduced-motion — disable entrance animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-in-up, .animate-in-scale, .animate-in-fade { animation: none; }
+}
 
 /* ── Interactive affordance — aplicar em Links/buttons de navegação e ação.
    Hover: sobe 1px. Active: pressiona 2% (tap feedback).

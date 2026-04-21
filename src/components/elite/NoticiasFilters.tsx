@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Search, X, Eraser, ChevronDown, Globe } from "lucide-react";
+import { Search, X, Eraser, ChevronDown, Globe, SlidersHorizontal } from "lucide-react";
 import type { NewsFilters, CalendarFilters, CountryFilter } from "@/lib/noticias-filters";
 import type { NewsCategory } from "@/lib/market-news";
 import { WatchlistFilterControls } from "./WatchlistFilter";
@@ -20,6 +20,9 @@ export function NewsFiltersBar({ current, counts, resultLabel }: { current: News
   const [pending, startTransition] = useTransition();
   const [searchText, setSearchText] = useState(current.q);
   const searchRef = useRef<HTMLInputElement | null>(null);
+  // Filtros secundários (janela + qualidade) só abrem quando user pede — progressive disclosure.
+  const secondaryActive = current.period !== "12h" || current.score !== "good";
+  const [showAdvanced, setShowAdvanced] = useState(secondaryActive);
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -65,10 +68,9 @@ export function NewsFiltersBar({ current, counts, resultLabel }: { current: News
   const anyActive = current.cat !== "all" || current.score !== "good" || current.period !== "12h" || current.q.length > 0;
 
   return (
-    <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">
-      {/* Tema (categoria) */}
-      <div className="flex items-center gap-2">
-        <GroupLabel>tema</GroupLabel>
+    <div className="space-y-2">
+      {/* Row principal — tema (filtro mais usado) + search + toggle avançado */}
+      <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">
         <ChipGroup>
           <Chip active={current.cat === "all"} onClick={() => setParam("cat", "all")} count={counts?.all}>Todas</Chip>
           <Chip active={current.cat === "crypto"} onClick={() => setParam("cat", "crypto")} accent="#A855F7" count={counts?.crypto}>Crypto</Chip>
@@ -76,70 +78,85 @@ export function NewsFiltersBar({ current, counts, resultLabel }: { current: News
           <Chip active={current.cat === "stocks"} onClick={() => setParam("cat", "stocks")} accent="#10B981" count={counts?.stocks}>Ações</Chip>
           <Chip active={current.cat === "general"} onClick={() => setParam("cat", "general")} accent="#C9A461" count={counts?.general}>Macro</Chip>
         </ChipGroup>
-      </div>
 
-      {/* Janela (período) */}
-      <div className="flex items-center gap-2">
-        <GroupLabel>janela</GroupLabel>
-        <ChipGroup>
-          <Chip active={current.period === "1h"} onClick={() => setParam("period", "1h")}>1h</Chip>
-          <Chip active={current.period === "6h"} onClick={() => setParam("period", "6h")}>6h</Chip>
-          <Chip active={current.period === "12h"} onClick={() => setParam("period", "12h")}>12h</Chip>
-          <Chip active={current.period === "24h"} onClick={() => setParam("period", "24h")}>24h</Chip>
-        </ChipGroup>
-      </div>
-
-      {/* Qualidade (score) */}
-      <div className="flex items-center gap-2">
-        <GroupLabel>qualidade</GroupLabel>
-        <ChipGroup>
-          <Chip active={current.score === "all"} onClick={() => setParam("score", "all")}>Tudo</Chip>
-          <Chip active={current.score === "good"} onClick={() => setParam("score", "good")}>Relevantes</Chip>
-          <Chip active={current.score === "premium"} onClick={() => setParam("score", "premium")} accent="#F87171">Top</Chip>
-        </ChipGroup>
-      </div>
-
-      {/* Limpar filtros — só quando algo mudou do default */}
-      {anyActive && (
         <button
           type="button"
-          onClick={clearAll}
-          className="interactive-tap inline-flex items-center gap-1 px-2 py-1 rounded-md border border-white/[0.06] text-[10.5px] font-semibold text-white/45 hover:text-white/85 hover:border-white/[0.14]"
-          aria-label="Limpar filtros"
+          onClick={() => setShowAdvanced((v) => !v)}
+          aria-expanded={showAdvanced}
+          className={`interactive-tap inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10.5px] font-semibold transition-colors ${
+            secondaryActive
+              ? "border-white/[0.22] text-white bg-white/[0.04]"
+              : "border-white/[0.06] text-white/45 hover:text-white/75 hover:border-white/[0.12]"
+          }`}
         >
-          <Eraser className="w-2.5 h-2.5" strokeWidth={2.2} />
-          Limpar
+          <SlidersHorizontal className="w-2.5 h-2.5" strokeWidth={2.2} />
+          Filtros
+          <ChevronDown className={`w-2.5 h-2.5 transition-transform ${showAdvanced ? "rotate-180" : ""}`} strokeWidth={2} />
         </button>
-      )}
 
-      {/* Search + contador agrupados */}
-      <div className="ml-auto flex items-center gap-2">
-        {resultLabel && (
-          <span className="text-[9.5px] font-mono uppercase tracking-[0.18em] text-white/30 tabular-nums hidden sm:inline">
-            {resultLabel}
-          </span>
+        {anyActive && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="interactive-tap inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10.5px] font-semibold text-white/40 hover:text-white/80 transition-colors"
+            aria-label="Limpar filtros"
+          >
+            <Eraser className="w-2.5 h-2.5" strokeWidth={2.2} />
+            Limpar
+          </button>
         )}
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" strokeWidth={2} />
-          <input
-            ref={searchRef}
-            type="text"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Buscar…"
-            className="w-[170px] pl-7 pr-11 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.08] text-[11.5px] text-white/80 placeholder:text-white/25 focus:outline-none focus:border-white/[0.18]"
-          />
-          {searchText ? (
-            <button type="button" onClick={() => setSearchText("")} className="interactive-tap absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded flex items-center justify-center text-white/40 hover:text-white">
-              <X className="w-2.5 h-2.5" strokeWidth={2.2} />
-            </button>
-          ) : (
-            <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-white/[0.08] bg-white/[0.02] text-[9px] font-mono text-white/35">/</kbd>
-          )}
-        </div>
 
-        {pending && <span className="text-[10px] text-white/35 animate-pulse">…</span>}
+        <div className="ml-auto flex items-center gap-2">
+          {resultLabel && (
+            <span className="text-[9.5px] font-mono uppercase tracking-[0.18em] text-white/30 tabular-nums hidden sm:inline">
+              {resultLabel}
+            </span>
+          )}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" strokeWidth={2} />
+            <input
+              ref={searchRef}
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar…"
+              className="w-[170px] pl-7 pr-11 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.08] text-[11.5px] text-white/80 placeholder:text-white/25 focus:outline-none focus:border-white/[0.18]"
+            />
+            {searchText ? (
+              <button type="button" onClick={() => setSearchText("")} className="interactive-tap absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded flex items-center justify-center text-white/40 hover:text-white">
+                <X className="w-2.5 h-2.5" strokeWidth={2.2} />
+              </button>
+            ) : (
+              <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-white/[0.08] bg-white/[0.02] text-[9px] font-mono text-white/35">/</kbd>
+            )}
+          </div>
+          {pending && <span className="text-[10px] text-white/35 animate-pulse">…</span>}
+        </div>
       </div>
+
+      {/* Row secundária — só aparece quando user expande ou tem filtros avançados ativos */}
+      {showAdvanced && (
+        <div className="flex items-center gap-x-4 gap-y-2 flex-wrap pt-2 border-t border-white/[0.04]">
+          <div className="flex items-center gap-2">
+            <GroupLabel>janela</GroupLabel>
+            <ChipGroup>
+              <Chip active={current.period === "1h"} onClick={() => setParam("period", "1h")} small>1h</Chip>
+              <Chip active={current.period === "6h"} onClick={() => setParam("period", "6h")} small>6h</Chip>
+              <Chip active={current.period === "12h"} onClick={() => setParam("period", "12h")} small>12h</Chip>
+              <Chip active={current.period === "24h"} onClick={() => setParam("period", "24h")} small>24h</Chip>
+            </ChipGroup>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <GroupLabel>qualidade</GroupLabel>
+            <ChipGroup>
+              <Chip active={current.score === "all"} onClick={() => setParam("score", "all")} small>Tudo</Chip>
+              <Chip active={current.score === "good"} onClick={() => setParam("score", "good")} small>Relevantes</Chip>
+              <Chip active={current.score === "premium"} onClick={() => setParam("score", "premium")} accent="#F87171" small>Top</Chip>
+            </ChipGroup>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

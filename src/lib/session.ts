@@ -38,6 +38,18 @@ export async function createSession(payload: SessionPayload) {
 
 /** Read and verify the session from cookies. Returns null if invalid/expired. */
 export async function getSession(): Promise<SessionPayload | null> {
+  // TEMP: dev bypass — REMOVER ANTES DE COMMITAR
+  if (process.env.NODE_ENV === "development") {
+    return {
+      userId: "dev-user",
+      username: "dev",
+      globalName: "Dev User",
+      avatar: null,
+      roles: [],
+      isElite: true,
+      isVip: true,
+    };
+  }
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
   if (!token) return null;

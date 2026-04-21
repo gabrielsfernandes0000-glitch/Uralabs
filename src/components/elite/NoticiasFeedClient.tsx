@@ -16,9 +16,11 @@ import { NewsThumbFallback } from "@/components/elite/NewsThumbFallback";
 export function NoticiasFeedClient({
   feed,
   filtersActive = false,
+  filtersBar,
 }: {
   feed: MarketNews[];
   filtersActive?: boolean;
+  filtersBar?: React.ReactNode;
 }) {
   const [openItem, setOpenItem] = useState<MarketNews | null>(null);
   // Dedup de prefetch — cada artigo só dispara Jina fetch uma vez por sessão.
@@ -60,12 +62,24 @@ export function NoticiasFeedClient({
           </span>
         </div>
 
+        {/* Filtros logo acima do grid — contexto claro, user v\u00ea imediatamente o que est\u00e1 filtrando */}
+        {filtersBar && (
+          <div className="mb-3 rounded-xl bg-white/[0.02] px-3 py-2.5">
+            {filtersBar}
+          </div>
+        )}
+
         {feed.length === 0 ? (
           <EmptyFeed filtersActive={filtersActive} />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {feed.map((item) => (
-              <NewsCard key={item.id} item={item} onOpen={handleOpen} onPrefetch={handlePrefetch} />
+          <div
+            key={feed.slice(0, 3).map((n) => n.id).join("-")}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+          >
+            {feed.map((item, i) => (
+              <div key={item.id} className="animate-in-fade" style={{ animationDelay: `${Math.min(i * 20, 200)}ms` }}>
+                <NewsCard item={item} onOpen={handleOpen} onPrefetch={handlePrefetch} />
+              </div>
             ))}
           </div>
         )}

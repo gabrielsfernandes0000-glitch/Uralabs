@@ -108,13 +108,10 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
   const done14 = days.filter((d) => d.done).length;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
-      <div className="absolute top-[-30%] right-[-10%] w-[260px] h-[160px] bg-amber-500/[0.05] blur-[110px] pointer-events-none" />
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-
+    <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-5">
       <div className="relative z-10 space-y-3.5">
         <div className="flex items-center gap-3">
-          <Flame className={`w-8 h-8 shrink-0 ${streak > 0 ? "text-amber-400" : "text-white/25"}`} strokeWidth={1.5} />
+          <Flame className={`w-8 h-8 shrink-0 ${streak > 0 ? "text-brand-500" : "text-white/25"}`} strokeWidth={1.5} />
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2">
               <p className={`text-[26px] font-bold font-mono leading-none ${streak > 0 ? "text-amber-300" : "text-white/80"}`}>{streak}</p>
@@ -136,9 +133,9 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
                 title={`${d.key}${d.done ? " · ✓ concluído" : d.isToday ? " · hoje" : ""}`}
                 className={`aspect-square rounded-[4px] flex items-center justify-center text-[8px] font-mono font-bold border ${
                   d.done
-                    ? "border-amber-500/45 text-amber-400"
+                    ? "border-white/30 bg-white/[0.08] text-white"
                     : d.isToday
-                    ? "border-brand-500/50 text-white/50"
+                    ? "border-white/30 text-white/60"
                     : "border-white/[0.05] text-white/20"
                 }`}
               >
@@ -173,17 +170,101 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
                 <div
                   key={cat.key}
                   title={`${cat.key}${covered ? " · ✓ coberto" : ""}`}
-                  className="aspect-square rounded-[3px] border"
-                  style={{
-                    backgroundColor: covered ? `${cat.accent}30` : "transparent",
-                    borderColor: covered ? `${cat.accent}80` : "rgba(255,255,255,0.06)",
-                  }}
+                  className={`aspect-square rounded-[3px] border ${
+                    covered
+                      ? "border-white/30 bg-white/[0.12]"
+                      : "border-white/[0.05] bg-transparent"
+                  }`}
                 />
               );
             })}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
+   Uncovered Themes — temas que o user ainda não treinou,
+   acionáveis (click = vai direto pro treino daquele tema).
+   Fecha o loop do streak card (2/15 cobertos → "estes aqui te esperam").
+   ──────────────────────────────────────────── */
+
+function UncoveredThemesPanel({ streakVersion }: { streakVersion: number }) {
+  const [loaded, setLoaded] = useState(false);
+  const [covered, setCovered] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const s = new Set<string>();
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const k = dateKey(d);
+      if (localStorage.getItem(`treino-diario-${k}`) === "done") {
+        s.add(getDailyTheme(k));
+      }
+    }
+    setCovered(s);
+    setLoaded(true);
+  }, [streakVersion]);
+
+  if (!loaded) return null;
+  const uncovered = TREINO_CATEGORIES.filter((cat) => !covered.has(cat.key));
+  if (uncovered.length === 0) return null; // user cobriu tudo
+
+  const visibleCount = Math.min(uncovered.length, 6);
+  const remaining = uncovered.length - visibleCount;
+
+  return (
+    <div className="rounded-2xl bg-white/[0.02] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-[13px] font-bold text-white/85">Temas que faltam</h3>
+          <span className="text-[10.5px] text-white/30 font-mono tabular-nums">
+            {uncovered.length}/{TREINO_CATEGORIES.length}
+          </span>
+        </div>
+        <Link
+          href="/elite/pratica/temas"
+          className="text-[10px] text-white/30 hover:text-white/70 transition-colors flex items-center gap-1"
+        >
+          Ver todos <ChevronRight className="w-3 h-3" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        {uncovered.slice(0, visibleCount).map((cat) => (
+          <Link
+            key={cat.key}
+            href={`/elite/treino/livre?category=${encodeURIComponent(cat.key)}`}
+            className="interactive group relative overflow-hidden rounded-lg bg-white/[0.02] px-3 py-2.5 transition-colors flex items-center gap-2.5"
+          >
+            {/* Hover wash da cor da categoria (mesmo pattern dos ThemeCards) */}
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              style={{ background: `linear-gradient(135deg, ${cat.accent}14, ${cat.accent}05 60%, transparent)` }}
+            />
+            <span className="relative w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: cat.accent }} />
+            <div className="relative flex-1 min-w-0">
+              <p className="text-[12px] font-bold text-white/90 leading-tight truncate">{cat.key}</p>
+              <p className="text-[9.5px] text-white/35 truncate mt-0.5">{cat.tagline}</p>
+            </div>
+            <ChevronRight className="relative w-3 h-3 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </Link>
+        ))}
+      </div>
+
+      {remaining > 0 && (
+        <p className="text-[10px] text-white/25 mt-3 text-center">
+          + {remaining} {remaining === 1 ? "tema" : "temas"} em{" "}
+          <Link href="/elite/pratica/temas" className="text-white/45 hover:text-white/80 underline underline-offset-2">
+            Por Tema
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
@@ -361,34 +442,56 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
                 const isPicked = currentPick === idx;
                 const isRight = idx === currentScenario.correct;
                 let cls = "border-white/[0.06] bg-[#0e0e10] text-white/60 hover:border-white/[0.14] hover:bg-white/[0.02]";
+                let icon: React.ReactNode = null;
                 if (showAnswer) {
-                  if (isRight) cls = "border-green-500/40 bg-green-500/[0.08] text-green-200";
-                  else if (isPicked) cls = "border-red-500/40 bg-red-500/[0.08] text-red-200";
-                  else cls = "border-white/[0.04] bg-transparent text-white/25";
+                  if (isRight) {
+                    cls = "border-green-500/60 bg-green-500/[0.16] text-green-100 shadow-[0_0_0_1px_rgba(74,222,128,0.25),0_8px_32px_rgba(74,222,128,0.12)]";
+                    icon = <Check className="w-4 h-4 text-green-400 shrink-0" strokeWidth={2.5} />;
+                  } else if (isPicked) {
+                    cls = "border-red-500/60 bg-red-500/[0.14] text-red-100 shadow-[0_0_0_1px_rgba(248,113,113,0.2)]";
+                    icon = <X className="w-4 h-4 text-red-400 shrink-0" strokeWidth={2.5} />;
+                  } else {
+                    cls = "border-white/[0.04] bg-transparent text-white/20";
+                  }
                 }
                 return (
-                  <button key={idx} onClick={() => handlePick(idx)} disabled={showAnswer}
-                    className={`w-full text-left px-4 py-3 rounded-lg border text-[12.5px] font-medium ${cls}`}>
-                    <span className="font-mono mr-2 text-white/35">{String.fromCharCode(65 + idx)}.</span>
-                    {opt}
-                  </button>
+                  <motion.button
+                    key={idx}
+                    onClick={() => handlePick(idx)}
+                    disabled={showAnswer}
+                    animate={showAnswer && (isRight || isPicked) ? { scale: [1, 1.02, 1] } : {}}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className={`w-full text-left px-4 py-3 rounded-lg border text-[12.5px] font-medium flex items-center gap-2.5 ${cls}`}
+                  >
+                    <span className="font-mono text-white/35 shrink-0">{String.fromCharCode(65 + idx)}.</span>
+                    <span className="flex-1">{opt}</span>
+                    {icon}
+                  </motion.button>
                 );
               })}
             </div>
 
             {showAnswer && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                className={`rounded-xl border p-4 ${currentPick === currentScenario.correct ? "border-green-500/25 bg-green-500/[0.04]" : "border-red-500/25 bg-red-500/[0.04]"}`}
+                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                className={`relative overflow-hidden rounded-xl p-4 ${currentPick === currentScenario.correct ? "bg-green-500/[0.08]" : "bg-red-500/[0.08]"}`}
               >
-                <p className={`text-[11px] font-bold uppercase tracking-wider mb-1.5 ${currentPick === currentScenario.correct ? "text-green-400" : "text-red-400"}`}>
-                  {currentPick === currentScenario.correct ? "Correto" : "Não exatamente"}
-                </p>
-                <p className="text-[12px] text-white/55 leading-relaxed">{currentScenario.explanation}</p>
+                <div className={`absolute top-0 left-0 bottom-0 w-[3px] ${currentPick === currentScenario.correct ? "bg-green-400" : "bg-red-400"}`} />
+                <div className="flex items-center gap-2 mb-2">
+                  {currentPick === currentScenario.correct ? (
+                    <Check className="w-4 h-4 text-green-400" strokeWidth={2.5} />
+                  ) : (
+                    <X className="w-4 h-4 text-red-400" strokeWidth={2.5} />
+                  )}
+                  <p className={`text-[11px] font-bold uppercase tracking-[0.22em] ${currentPick === currentScenario.correct ? "text-green-400" : "text-red-400"}`}>
+                    {currentPick === currentScenario.correct ? "Isso mesmo" : "Ainda não"}
+                  </p>
+                </div>
+                <p className="text-[12.5px] text-white/75 leading-relaxed">{currentScenario.explanation}</p>
                 <button onClick={handleNext}
-                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-500 text-brand-500 text-[12px] font-bold hover:bg-brand-500/[0.04]">
+                  className="mt-3.5 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-500 text-brand-500 text-[12px] font-bold hover:bg-brand-500/[0.04]">
                   {currentIdx < scenarios.length - 1 ? "Próximo cenário" : "Ver resultado"} <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </motion.div>
@@ -414,25 +517,19 @@ export default function PraticaPage() {
   return (
     <div className="space-y-6">
       {/* ───── HERO ───── */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-[#0e0e10] border border-white/[0.06]">
+      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]">
         <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
           <span
-            className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-brand-500 pr-10"
+            className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-white pr-10"
             style={{ fontSize: "160px", letterSpacing: "-0.06em", lineHeight: 1 }}
           >
             PRÁTICA
           </span>
         </div>
-        <div className="absolute top-[-40%] left-[5%] w-[500px] h-[300px] bg-brand-500/[0.05] blur-[140px] pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
 
         <div className="relative z-10 p-5 lg:p-6">
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-5">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
-                <span className="text-[9.5px] font-bold tracking-[0.3em] uppercase text-brand-500">Modo infinito · 24/7</span>
-              </div>
               <h1 className="text-[26px] lg:text-[30px] font-bold text-white tracking-tight leading-[1.05]">Prática</h1>
               <p className="text-[12.5px] text-white/45 mt-2 max-w-lg leading-relaxed">
                 Treine leitura e decisão com cenários reais. Missão diária rotativa, {totalScenarios} cenários filtráveis e {totalGuided} skills guiadas.
@@ -460,7 +557,7 @@ export default function PraticaPage() {
 
       {/* ───── Grid principal: missão+modos (esquerda) · streak (direita) ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
-        {/* Coluna esquerda — missão do dia + 3 modos de treino */}
+        {/* Coluna esquerda — hierarquia: contexto > a\u00e7\u00e3o do dia > alternativas > descoberta */}
         <div className="space-y-3">
           <div className="animate-in-up delay-0">
             <EventBonusTreinoCard />
@@ -470,74 +567,36 @@ export default function PraticaPage() {
             <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
           </div>
 
-          {/* Modos de treino */}
-          <div className="animate-in-up delay-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Treino Livre */}
-            <Link
-              href="/elite/treino/livre"
-              className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-brand-500/30 block"
-            >
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-              <div className="absolute top-[-30%] right-[-10%] w-[200px] h-[140px] bg-brand-500/[0.05] blur-[90px] pointer-events-none" />
-              <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
-                    <Zap className="w-4.5 h-4.5 text-brand-500" strokeWidth={1.8} />
+          {/* Modos de treino — navegação neutra; diferenciação por ícone + hierarquia, não cor */}
+          <div className="animate-in-up delay-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              { href: "/elite/treino/livre",   icon: Zap,    title: "Treino Livre", tag: "Infinito", count: totalScenarios, hint: "cenários · todos os temas",   primary: true  },
+              { href: "/elite/pratica/temas",  icon: Layers, title: "Por Tema",     tag: "Focado",   count: totalThemes,    hint: "temas · cenários filtrados",   primary: false },
+              { href: "/elite/pratica/skills", icon: Target, title: "Skills",       tag: "Guiado",   count: totalGuided,    hint: "sequências · gráfico real",    primary: false },
+            ].map((mode) => (
+              <Link
+                key={mode.href}
+                href={mode.href}
+                className="interactive group relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] block transition-colors"
+              >
+                <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
+                  <div className="flex items-center justify-between">
+                    <mode.icon className={`w-5 h-5 ${mode.primary ? "text-brand-500" : "text-white/60"}`} strokeWidth={1.8} />
+                    <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/35">{mode.tag}</span>
                   </div>
-                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Infinito</span>
+                  <div className="min-w-0">
+                    <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">{mode.title}</h3>
+                    <p className="text-[11px] text-white/45 leading-snug mt-1">
+                      <span className="font-mono text-white/70">{mode.count}</span> {mode.hint}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">Treino Livre</h3>
-                  <p className="text-[11px] text-white/45 leading-snug mt-1">
-                    <span className="font-mono text-brand-500">{totalScenarios}</span> cenários · todos os temas
-                  </p>
-                </div>
-              </div>
-            </Link>
+              </Link>
+            ))}
+          </div>
 
-            {/* Por Tema */}
-            <Link
-              href="/elite/pratica/temas"
-              className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] block"
-            >
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-              <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
-                    <Layers className="w-4.5 h-4.5 text-white/70" strokeWidth={1.8} />
-                  </div>
-                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Focado</span>
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">Por Tema</h3>
-                  <p className="text-[11px] text-white/45 leading-snug mt-1">
-                    <span className="font-mono text-white/70">{totalThemes}</span> temas · cenários filtrados
-                  </p>
-                </div>
-              </div>
-            </Link>
-
-            {/* Skills Guiadas */}
-            <Link
-              href="/elite/pratica/skills"
-              className="interactive group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.18] block"
-            >
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-              <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
-                    <Target className="w-4.5 h-4.5 text-white/70" strokeWidth={1.8} />
-                  </div>
-                  <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/45">Guiado</span>
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">Skills</h3>
-                  <p className="text-[11px] text-white/45 leading-snug mt-1">
-                    <span className="font-mono text-white/70">{totalGuided}</span> sequências · gráfico real
-                  </p>
-                </div>
-              </div>
-            </Link>
+          <div className="animate-in-up delay-3">
+            <UncoveredThemesPanel streakVersion={streakVersion} />
           </div>
         </div>
 

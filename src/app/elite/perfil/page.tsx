@@ -12,7 +12,7 @@ export default async function PerfilPage() {
   return (
     <div className="space-y-6">
       {/* ── Profile header ── */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         {/* Cover gradient */}
         <div className="h-36 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500/15 via-purple-500/5 to-blue-500/10" />
@@ -36,14 +36,15 @@ export default async function PerfilPage() {
               <h1 className="text-[22px] font-bold text-white tracking-tight">{displayName}</h1>
               <p className="text-[13px] text-white/30">@{session.username}</p>
               <div className="flex gap-2 mt-2.5">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-500/10 border border-brand-500/20 rounded-lg text-[10px] font-bold text-brand-500 uppercase tracking-widest">
-                  <Flame className="w-3 h-3" /> Elite
-                </span>
-                {session.isVip && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    VIP
+                {session.isElite ? (
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-brand-500 uppercase tracking-[0.22em]">
+                    <span className="w-1 h-1 rounded-full bg-brand-500" /> Elite 4.0
                   </span>
-                )}
+                ) : session.isVip ? (
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-[0.22em]">
+                    <span className="w-1 h-1 rounded-full bg-blue-400" /> VIP
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -68,7 +69,7 @@ export default async function PerfilPage() {
       </div>
 
       {/* ── Goal ── */}
-      <div className="animate-in-up delay-1 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-1 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-r from-green-500/[0.02] to-transparent" />
 
         <div className="relative z-10 p-7">
@@ -97,7 +98,7 @@ export default async function PerfilPage() {
       <div className="animate-in-up delay-2"><PersonalizationSection /></div>
 
       {/* ── Badges showcase ── */}
-      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] hover:border-white/[0.12] transition-all duration-300">
+      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">

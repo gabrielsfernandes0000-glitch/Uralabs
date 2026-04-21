@@ -23,6 +23,49 @@ export interface UpcomingEventPreview {
 }
 
 /* ────────────────────────────────────────────
+   Scroll progress — thin bar fixed ao topo da viewport.
+   ──────────────────────────────────────────── */
+
+function ScrollProgress({ accent }: { accent: string }) {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    const handler = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setPct(total > 0 ? Math.min(100, Math.max(0, (window.scrollY / total) * 100)) : 0);
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+  return (
+    <div className="fixed top-0 left-0 right-0 h-[2px] z-50 pointer-events-none" aria-hidden>
+      <div className="h-full transition-[width] duration-75 ease-linear" style={{ width: `${pct}%`, backgroundColor: accent, boxShadow: `0 0 8px ${accent}60` }} />
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
+   Toast — canto inferior direito, auto-dismiss.
+   ──────────────────────────────────────────── */
+
+function Toast({ message, show, accent, onDone }: { message: string; show: boolean; accent: string; onDone: () => void }) {
+  useEffect(() => {
+    if (!show) return;
+    const t = setTimeout(onDone, 2800);
+    return () => clearTimeout(t);
+  }, [show, onDone]);
+  if (!show) return null;
+  return (
+    <div className="fixed bottom-6 right-6 z-50 animate-in-up" role="status" aria-live="polite">
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#141417] shadow-2xl" style={{ boxShadow: `0 20px 60px ${accent}40, 0 0 0 1px ${accent}30` }}>
+        <CheckCircle className="w-5 h-5 shrink-0" style={{ color: accent }} strokeWidth={2} />
+        <p className="text-[13px] font-semibold text-white">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
    Confetti — lightweight celebration particles
    ──────────────────────────────────────────── */
 
@@ -877,6 +920,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
 
   const [quizPassed, setQuizPassed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   type Resource = "quiz" | "flashcards" | "checklist" | "treino";
   const [activeResource, setActiveResource] = useState<Resource | null>(null);
 
@@ -903,6 +947,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
     if (passed) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 100);
+      setToast(`Quiz dominado · ${score}/${total} acertos`);
     }
   };
 
@@ -922,7 +967,9 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      <ScrollProgress accent={accent} />
       <Confetti active={showConfetti} accent={accent} />
+      <Toast message={toast ?? ""} show={!!toast} accent={accent} onDone={() => setToast(null)} />
 
       {/* Compact header — back + lesson title + meta in one block */}
       <div>
@@ -1101,7 +1148,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
 
       {/* Active resource panel — renders only the selected resource */}
       {activeResource && (
-        <div id="active-resource-panel" className="scroll-mt-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6 md:p-8 relative overflow-hidden">
+        <div id="active-resource-panel" className="scroll-mt-6 rounded-2xl bg-white/[0.02] p-6 md:p-8 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
             background: `linear-gradient(90deg, transparent, ${accent}70 30%, ${accent}50 70%, transparent)`
           }} />

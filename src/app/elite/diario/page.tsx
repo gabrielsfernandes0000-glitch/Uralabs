@@ -75,7 +75,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
       />
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+        <div className="rounded-xl bg-white/[0.02] p-4">
           <p className="text-[12px] text-white/70 font-semibold mb-2.5">Como você está?</p>
           <div className="grid grid-cols-5 gap-1.5">
             {moods.map((e) => (
@@ -93,7 +93,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+        <div className="rounded-xl bg-white/[0.02] p-4">
           <p className="text-[12px] text-white/70 font-semibold mb-2.5">Viés do dia</p>
           <div className="flex gap-2">
             <button onClick={() => setBias("bullish")}
@@ -118,7 +118,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+      <div className="rounded-xl bg-white/[0.02] p-4">
         <p className="text-[12px] text-white/70 font-semibold mb-2">Por que esse viés?</p>
         <textarea
           value={biasReason}
@@ -129,7 +129,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+        <div className="rounded-xl bg-white/[0.02] p-4">
           <p className="text-[12px] text-white/70 font-semibold mb-2">Níveis-chave (OBs, FVGs, Liquidez)</p>
           <textarea
             value={keyLevels}
@@ -138,7 +138,7 @@ function PrepSheet({ onSave }: { onSave: (data: { bias: "bullish" | "bearish"; b
             className="w-full h-24 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[12.5px] text-white/70 placeholder-white/20 resize-none focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.04]"
           />
         </div>
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-4">
+        <div className="rounded-xl bg-white/[0.02] p-4">
           <p className="text-[12px] text-white/70 font-semibold mb-2">Plano de ação</p>
           <textarea
             value={plan}
@@ -212,7 +212,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+      <div className="rounded-xl bg-white/[0.02] p-6">
         <p className="text-[14px] text-white/70 font-semibold mb-4">Direção</p>
         <div className="flex gap-3">
           <button onClick={() => setDirection("long")}
@@ -235,24 +235,24 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12]">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04]">
           <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider mb-2">Entry</p>
           <input type="text" value={entry} onChange={(e) => setEntry(e.target.value)} placeholder="18.100"
             className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12]">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04]">
           <p className="text-[11px] text-red-400/50 font-semibold uppercase tracking-wider mb-2">Stop Loss</p>
           <input type="text" value={sl} onChange={(e) => setSl(e.target.value)} placeholder="18.050"
             className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
-        <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-5 hover:border-white/[0.12]">
+        <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04]">
           <p className="text-[11px] text-green-400/50 font-semibold uppercase tracking-wider mb-2">Take Profit</p>
           <input type="text" value={tp} onChange={(e) => setTp(e.target.value)} placeholder="18.250"
             className="w-full bg-transparent text-[18px] text-white/80 font-mono focus:outline-none placeholder-white/15" />
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+      <div className="rounded-xl bg-white/[0.02] p-6">
         <p className="text-[14px] text-white/70 font-semibold mb-4">Resultado</p>
         <div className="flex gap-3">
           {([
@@ -278,7 +278,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         )}
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+      <div className="rounded-xl bg-white/[0.02] p-6">
         <p className="text-[14px] text-white/70 font-semibold mb-4">Seguiu o plano do Prep Sheet?</p>
         <div className="flex gap-3">
           <button onClick={() => setFollowedPlan(true)}
@@ -292,7 +292,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+      <div className="rounded-xl bg-white/[0.02] p-6">
         <p className="text-[14px] text-white/70 font-semibold mb-4">Como você está se sentindo depois do trade?</p>
         <div className="flex flex-col gap-1.5">
           {[
@@ -316,7 +316,7 @@ function TradeJournal({ onSave }: { onSave: (data: { direction: "long" | "short"
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#111114] p-6">
+      <div className="rounded-xl bg-white/[0.02] p-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
           <p className="text-[14px] text-white/70 font-semibold">O que você aprendeu com esse trade?</p>
@@ -371,7 +371,7 @@ export default function DiarioPage() {
               className={`interactive-tap flex items-center gap-2.5 px-5 py-3 rounded-xl border text-[13.5px] font-semibold ${
                 active
                   ? "border-white/[0.22] text-white"
-                  : "border-white/[0.06] text-white/40 hover:text-white/65 hover:border-white/[0.12]"
+                  : "border-white/[0.06] text-white/40 hover:text-white/65 hover:bg-white/[0.04]"
               }`}>
               <tab.icon className={`w-4 h-4 ${active ? "text-brand-500" : ""}`} />
               <span>{tab.label}</span>

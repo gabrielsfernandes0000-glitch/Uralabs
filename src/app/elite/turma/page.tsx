@@ -657,13 +657,13 @@ function RankingView() {
                   <p className="text-[10px] text-white/30">{m.handle} · Turma {m.turma}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-brand-500/10 border border-brand-500/20">
-                    <Flame className="w-3 h-3 text-brand-500" />
-                    <span className="text-[10px] text-brand-500 font-bold font-mono">{r.streak}d</span>
+                  <div className="flex items-center gap-1 text-amber-400/80">
+                    <Flame className="w-3 h-3" />
+                    <span className="text-[10px] font-bold font-mono">{r.streak}d</span>
                   </div>
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/20">
-                    <Trophy className="w-3 h-3 text-yellow-500" />
-                    <span className="text-[10px] text-yellow-500 font-bold font-mono">{r.mesas}</span>
+                  <div className="flex items-center gap-1 text-yellow-500">
+                    <Trophy className="w-3 h-3" />
+                    <span className="text-[10px] font-bold font-mono">{r.mesas}</span>
                   </div>
                   <span className="text-[14px] font-bold text-white font-mono w-14 text-right">{r.pts}</span>
                 </div>
@@ -735,11 +735,8 @@ function TurmaInner() {
       <div className="animate-in-up flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="relative">
-              <div className="w-2 h-2 bg-red-500 rounded-full" />
-              <div className="absolute inset-0 w-2 h-2 bg-red-500 rounded-full animate-ping opacity-50" />
-            </div>
-            <span className="text-[10px] text-red-400 font-bold tracking-[0.2em] uppercase">Ao vivo</span>
+            <span className="w-1 h-1 rounded-full bg-white/40" />
+            <span className="text-[10px] text-white/40 font-bold tracking-[0.22em] uppercase">Comunidade</span>
           </div>
           <h1 className="text-[22px] md:text-[26px] font-bold text-white tracking-tight leading-tight">Mural da Turma</h1>
           <p className="text-[12px] text-white/40 mt-0.5">

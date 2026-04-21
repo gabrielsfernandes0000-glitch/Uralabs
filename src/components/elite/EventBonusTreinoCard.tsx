@@ -37,11 +37,26 @@ export function EventBonusTreinoCard() {
   const treinoCats = treinoCategoriesForEvent(evCat).slice(0, 3);
   if (treinoCats.length === 0) return null;
 
+  // Urgency tier: red só se evento é iminente (<30min); senão laranja brand pra alinhar com identidade da Prática.
+  const isImminent = (() => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(highImpact.time || "");
+    if (!m) return false;
+    const eventMins = Number(m[1]) * 60 + Number(m[2]);
+    const now = new Date();
+    const nyStr = now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false });
+    const [nh, nm] = nyStr.split(":").map(Number);
+    const nowMins = nh * 60 + nm;
+    const diff = eventMins - nowMins;
+    return diff >= 0 && diff <= 30;
+  })();
+  const dotColor = isImminent ? "bg-red-400" : "bg-brand-500";
+  const labelColor = isImminent ? "text-red-400/90" : "text-brand-500";
+
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-4">
+    <div className="rounded-xl bg-white/[0.02] p-4">
       <div className="flex items-center gap-2 mb-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" aria-hidden />
-        <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-red-400/90">
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
+        <span className={`text-[9.5px] font-bold tracking-[0.25em] uppercase ${labelColor}`}>
           Treine pro evento de hoje
         </span>
       </div>

@@ -7,6 +7,7 @@ import {
   TrendingUp, Award, Video, Bell, MessageCircle,
 } from "lucide-react";
 import { TodayEventsBanner } from "@/components/elite/TodayEventsBanner";
+import { SectionHeader } from "@/components/elite/SectionHeader";
 
 /* ────────────────────────────────────────────
    Mock data — replace with live sources (Discord voice state + Supabase)
@@ -186,7 +187,7 @@ function CallsHero({ liveCall, upcomingCount }: { liveCall?: ScheduledCall; upco
   const accent = isLive ? "#EF4444" : "#FF5500";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08]" style={{ background: "#111114" }}>
+    <div className="relative overflow-hidden rounded-2xl" style={{ background: "#111114" }}>
       <div className="absolute inset-0" style={{
         background: `radial-gradient(ellipse 60% 80% at 85% 40%, ${accent}${isLive ? "18" : "12"}, transparent 60%)`,
       }} />
@@ -257,8 +258,8 @@ function CallsHero({ liveCall, upcomingCount }: { liveCall?: ScheduledCall; upco
               </p>
               <div className="flex items-center gap-3 flex-wrap">
                 <Link href="https://discord.com/channels/@me" target="_blank"
-                  className="interactive flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all hover:brightness-110 hover:-translate-y-0.5"
-                  style={{ backgroundColor: accent, color: "white", boxShadow: `0 4px 20px ${accent}35` }}>
+                  className="interactive flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[13px] font-bold transition-colors hover:-translate-y-0.5"
+                  style={{ borderColor: accent, color: accent }}>
                   <Bell className="w-3.5 h-3.5" />
                   Ativar alerta
                 </Link>
@@ -292,21 +293,6 @@ function CallsHero({ liveCall, upcomingCount }: { liveCall?: ScheduledCall; upco
 }
 
 /* ────────────────────────────────────────────
-   Section header — matches Aulas
-   ──────────────────────────────────────────── */
-
-function SectionHeader({ accent, title, subtitle, meta }: { accent: string; title: string; subtitle?: string; meta?: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-4 mb-5">
-      <div className="w-1 h-7 rounded-full" style={{ backgroundColor: accent + "80" }} />
-      <h2 className="text-[22px] font-bold text-white tracking-tight">{title}</h2>
-      {subtitle && <span className="text-[13px] text-white/40 font-medium">{subtitle}</span>}
-      {meta && <div className="ml-auto">{meta}</div>}
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
    Schedule card — horizontal with thumb art (inspired by LiveCard)
    ──────────────────────────────────────────── */
 
@@ -322,10 +308,9 @@ function ScheduleCard({ call }: { call: ScheduledCall }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="relative overflow-hidden rounded-xl border transition-all duration-300 flex"
+        className="relative overflow-hidden rounded-xl transition-all duration-300 flex"
         style={{
-          borderColor: isLive ? s.color + "40" : "rgba(255,255,255,0.06)",
-          boxShadow: hovered ? `0 8px 32px ${s.color}18` : undefined,
+          boxShadow: hovered ? `0 8px 32px ${s.color}18` : isLive ? `0 0 0 1px ${s.color}35` : undefined,
         }}
       >
         {/* Thumb — left */}
@@ -403,7 +388,7 @@ function ReplayCard({ replay }: { replay: Replay }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="relative overflow-hidden rounded-2xl border transition-all duration-300 border-white/[0.08] hover:border-white/[0.18] hover:-translate-y-1"
+        className="relative overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
         style={hovered ? { boxShadow: `0 16px 60px ${s.color}22` } : undefined}
       >
         {/* Thumb */}
@@ -504,7 +489,7 @@ export default function CallsPage() {
       </div>
 
       {/* Tabs — pill nav, premium feel */}
-      <div className="animate-in-up delay-1 flex items-center gap-1.5 p-1 rounded-xl border border-white/[0.06] bg-[#0e0e10] w-fit">
+      <div className="animate-in-up delay-1 flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.025] w-fit">
         {TABS.map((t) => {
           const active = tab === t.id;
           return (
@@ -536,7 +521,7 @@ export default function CallsPage() {
 
               {/* Sidebar */}
               <div className="space-y-4">
-                <div className="rounded-2xl border border-white/[0.08] bg-[#141417] p-5">
+                <div className="rounded-2xl bg-white/[0.02] p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Clock className="w-3.5 h-3.5 text-brand-500" />
                     <h3 className="text-[12px] font-bold text-white/85 uppercase tracking-wider">Rotina da semana</h3>
@@ -563,7 +548,7 @@ export default function CallsPage() {
                   </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl border border-brand-500/20 bg-[#141417] p-5">
+                <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-6">
                   <div className="absolute inset-0" style={{
                     background: "radial-gradient(ellipse 70% 70% at 80% 20%, rgba(255,85,0,0.10), transparent 60%)",
                   }} />
@@ -619,7 +604,7 @@ export default function CallsPage() {
               </div>
 
               {/* Firms sidebar */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#141417] p-5 h-fit">
+              <div className="rounded-2xl bg-white/[0.02] p-6 h-fit">
                 <div className="flex items-center gap-2 mb-4">
                   <Trophy className="w-3.5 h-3.5 text-yellow-400" />
                   <h3 className="text-[12px] font-bold text-white/85 uppercase tracking-wider">Mesas cobertas</h3>

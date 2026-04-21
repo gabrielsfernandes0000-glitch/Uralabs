@@ -60,7 +60,7 @@ export function WatchlistFilterControls() {
         disabled={!hasAny}
         className={`interactive-tap rounded-md border px-2 py-1 text-[10.5px] font-semibold inline-flex items-center gap-1.5 transition-colors ${
           on
-            ? "border-emerald-400/40 text-emerald-400"
+            ? "border-white/[0.22] text-white bg-white/[0.04]"
             : hasAny
               ? "border-white/[0.06] text-white/45 hover:text-white/75 hover:border-white/[0.12]"
               : "border-white/[0.04] text-white/25 cursor-not-allowed"

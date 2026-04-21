@@ -27,7 +27,7 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
       </Link>
 
       {/* Hero badge — large render */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-[#141417] to-[#0e0e10]">
+      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full blur-[100px] pointer-events-none" style={{
           backgroundColor: isLegendary ? "#FF5500" : achievement.rarity === "gold" ? "#F59E0B" : achievement.rarity === "silver" ? "#CBD5E1" : "#C4833F",
           opacity: isLegendary ? 0.10 : 0.05,
@@ -66,7 +66,7 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
       </div>
 
       {/* Distribution rules */}
-      <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-6">
+      <div className="rounded-2xl bg-white/[0.02] p-6">
         <div className="flex items-center gap-2 mb-3">
           {achievement.autoDistribute ? (
             <>
