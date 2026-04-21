@@ -567,22 +567,32 @@ export default function PraticaPage() {
             <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
           </div>
 
-          {/* Modos de treino — navegação neutra; diferenciação por ícone + hierarquia, não cor */}
+          {/* Modos de treino — accent lateral por modo + ícone colorido, cor como acento */}
           <div className="animate-in-up delay-2 grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { href: "/elite/treino/livre",   icon: Zap,    title: "Treino Livre", tag: "Infinito", count: totalScenarios, hint: "cenários · todos os temas",   primary: true  },
-              { href: "/elite/pratica/temas",  icon: Layers, title: "Por Tema",     tag: "Focado",   count: totalThemes,    hint: "temas · cenários filtrados",   primary: false },
-              { href: "/elite/pratica/skills", icon: Target, title: "Skills",       tag: "Guiado",   count: totalGuided,    hint: "sequências · gráfico real",    primary: false },
+              { href: "/elite/treino/livre",   icon: Zap,    title: "Treino Livre", tag: "Infinito", count: totalScenarios, hint: "cenários · todos os temas",   accent: "#FF5500" },
+              { href: "/elite/pratica/temas",  icon: Layers, title: "Por Tema",     tag: "Focado",   count: totalThemes,    hint: "temas · cenários filtrados",   accent: "#3B82F6" },
+              { href: "/elite/pratica/skills", icon: Target, title: "Skills",       tag: "Guiado",   count: totalGuided,    hint: "sequências · gráfico real",    accent: "#10B981" },
             ].map((mode) => (
               <Link
                 key={mode.href}
                 href={mode.href}
                 className="interactive group relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] block transition-colors"
               >
-                <div className="relative z-10 p-4 flex flex-col gap-2.5 h-full">
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-0 bottom-0 w-[3px] transition-opacity"
+                  style={{ backgroundColor: mode.accent, opacity: 0.4 }}
+                />
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-0 bottom-0 w-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ backgroundColor: mode.accent }}
+                />
+                <div className="relative z-10 p-4 pl-[18px] flex flex-col gap-2.5 h-full">
                   <div className="flex items-center justify-between">
-                    <mode.icon className={`w-5 h-5 ${mode.primary ? "text-brand-500" : "text-white/60"}`} strokeWidth={1.8} />
-                    <span className="text-[9px] font-bold tracking-[0.25em] uppercase text-white/35">{mode.tag}</span>
+                    <mode.icon className="w-5 h-5" strokeWidth={1.8} style={{ color: mode.accent }} />
+                    <span className="text-[9px] font-bold tracking-[0.25em] uppercase" style={{ color: mode.accent, opacity: 0.75 }}>{mode.tag}</span>
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">{mode.title}</h3>
