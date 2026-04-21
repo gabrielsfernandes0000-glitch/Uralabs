@@ -43,7 +43,7 @@ export function EventBonusTreinoCard() {
     if (!m) return false;
     const eventMins = Number(m[1]) * 60 + Number(m[2]);
     const now = new Date();
-    const nyStr = now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false });
+    const nyStr = now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false });
     const [nh, nm] = nyStr.split(":").map(Number);
     const nowMins = nh * 60 + nm;
     const diff = eventMins - nowMins;

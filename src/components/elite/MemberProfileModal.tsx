@@ -112,7 +112,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
             const img = new Image();
             img.onload = () => { if (!cancelled) setBannerReady(true); };
             img.onerror = () => { if (!cancelled) setBannerReady(true); };
-            img.src = `/cosmetics/banners/${slug}.webp`;
+            img.src = `/cosmetics/banners/${slug}.webp?v=6x1b`;
           } else {
             setBannerReady(true);
           }
@@ -197,7 +197,9 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
               <CosmeticBanner slug={equippedBannerSlug} variant="full" />
               {/* Fade inferior dupla camada: linear forte na base pra separar
                   o avatar/nome do banner + radial sutil atrás do avatar pra
-                  dar profundidade sem esconder a cena do topo. */}
+                  dar profundidade sem esconder a cena do topo.
+                  Vignettes lateral/topo removidos — modal é estreito e a
+                  arte já é pequena, não precisa de fade pras bordas. */}
               <div className="absolute inset-0" style={{
                 background: "linear-gradient(to bottom, rgba(20,20,23,0) 0%, rgba(20,20,23,0.12) 55%, rgba(20,20,23,0.5) 85%, rgba(20,20,23,0.8) 100%)",
               }} />

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bg-xp" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#1a1a1d"/>
+      <stop offset="100%" stop-color="#0a0a0c"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg-xp)"/>
+
+  <!-- Background pattern: chevrons indicando velocidade -->
+  <g opacity="0.07" stroke="#ffffff" stroke-width="2" fill="none">
+    <path d="M 150 200 L 220 280 L 150 360"/>
+    <path d="M 230 200 L 300 280 L 230 360"/>
+    <path d="M 500 200 L 570 280 L 500 360"/>
+    <path d="M 580 200 L 650 280 L 580 360"/>
+  </g>
+
+  <!-- Lightning bolt central -->
+  <g transform="translate(400 265)">
+    <path d="M -20 -90 L 25 -90 L 5 -15 L 45 -15 L -15 90 L 5 10 L -30 10 Z"
+          fill="#ffffff" fill-opacity="0.9" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+
+  <!-- 2X grande -->
+  <text x="400" y="440" text-anchor="middle" fill="#ffffff"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-size="86" font-weight="700" letter-spacing="-2">2×</text>
+  <text x="400" y="480" text-anchor="middle" fill="#ffffff" fill-opacity="0.55"
+        font-family="system-ui, sans-serif"
+        font-size="14" font-weight="500" letter-spacing="4">XP BOOSTER</text>
+
+  <text x="400" y="530" text-anchor="middle" fill="#ffffff" fill-opacity="0.35"
+        font-family="system-ui, sans-serif"
+        font-size="12" letter-spacing="3">DURAÇÃO 24 HORAS</text>
+</svg>

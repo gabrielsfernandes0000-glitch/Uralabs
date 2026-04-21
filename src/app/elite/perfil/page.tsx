@@ -12,11 +12,15 @@ const BANNER_SLUGS = new Set([
   // Batch 1
   "diamond-hands", "o-sol-bull", "a-torre-flash", "a-temperanca-rr",
   // Batch 2
-  "o-louco-yolo", "a-imperatriz-liquidez", "o-eremita-paciencia", "a-morte-cycle",
-  "mesa-trader", "whale-alert", "vegas-lambo",
-  "wolfpack-alpha", "crypto-monastery", "phoenix-rebirth", "dragon-gold",
+  "o-louco-yolo", "a-imperatriz-liquidez", "a-morte-cycle",
+  "vegas-lambo",
+  "crypto-monastery", "phoenix-rebirth", "dragon-gold",
   "neural-net", "cyber-samurai", "hologram-chart", "matrix-throne",
-  "golden-gates", "smoke-mirrors", "warrior-king-bull",
+  "smoke-mirrors", "warrior-king-bull",
+  // Batch 3
+  "favela-3am", "saci-degen", "copacabana-cyber", "capoeira-bull-vs-bear",
+  "leao-dourado", "tigre-neon", "aguia-mercado", "orca-apex",
+  "ampulheta-bitcoin", "dojo-samurai",
 ]);
 
 export default async function PerfilPage() {
@@ -42,23 +46,31 @@ export default async function PerfilPage() {
         <link
           rel="preload"
           as="image"
-          href={`/cosmetics/banners/${equippedBannerSlug}.webp`}
+          href={`/cosmetics/banners/${equippedBannerSlug}.webp?v=6x1b`}
           fetchPriority="high"
         />
       )}
-      {/* ── Profile header ── banner na proporção nativa 7:2 pra nunca cortar
-           nem deixar borda. Max-w 1008px porque esse é o limite onde o banner
-           cabe em altura 288px (nossa âncora visual). Acima disso, banner
-           fica centralizado; abaixo, preenche width e altura escala. */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
+      {/* ── Profile header ── banner 6:1 nativo (2400×400), preenche toda a
+           largura do container. Safe zone de 70% central garantida nos prompts
+           v3, então cover crop nas laterais (quando tiver) nunca perde subject. */}
+      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 w-full">
         {/* Header com banner + avatar/nome sobrepostos */}
         <div
-          className="relative overflow-hidden border-b border-white/[0.05] mx-auto"
-          style={{ aspectRatio: "7 / 2", maxWidth: "1008px", width: "100%" }}
+          className="relative overflow-hidden border-b border-white/[0.05]"
+          style={{ aspectRatio: "6 / 1" }}
         >
           {hasBanner ? (
             <>
               <CosmeticBanner slug={equippedBannerSlug} variant="full" />
+              {/* Vignette horizontal — fade forte pros cantos p/ transição
+                  imperceptível com o bg da página. */}
+              <div className="absolute inset-0" style={{
+                background: "linear-gradient(to right, #0e0e10 0%, rgba(14,14,16,0.9) 6%, rgba(14,14,16,0.3) 18%, rgba(14,14,16,0) 34%, rgba(14,14,16,0) 66%, rgba(14,14,16,0.3) 82%, rgba(14,14,16,0.9) 94%, #0e0e10 100%)",
+              }} />
+              {/* Vignette vertical sutil no topo — suaviza a borda superior. */}
+              <div className="absolute inset-0" style={{
+                background: "linear-gradient(to bottom, rgba(14,14,16,0.35) 0%, rgba(14,14,16,0) 22%, rgba(14,14,16,0) 100%)",
+              }} />
               {/* Fade inferior pra nome/avatar lerem + radial atrás do avatar */}
               <div className="absolute inset-0" style={{
                 background: "linear-gradient(to bottom, rgba(14,14,16,0) 0%, rgba(14,14,16,0.12) 55%, rgba(14,14,16,0.5) 85%, rgba(14,14,16,0.85) 100%)",

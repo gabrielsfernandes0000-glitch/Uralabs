@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bb-bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#1f1f22"/>
+      <stop offset="100%" stop-color="#0a0a0c"/>
+    </radialGradient>
+    <linearGradient id="bb-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="bb-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.03"/>
+    </linearGradient>
+    <linearGradient id="bb-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.06"/>
+    </linearGradient>
+    <radialGradient id="bb-floor" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bb-bg)"/>
+
+  <!-- Floor shadow -->
+  <ellipse cx="400" cy="440" rx="170" ry="28" fill="url(#bb-floor)"/>
+
+  <!-- Isometric box FECHADA — faces cuidadosamente proporcionadas -->
+  <g transform="translate(400 310)">
+    <!-- Left face -->
+    <path d="M -140 -45 L 0 25 L 0 125 L -140 55 Z"
+          fill="url(#bb-left)" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.5"/>
+    <!-- Right face -->
+    <path d="M 140 -45 L 0 25 L 0 125 L 140 55 Z"
+          fill="url(#bb-right)" stroke="#ffffff" stroke-opacity="0.38" stroke-width="1.5"/>
+    <!-- Top face -->
+    <path d="M 0 -115 L 140 -45 L 0 25 L -140 -45 Z"
+          fill="url(#bb-top)" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.8"/>
+
+    <!-- Seam line (tampa fechada) -->
+    <path d="M -140 -45 L 0 25 L 140 -45" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1" fill="none"/>
+
+    <!-- Top highlight edges -->
+    <path d="M 0 -115 L 140 -45" stroke="#ffffff" stroke-opacity="0.8" stroke-width="2" fill="none"/>
+    <path d="M 0 -115 L -140 -45" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.5" fill="none"/>
+
+    <!-- Center dot no topo -->
+    <circle cx="0" cy="-45" r="4" fill="#ffffff" fill-opacity="0.4"/>
+    <circle cx="0" cy="-45" r="1.5" fill="#ffffff" fill-opacity="0.9"/>
+  </g>
+
+  <!-- Label -->
+  <text x="400" y="510" text-anchor="middle" fill="#ffffff" fill-opacity="0.9"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="30" font-weight="600" letter-spacing="3">Básica</text>
+  <text x="400" y="542" text-anchor="middle" fill="#ffffff" fill-opacity="0.35"
+        font-family="system-ui, sans-serif"
+        font-size="12" letter-spacing="2">STARTER · ENTRADA</text>
+</svg>

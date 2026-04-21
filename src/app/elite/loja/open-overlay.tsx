@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, AlertTriangle, Loader2 } from "lucide-react";
+import { X, AlertTriangle, Loader2, Gift, DollarSign, Coins, Sparkles, Zap, Ticket } from "lucide-react";
+import Image from "next/image";
 import type { BoxWithPrizes, Prize, PrizeType, PrizeRarity } from "@/lib/ura-coin";
 import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
-import { PrizeTile, RARITY_STYLES } from "./prize-tile";
+import { RARITY_STYLES } from "./prize-tile";
 
 export type OpenResult = {
   opening_id: string;
@@ -24,12 +25,12 @@ export type OpenResult = {
   rng_roll: number;
 };
 
-const ITEM_W = 140;   // px — largura de cada tile na strip
-const ITEM_GAP = 8;   // px
+const ITEM_W = 160;
+const ITEM_GAP = 12;       // MUST match tailwind class abaixo (gap-3 = 0.75rem = 12px)
 const STEP = ITEM_W + ITEM_GAP;
-const STRIP_LEN = 60; // itens visíveis no total
-const LANDING_INDEX = 52; // índice do vencedor na strip (pra dar bastante scroll antes)
-const ANIMATION_MS = 4200;
+const STRIP_LEN = 130;
+const LANDING_INDEX = 118;
+const ANIMATION_MS = 11000;
 
 export function OpenOverlay({
   box,
@@ -60,6 +61,7 @@ export function OpenOverlay({
       type: result.prize.type,
       rarity: result.prize.rarity,
       value_brl: result.prize.value_brl,
+      image_url: result.prize.image_url,
     };
     setStrip((prev) => {
       const next = [...prev];
@@ -71,15 +73,38 @@ export function OpenOverlay({
     return () => clearTimeout(t);
   }, [result]);
 
-  // Quando entra em fase "landing", aplica transform com transition cubic-bezier
+  // Quando entra em fase "landing", mede DOM pra calcular translateX exato que
+  // alinha o tile vencedor com o marker central. Evita drift por gap/padding CSS.
   useEffect(() => {
     if (phase !== "landing") return;
     const el = stripRef.current;
     if (!el) return;
-    // pequena aleatoriedade na posição final pro landing não cair cravado no centro
-    const jitter = (Math.random() - 0.5) * (ITEM_W * 0.6);
-    const targetX = -(LANDING_INDEX * STEP - STEP / 2) + jitter;
+
+    const container = el.parentElement;
+    const landingEl = el.children[LANDING_INDEX] as HTMLElement | undefined;
+    if (!container || !landingEl) return;
+
+    // Rects no instante atual (durante spin, strip ja esta deslocado)
+    const containerRect = container.getBoundingClientRect();
+    const tileRect = landingEl.getBoundingClientRect();
+
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    const tileCenter = tileRect.left + tileRect.width / 2;
+    const delta = containerCenter - tileCenter; // deslocamento necessario
+
+    // Pega o translateX atual do style inline (ou 0 se era driven pelo rAF) e soma delta
+    // Durante spinning usamos `el.style.transform` direto, entao precisamos ler o matrix atual
+    const currentMatrix = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+    const currentX = currentMatrix.m41; // translateX efetivo atual
+
+    // Jitter pequeno pra parecer organico sem sair do tile
+    const jitter = (Math.random() - 0.5) * (ITEM_W * 0.2);
+    const targetX = currentX + delta + jitter;
+
+    // Remove o translateX direto (que foi setado pelo rAF) pra transition do React assumir
+    el.style.transform = "";
     setAnimatedToX(targetX);
+
     const t = setTimeout(() => setPhase("revealed"), ANIMATION_MS);
     return () => clearTimeout(t);
   }, [phase]);
@@ -89,23 +114,30 @@ export function OpenOverlay({
     if (error) setPhase("error");
   }, [error]);
 
-  // Phase "spinning" — strip anima pra direita em loop sutil
-  const [spinX, setSpinX] = useState(0);
+  // Phase "spinning" — strip anima direto via transform no ref (sem setState por frame).
+  // Comeca centralizando tile 0 no container e decrementa — passa varios tiles.
   useEffect(() => {
     if (phase !== "spinning") return;
+    const el = stripRef.current;
+    if (!el) return;
+    const container = el.parentElement;
+    if (!container) return;
+    // Offset inicial: tile 0 centralizado no container
+    const initialOffset = container.clientWidth / 2 - ITEM_W / 2;
     let raf = 0;
+    let x = initialOffset;
     let last = performance.now();
     const tick = (now: number) => {
       const dt = now - last;
       last = now;
-      setSpinX((x) => x - dt * 0.9); // velocidade constante
+      x -= dt * 1.2;
+      el.style.transform = `translateX(${x}px)`;
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [phase]);
 
-  const translateX = phase === "spinning" ? spinX : animatedToX;
   const withTransition = phase === "landing";
 
   if (phase === "error") {
@@ -148,11 +180,12 @@ export function OpenOverlay({
 
           <div
             ref={stripRef}
-            className="flex gap-2 will-change-transform"
+            className="flex gap-3 will-change-transform"
             style={{
-              transform: `translateX(calc(50% + ${translateX}px))`,
+              // Spinning: rAF controla via ref. Landing/revealed: React aplica animatedToX absoluto.
+              transform: phase !== "spinning" ? `translateX(${animatedToX}px)` : undefined,
               transition: withTransition
-                ? `transform ${ANIMATION_MS}ms cubic-bezier(0.12, 0.68, 0.2, 1)`
+                ? `transform ${ANIMATION_MS}ms cubic-bezier(0.08, 0.82, 0.12, 1)`
                 : undefined,
             }}
           >
@@ -198,7 +231,7 @@ function Overlay({ children, onClose }: { children: React.ReactNode; onClose?: (
   );
 }
 
-type PrizeLike = Pick<Prize, "id" | "name" | "type" | "rarity" | "value_brl">;
+type PrizeLike = Pick<Prize, "id" | "name" | "type" | "rarity" | "value_brl" | "image_url">;
 
 function buildRandomStrip(pool: Array<PrizeLike & { weight: number }>, n: number): PrizeLike[] {
   if (pool.length === 0) {
@@ -209,6 +242,7 @@ function buildRandomStrip(pool: Array<PrizeLike & { weight: number }>, n: number
       type: "ura_coin_bonus" as PrizeType,
       rarity: "common" as PrizeRarity,
       value_brl: null,
+      image_url: null,
     }));
   }
   const totalW = pool.reduce((s, p) => s + p.weight, 0);
@@ -218,7 +252,7 @@ function buildRandomStrip(pool: Array<PrizeLike & { weight: number }>, n: number
     for (const p of pool) {
       roll -= p.weight;
       if (roll <= 0) {
-        out.push({ id: p.id, name: p.name, type: p.type, rarity: p.rarity, value_brl: p.value_brl });
+        out.push({ id: p.id, name: p.name, type: p.type, rarity: p.rarity, value_brl: p.value_brl, image_url: p.image_url });
         break;
       }
     }
@@ -227,32 +261,94 @@ function buildRandomStrip(pool: Array<PrizeLike & { weight: number }>, n: number
   return out;
 }
 
+// Cor de borda por raridade — alinhada com CSGO (barra esquerda)
+const RARITY_BAR: Record<PrizeRarity, string> = {
+  common: "#a1a1aa",
+  uncommon: "#34d399",
+  rare: "#60a5fa",
+  epic: "#c084fc",
+  legendary: "#fcd34d",
+};
+
+function prizeIcon(type: PrizeType) {
+  switch (type) {
+    case "cash_brl": return DollarSign;
+    case "nitro_basic":
+    case "nitro_boost": return Zap;
+    case "ura_coin_bonus": return Coins;
+    case "elite_discount":
+    case "cupom_custom": return Ticket;
+    case "sub_vip":
+    case "sub_elite": return Sparkles;
+    default: return Gift;
+  }
+}
+
 function StripCard({ item, highlighted }: { item: PrizeLike; highlighted: boolean }) {
   const s = RARITY_STYLES[item.rarity];
+  const barColor = RARITY_BAR[item.rarity];
+  const Icon = prizeIcon(item.type);
   return (
     <div
-      className={`shrink-0 transition-all duration-500 ${highlighted ? "scale-110" : ""}`}
+      className={`shrink-0 py-3 transition-transform duration-500 ${highlighted ? "scale-110 z-20 relative" : ""}`}
       style={{ width: ITEM_W }}
     >
       <div
-        className={`relative rounded-xl border ${s.bg} ${s.border} ${
-          highlighted ? `shadow-[0_0_24px_rgba(255,255,255,0.15)] ring-2 ring-white/30` : ""
-        } overflow-hidden`}
+        className={`relative rounded-lg overflow-hidden bg-[#0e0e10] border border-white/[0.06] ${
+          highlighted ? "shadow-[0_0_40px_rgba(255,255,255,0.35)]" : ""
+        }`}
+        style={{
+          height: ITEM_W * 1.1,
+          boxShadow: highlighted
+            ? `0 0 40px ${barColor}88, 0 0 80px ${barColor}44, inset 0 0 0 1.5px ${barColor}`
+            : undefined,
+        }}
       >
-        <PrizeTileFull item={item} />
+        {/* Barra de raridade à esquerda (estilo CSGO) */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-[3px]"
+          style={{ background: barColor, boxShadow: `0 0 8px ${barColor}88` }}
+        />
+
+        {/* Imagem ou ícone */}
+        <div className="absolute inset-0 flex items-center justify-center p-4 pt-5">
+          {item.image_url ? (
+            <div className="relative w-full h-full">
+              <Image
+                src={item.image_url}
+                alt={item.name}
+                fill
+                sizes="160px"
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <Icon className="w-12 h-12" style={{ color: barColor }} strokeWidth={1.5} />
+          )}
+        </div>
+
+        {/* Rarity label top-right */}
+        <div
+          className="absolute top-2 right-2 text-[8.5px] font-bold uppercase tracking-[0.18em]"
+          style={{ color: barColor }}
+        >
+          {s.label}
+        </div>
+
+        {/* Footer: nome + valor */}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/85 to-transparent px-3 pt-6 pb-2">
+          <div className="text-[11px] font-semibold text-white truncate leading-tight">
+            {item.name}
+          </div>
+          {item.value_brl != null && item.value_brl > 0 && (
+            <div className="text-[10px] text-white/50 tabular-nums mt-0.5">
+              R${item.value_brl.toFixed(2)}
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  );
-}
-
-function PrizeTileFull({ item }: { item: PrizeLike }) {
-  return (
-    <PrizeTile
-      name={item.name}
-      type={item.type}
-      rarity={item.rarity}
-      valueBrl={item.value_brl}
-    />
   );
 }
 
@@ -263,37 +359,52 @@ function RevealCard({ result, onClose }: { result: OpenResult; onClose: () => vo
   const coinAmount = isCoinBonus ? Number(result.prize.metadata?.coin_amount ?? 0) : 0;
 
   return (
-    <div
-      className={`rounded-2xl border ${s.border} ${s.bg} backdrop-blur-sm p-6 max-w-md w-full text-center animate-in zoom-in-95 slide-in-from-bottom-4 duration-500`}
-    >
-      <div className={`text-xs uppercase tracking-[0.24em] ${s.text} mb-3 font-semibold`}>
-        {s.label}
+    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.08] backdrop-blur-sm p-7 max-w-md w-full animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+      {/* Rarity — label sutil com dot, monocromático salvo ponto de cor mínimo */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className={`w-1.5 h-1.5 rounded-full ${RARITY_DOT[result.prize.rarity]}`} />
+        <span className="text-[11px] text-white/50 tracking-[0.08em]">{s.label}</span>
       </div>
-      <h3 className="text-2xl font-bold mb-2">{result.prize.name}</h3>
-      {result.prize.value_brl != null && result.prize.value_brl > 0 && (
-        <p className="text-sm text-white/60 mb-2">
-          Valor: R${result.prize.value_brl.toFixed(2)}
+
+      <h3 className="text-[22px] font-semibold text-white tracking-tight leading-tight mb-1.5">
+        {result.prize.name}
+      </h3>
+
+      {result.prize.value_brl != null && result.prize.value_brl > 0 && !isCoinBonus && (
+        <p className="text-[13px] text-white/45 tabular-nums">
+          R${result.prize.value_brl.toFixed(2)}
         </p>
       )}
+
       {isCoinBonus && (
-        <p className="text-sm text-white/60 mb-2 inline-flex items-center gap-1">
+        <p className="text-[13px] text-white/55 flex items-center gap-1.5 tabular-nums">
           <UraCoinIcon className="w-3.5 h-3.5" />
-          +{coinAmount.toLocaleString("pt-BR")} URA Coin · creditado automático
+          +{coinAmount.toLocaleString("pt-BR")} no saldo
         </p>
       )}
-      <p className="text-xs text-white/40 mt-3">
+
+      <p className="text-[12px] text-white/35 mt-5 leading-relaxed">
         {isCash
           ? "Envie os dados de PIX na próxima tela pra receber."
           : isCoinBonus
-            ? "Já tá no seu saldo."
-            : "O URA entrega manualmente (aguarde DM ou notificação)."}
+            ? "Crédito automático concluído."
+            : "URA entrega manualmente — aguarde DM ou notificação."}
       </p>
+
       <button
         onClick={onClose}
-        className="mt-5 w-full px-5 py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+        className="interactive-tap mt-6 w-full h-11 rounded-full bg-white text-black font-semibold text-[13px] hover:bg-white/90 transition-colors"
       >
         {isCash ? "Enviar PIX agora" : "Continuar"}
       </button>
     </div>
   );
 }
+
+const RARITY_DOT: Record<PrizeRarity, string> = {
+  common: "bg-zinc-400",
+  uncommon: "bg-emerald-400",
+  rare: "bg-blue-400",
+  epic: "bg-purple-400",
+  legendary: "bg-amber-400",
+};

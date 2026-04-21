@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bp-bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#22222a"/>
+      <stop offset="100%" stop-color="#0a0a0c"/>
+    </radialGradient>
+    <radialGradient id="bp-inner-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bp-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="bp-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="bp-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.08"/>
+    </linearGradient>
+    <radialGradient id="bp-floor" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="bp-blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bp-bg)"/>
+
+  <!-- Inner light escapando da caixa semi-aberta -->
+  <ellipse cx="400" cy="220" rx="180" ry="90" fill="url(#bp-inner-glow)" filter="url(#bp-blur)" opacity="0.8"/>
+
+  <!-- Floor shadow -->
+  <ellipse cx="400" cy="445" rx="180" ry="30" fill="url(#bp-floor)"/>
+
+  <!-- Box body (sem tampa) -->
+  <g transform="translate(400 320)">
+    <!-- Left face -->
+    <path d="M -140 -25 L 0 45 L 0 135 L -140 65 Z"
+          fill="url(#bp-left)" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5"/>
+    <!-- Right face -->
+    <path d="M 140 -25 L 0 45 L 0 135 L 140 65 Z"
+          fill="url(#bp-right)" stroke="#ffffff" stroke-opacity="0.42" stroke-width="1.5"/>
+    <!-- Open top (rim/borda) -->
+    <path d="M 0 -25 L 140 -25 L 0 45 L -140 -25 Z"
+          fill="#0a0a0c" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1.8"/>
+    <!-- Inner dark (interior visible) -->
+    <path d="M -125 -19 L 0 42 L 125 -19 L 0 35 Z"
+          fill="#050506"/>
+  </g>
+
+  <!-- Tampa flutuando acima -->
+  <g transform="translate(400 180) rotate(-4)">
+    <!-- Top face -->
+    <path d="M 0 -45 L 142 0 L 0 45 L -142 0 Z"
+          fill="url(#bp-top)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.8"/>
+    <!-- Front edge (underside visible) -->
+    <path d="M -142 0 L 0 45 L 142 0 L 0 5 Z"
+          fill="#ffffff" fill-opacity="0.04"/>
+    <!-- Highlight -->
+    <path d="M 0 -45 L 142 0" stroke="#ffffff" stroke-opacity="0.85" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Sparkles sutis -->
+  <g fill="#ffffff">
+    <circle cx="280" cy="200" r="1.5" opacity="0.55"/>
+    <circle cx="530" cy="180" r="1.3" opacity="0.5"/>
+    <circle cx="320" cy="260" r="1" opacity="0.4"/>
+    <circle cx="490" cy="240" r="1.2" opacity="0.45"/>
+    <circle cx="400" cy="140" r="1.8" opacity="0.6"/>
+  </g>
+
+  <!-- Label -->
+  <text x="400" y="510" text-anchor="middle" fill="#ffffff"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="30" font-weight="600" letter-spacing="3">Premium</text>
+  <text x="400" y="542" text-anchor="middle" fill="#ffffff" fill-opacity="0.4"
+        font-family="system-ui, sans-serif"
+        font-size="12" letter-spacing="2">RAROS · ÉPICOS</text>
+</svg>

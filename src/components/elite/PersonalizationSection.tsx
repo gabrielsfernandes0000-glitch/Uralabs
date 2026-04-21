@@ -18,12 +18,12 @@ interface OwnedCosmetic {
   equipped: boolean;
 }
 
-const RARITY_META: Record<OwnedCosmetic["prize_rarity"], { label: string; className: string; ring: string }> = {
-  common:    { label: "Comum",    className: "text-white/50",    ring: "#52525b" },
-  uncommon:  { label: "Incomum",  className: "text-emerald-400", ring: "#10b981" },
-  rare:      { label: "Raro",     className: "text-sky-400",     ring: "#38bdf8" },
-  epic:      { label: "Épico",    className: "text-purple-400",  ring: "#a855f7" },
-  legendary: { label: "Lendário", className: "text-amber-400",   ring: "#f59e0b" },
+const RARITY_META: Record<OwnedCosmetic["prize_rarity"], { label: string; dotClass: string; ring: string }> = {
+  common:    { label: "Comum",    dotClass: "bg-zinc-400",    ring: "#52525b" },
+  uncommon:  { label: "Incomum",  dotClass: "bg-emerald-400", ring: "#10b981" },
+  rare:      { label: "Raro",     dotClass: "bg-sky-400",     ring: "#38bdf8" },
+  epic:      { label: "Épico",    dotClass: "bg-purple-400",  ring: "#a855f7" },
+  legendary: { label: "Lendário", dotClass: "bg-amber-400",   ring: "#f59e0b" },
 };
 
 const TYPE_META: Record<OwnedCosmetic["cosmetic_type"], { label: string; description: string }> = {
@@ -192,7 +192,7 @@ function prefetchFull(slug: string) {
   if (prefetchedFulls.has(slug)) return;
   prefetchedFulls.add(slug);
   const img = new Image();
-  img.src = `/cosmetics/banners/${slug}.webp`;
+  img.src = `/cosmetics/banners/${slug}.webp?v=6x1b`;
 }
 
 function CosmeticCard({
@@ -221,16 +221,16 @@ function CosmeticCard({
         cosmetic.equipped ? "border-brand-500/40 ring-1 ring-brand-500/20" : "border-white/[0.06] hover:border-white/[0.15] hover:-translate-y-0.5"
       }`}
     >
-      {/* Preview area */}
-      <div className="relative h-[110px] overflow-hidden flex items-center justify-center" style={{
+      {/* Preview area — aspect ratio fixo pra banner preencher edge-to-edge */}
+      <div className="relative w-full overflow-hidden" style={{
+        aspectRatio: type === "banner" ? "16 / 7" : "16 / 9",
         background: bannerOK ? "transparent" : "#141417",
       }}>
         {bannerOK && (
-          /* hover-only pra não explodir a página com 33 animações concorrentes */
           <CosmeticBanner slug={cosmetic.prize_slug} variant="card" animated="hover" />
         )}
         {(frameSlug || auraSlug) && (
-          <div className="relative">
+          <div className="absolute inset-0 flex items-center justify-center">
             <AvatarWithCosmetics
               src={SAMPLE_AVATAR}
               name={cosmetic.prize_name}
@@ -242,20 +242,25 @@ function CosmeticCard({
           </div>
         )}
         {!bannerOK && !frameSlug && !auraSlug && (
-          <div className="text-white/20 text-[10px] uppercase tracking-widest">preview em breve</div>
+          <div className="absolute inset-0 flex items-center justify-center text-white/25 text-[11px]">
+            preview em breve
+          </div>
         )}
         {cosmetic.equipped && (
-          <div className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-brand-500/90 text-[9px] font-bold uppercase tracking-wider text-white">
-            <Check className="w-2.5 h-2.5" /> Equipado
+          <div className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm text-[10px] font-semibold text-white border border-white/15">
+            <Check className="w-2.5 h-2.5" strokeWidth={2.5} /> Equipado
           </div>
         )}
       </div>
 
-      {/* Info */}
+      {/* Info — rarity como dot+label, sem rainbow */}
       <div className="px-3 py-2.5 border-t border-white/[0.04]">
-        <p className="text-[12px] font-bold text-white/90 leading-tight truncate">{cosmetic.prize_name}</p>
-        <div className="flex items-center justify-between mt-1">
-          <span className={`text-[9px] font-bold tracking-[0.15em] uppercase ${rarity.className}`}>{rarity.label}</span>
+        <p className="text-[12.5px] font-semibold text-white leading-tight truncate">{cosmetic.prize_name}</p>
+        <div className="flex items-center justify-between mt-1.5">
+          <span className="flex items-center gap-1.5 text-[11px] text-white/45">
+            <span className={`w-1 h-1 rounded-full ${rarity.dotClass}`} />
+            {rarity.label}
+          </span>
           {!cosmetic.equipped && (
             <button
               onClick={onEquip}

@@ -67,6 +67,7 @@ export type RecentOpening = {
     type: PrizeType;
     rarity: PrizeRarity;
     value_brl: number | null;
+    image_url?: string | null;
   };
   redemption: {
     id: string;

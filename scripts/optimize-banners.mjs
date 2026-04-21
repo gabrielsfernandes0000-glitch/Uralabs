@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Converte PNGs de /public/cosmetics/banners/ em dois WebPs:
-//   <slug>.webp       — full 1792×512 quality 85 (perfil/modal)
-//   <slug>-thumb.webp — thumb 560×160 quality 78  (grid de seleção/cards)
+//   <slug>.webp       — full 2400×400 quality 85 (perfil/modal) — ratio 6:1
+//   <slug>-thumb.webp — thumb 900×150 quality 78  (grid de seleção/cards) — ratio 6:1
 //
 // Thumb pesa ~15-30KB (vs 500KB-1.7MB do full). 22 thumbs = ~0.5MB total
 // — abre sem travar decoding/GPU mesmo com 50+ banners no catálogo.
@@ -19,8 +19,10 @@ const DIR = join(__dirname, "..", "public", "cosmetics", "banners");
 
 const FULL_QUALITY = 85;
 const THUMB_QUALITY = 78;
-const THUMB_WIDTH = 560;
-const THUMB_HEIGHT = 160;
+const FULL_WIDTH = 2400;
+const FULL_HEIGHT = 400;
+const THUMB_WIDTH = 900;
+const THUMB_HEIGHT = 150;
 
 const mb = (n) => (n / 1024 / 1024).toFixed(2);
 const kb = (n) => (n / 1024).toFixed(1);
@@ -63,6 +65,7 @@ for (const slug of [...slugs].sort()) {
     totalBefore += sizeBefore;
 
     await sharp(source)
+      .resize(FULL_WIDTH, FULL_HEIGHT, { fit: "cover", position: "centre" })
       .webp({ quality: FULL_QUALITY, effort: 6 })
       .toFile(fullPath);
 

@@ -135,18 +135,15 @@ export default async function NoticiasPage({
   const counts: Record<EventImpact, number> = { high: 0, medium: 0, low: 0 };
   events.forEach((e) => counts[e.impact]++);
 
-  // Featured event — próximo evento de alto/médio impacto (prioridade: high > medium).
-  // Eventos já vêm ordenados por date/time asc do loadData.
+  // Featured event — proximo evento cronologico (qualquer impacto).
+  // Antes priorizava high-impact, mas isso causava mismatch de ETA com a AgendaPanel
+  // que mostra o proximo qualquer. Unificado pra "proximo mesmo" — badge de impacto no card.
   const nowMinsNy = nyNowMinutes();
   const upcomingEvents = events.filter((e) => {
     const m = parseEventMinutes(e.time);
     return m === null || m >= nowMinsNy;
   });
-  const featuredEvent =
-    upcomingEvents.find((e) => e.impact === "high") ??
-    upcomingEvents[0] ??
-    events[0] ??
-    null;
+  const featuredEvent = upcomingEvents[0] ?? events[0] ?? null;
 
   const highlights = news.filter((n) => n.importance === "high").length;
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
@@ -295,7 +292,7 @@ function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
             <div className="shrink-0">
               <p className="text-[44px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
               <p className="text-[10px] text-white/35 font-mono uppercase tracking-[0.22em] mt-2">
-                {countryCode(ev.country)} · ET
+                {countryCode(ev.country)} · BRT
               </p>
             </div>
             <div className="h-[70px] w-px bg-white/[0.06]" />
@@ -380,7 +377,7 @@ function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
           <div className="shrink-0">
             <p className="text-[42px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
             <p className="text-[10px] text-white/35 font-mono uppercase tracking-[0.22em] mt-2">
-              {countryCode(ev.country)} · ET
+              {countryCode(ev.country)} · BRT
             </p>
           </div>
 
@@ -537,8 +534,9 @@ function StatBlock({ label, sublabel, value, highlight, surprise }: {
    ──────────────────────────────────────────── */
 
 function nyNowMinutes(): number {
+  // Agora em BRT (Sao Paulo) — eventos sao armazenados em BRT pra alinhar com Forex Factory.
   const s = new Date().toLocaleString("en-US", {
-    timeZone: "America/New_York",
+    timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,

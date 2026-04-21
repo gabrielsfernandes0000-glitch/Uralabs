@@ -1,30 +1,17 @@
 "use client";
 
-import { Lock, Package } from "lucide-react";
 import type { BoxWithPrizes } from "@/lib/ura-coin";
 import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
-import { PrizeTile } from "./prize-tile";
+import { BoxVisual } from "./box-visual";
 
-const TIER_STYLES: Record<
-  "basic" | "premium" | "legendary",
-  { accent: string; glow: string; label: string }
-> = {
-  basic: {
-    accent: "from-zinc-500/20 to-zinc-600/10",
-    glow: "shadow-zinc-500/10",
-    label: "Básica",
-  },
-  premium: {
-    accent: "from-purple-500/25 to-pink-500/10",
-    glow: "shadow-purple-500/20",
-    label: "Premium",
-  },
-  legendary: {
-    accent: "from-amber-500/30 to-orange-500/10",
-    glow: "shadow-amber-500/30",
-    label: "Lendária",
-  },
-};
+/**
+ * BoxCard — Apple clean.
+ *
+ * Visual: card escuro sem border colorido, key art do prêmio destaque,
+ * tipografia generosa, CTA único claro. Sem 3D, sem rotação, sem tier colors.
+ * Diferenciação entre caixas vem do conteúdo (nome, prêmio destaque, preço),
+ * não de cor.
+ */
 
 export function BoxCard({
   box,
@@ -38,91 +25,56 @@ export function BoxCard({
   disabled: boolean;
 }) {
   const canAfford = balance >= box.cost_coins;
-  const style = TIER_STYLES[box.tier];
-  const topPrizes = box.prizes.slice(0, 4);
+  const keyPrize = [...box.prizes].sort((a, z) => a.chance - z.chance)[0] ?? box.prizes[0];
+  const enabled = !disabled && canAfford && box.any_available;
 
   return (
-    <div
-      className={`group relative rounded-2xl border border-white/[0.06] bg-gradient-to-br ${style.accent} overflow-hidden ${style.glow} shadow-xl transition-all hover:border-white/20`}
-    >
-      {/* Tier ribbon */}
-      <div className="absolute top-3 right-3 z-10">
-        <span className="text-[9px] uppercase tracking-[0.2em] px-2 py-0.5 rounded-full bg-black/40 border border-white/[0.08] text-white/60">
-          {style.label}
-        </span>
-      </div>
+    <div className="group relative rounded-2xl bg-white/[0.02] border border-white/[0.05] overflow-hidden transition-colors hover:border-white/[0.1]">
+      <BoxVisual box={box} />
 
-      <div className="p-5">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="relative">
-            <div className="absolute inset-0 blur-2xl bg-white/5" />
-            <div className="relative w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-              <Package className="w-6 h-6 text-white/70" />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-white leading-tight">{box.name}</h3>
-            {box.description && (
-              <p className="text-[11px] text-white/40 mt-1 line-clamp-2">
-                {box.description}
-              </p>
-            )}
-          </div>
-        </div>
+      <div className="p-5 pt-4">
+        <h3 className="text-[16px] font-semibold text-white leading-tight tracking-tight">
+          {box.name}
+        </h3>
+        {box.description && (
+          <p className="text-[12px] text-white/45 mt-1.5 line-clamp-1 leading-snug">
+            {box.description}
+          </p>
+        )}
 
-        {/* Prize preview */}
-        {topPrizes.length > 0 && (
-          <div className="mb-4">
-            <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
-              Pode cair
-            </div>
-            <div className="grid grid-cols-4 gap-1.5">
-              {topPrizes.map((p) => (
-                <div key={p.id} className="relative">
-                  <PrizeTile
-                    name={p.name}
-                    type={p.type}
-                    rarity={p.rarity}
-                    valueBrl={p.value_brl}
-                    compact
-                    exhausted={p.exhausted_today}
-                  />
-                  <div className="text-[9px] text-white/40 text-center mt-1 tabular-nums">
-                    {p.chance.toFixed(1)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-            {box.prizes.length > 4 && (
-              <p className="text-[10px] text-white/30 mt-2 text-center">
-                +{box.prizes.length - 4} outros possíveis
-              </p>
-            )}
+        {keyPrize && (
+          <div className="mt-4 flex items-center gap-2 text-[11.5px] text-white/55">
+            <span className="truncate">
+              <span className="text-white/35">Destaque </span>
+              <span className="font-medium text-white/80">{keyPrize.name}</span>
+            </span>
+            <span className="text-white/25">·</span>
+            <span className="font-mono tabular-nums shrink-0 text-white/45">
+              {keyPrize.chance.toFixed(keyPrize.chance < 1 ? 2 : 1)}%
+            </span>
           </div>
         )}
 
-        <button
-          onClick={onOpen}
-          disabled={disabled || !canAfford || !box.any_available}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 disabled:bg-white/[0.06] disabled:text-white/30 disabled:cursor-not-allowed transition-colors"
-        >
-          {!box.any_available ? (
-            <>
-              <Lock className="w-4 h-4" />
-              Esgotada hoje
-            </>
-          ) : !canAfford ? (
-            <>
-              <Lock className="w-4 h-4" />
-              Saldo insuficiente
-            </>
-          ) : (
-            <>
-              <UraCoinIcon className="w-4 h-4" />
-              Abrir por {box.cost_coins.toLocaleString("pt-BR")}
-            </>
-          )}
-        </button>
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-1.5">
+            <UraCoinIcon className="w-4 h-4" />
+            <span className="text-[18px] font-semibold tabular-nums tracking-tight">
+              {box.cost_coins.toLocaleString("pt-BR")}
+            </span>
+          </div>
+
+          <button
+            onClick={onOpen}
+            disabled={!enabled}
+            className="interactive-tap h-9 px-4 rounded-full bg-white text-black text-[12.5px] font-semibold hover:bg-white/90 disabled:bg-white/[0.05] disabled:text-white/30 disabled:cursor-not-allowed transition-colors"
+          >
+            {!box.any_available
+              ? "Esgotada"
+              : !canAfford
+                ? `Faltam ${(box.cost_coins - balance).toLocaleString("pt-BR")}`
+                : "Abrir"}
+          </button>
+        </div>
       </div>
     </div>
   );

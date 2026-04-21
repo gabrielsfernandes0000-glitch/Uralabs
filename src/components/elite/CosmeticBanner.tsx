@@ -31,14 +31,10 @@ export type BannerSlug =
   // Batch 2 — tarot v2
   | "o-louco-yolo"
   | "a-imperatriz-liquidez"
-  | "o-eremita-paciencia"
   | "a-morte-cycle"
   // Batch 2 — degen / street
-  | "mesa-trader"
-  | "whale-alert"
   | "vegas-lambo"
   // Batch 2 — mystical / nature
-  | "wolfpack-alpha"
   | "crypto-monastery"
   | "phoenix-rebirth"
   | "dragon-gold"
@@ -48,9 +44,21 @@ export type BannerSlug =
   | "hologram-chart"
   | "matrix-throne"
   // Batch 2 — royalty / classical
-  | "golden-gates"
   | "smoke-mirrors"
-  | "warrior-king-bull";
+  | "warrior-king-bull"
+  // Batch 3 — Brasil / cultura
+  | "favela-3am"
+  | "saci-degen"
+  | "copacabana-cyber"
+  | "capoeira-bull-vs-bear"
+  // Batch 3 — animais de poder
+  | "leao-dourado"
+  | "tigre-neon"
+  | "aguia-mercado"
+  | "orca-apex"
+  // Batch 3 — tempo / meditação
+  | "ampulheta-bitcoin"
+  | "dojo-samurai";
 
 export type BannerVariant = "full" | "sidebar" | "card" | "strip" | "cover";
 
@@ -76,14 +84,10 @@ const BANNER_ACCENT: Record<BannerSlug, string> = {
   // Tarot v2
   "o-louco-yolo": "#FBBF24",         // amarelo ensolarado
   "a-imperatriz-liquidez": "#10B981", // esmeralda
-  "o-eremita-paciencia": "#6366F1",   // violeta/índigo frio
   "a-morte-cycle": "#DC2626",         // carmesim
   // Degen / street
-  "mesa-trader": "#F97316",           // laranja do monitor
-  "whale-alert": "#06B6D4",           // azul-ciano deep
   "vegas-lambo": "#F59E0B",           // laranja Lambo + neon magenta
   // Mystical / nature
-  "wolfpack-alpha": "#94A3B8",        // prata lobo
   "crypto-monastery": "#FCD34D",      // dourado suave
   "phoenix-rebirth": "#F97316",       // fênix laranja
   "dragon-gold": "#EAB308",           // dourado imperial
@@ -93,9 +97,21 @@ const BANNER_ACCENT: Record<BannerSlug, string> = {
   "hologram-chart": "#06B6D4",        // ciano holográfico
   "matrix-throne": "#22C55E",         // verde Matrix
   // Royalty / classical
-  "golden-gates": "#EAB308",          // ouro baroque
   "smoke-mirrors": "#8B5CF6",         // púrpura victorian
   "warrior-king-bull": "#B45309",     // bronze guerreiro
+  // Batch 3 — Brasil / cultura
+  "favela-3am": "#F59E0B",            // amber das janelas
+  "saci-degen": "#DC2626",            // vermelho do gorro
+  "copacabana-cyber": "#A855F7",      // neon magenta
+  "capoeira-bull-vs-bear": "#10B981", // verde-luz da roda
+  // Batch 3 — animais de poder
+  "leao-dourado": "#EAB308",          // dourado imperial
+  "tigre-neon": "#06B6D4",            // ciano elétrico
+  "aguia-mercado": "#92400E",         // marrom canyon
+  "orca-apex": "#0EA5E9",             // azul oceano
+  // Batch 3 — tempo / meditação
+  "ampulheta-bitcoin": "#B45309",     // bronze sépia
+  "dojo-samurai": "#FCD34D",          // dourado suave do dawn
 };
 
 const ALL_SLUGS: BannerSlug[] = Object.keys(BANNER_ACCENT) as BannerSlug[];
@@ -131,7 +147,7 @@ export function CosmeticBanner({ slug, variant = "full", className }: CosmeticBa
   if (!isBannerSlug(slug)) return null;
 
   const suffix = USE_THUMB[variant] ? "-thumb" : "";
-  const src = `/cosmetics/banners/${slug}${suffix}.webp`;
+  const src = `/cosmetics/banners/${slug}${suffix}.webp?v=6x1b`;
   // Ambient mode: "cover" (perfil) mostra a arte inteira sem crop, e as sobras
   // (quando o container é mais largo/alto que a proporção da imagem) ficam
   // preenchidas com uma versão borrada e escurecida do mesmo banner. Zero

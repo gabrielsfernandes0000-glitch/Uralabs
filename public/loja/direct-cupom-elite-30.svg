@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="bg-cup-30" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#1f1a15"/>
+      <stop offset="100%" stop-color="#0a0a0c"/>
+    </radialGradient>
+    <radialGradient id="glow-30" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fcd34d" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#fcd34d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg-cup-30)"/>
+  <rect width="800" height="600" fill="url(#glow-30)"/>
+
+  <g transform="translate(160 140)">
+    <path d="M 0 40 Q 0 0 40 0 L 440 0 Q 480 0 480 40 L 480 140 Q 460 150 460 160 Q 460 170 480 180 L 480 280 Q 480 320 440 320 L 40 320 Q 0 320 0 280 L 0 180 Q 20 170 20 160 Q 20 150 0 140 Z"
+          fill="#fcd34d" fill-opacity="0.05" stroke="#fcd34d" stroke-opacity="0.35" stroke-width="1.5"/>
+
+    <line x1="340" y1="30" x2="340" y2="290" stroke="#fcd34d" stroke-opacity="0.2" stroke-width="1.5" stroke-dasharray="6 6"/>
+
+    <text x="170" y="170" text-anchor="middle" fill="#fde68a"
+          font-family="system-ui, -apple-system, sans-serif"
+          font-size="120" font-weight="700" letter-spacing="-4">30%</text>
+    <text x="170" y="210" text-anchor="middle" fill="#fcd34d" fill-opacity="0.55"
+          font-family="system-ui, sans-serif"
+          font-size="14" font-weight="500" letter-spacing="4">DESCONTO</text>
+
+    <text x="410" y="150" text-anchor="middle" fill="#fde68a" fill-opacity="0.75"
+          font-family="system-ui, sans-serif"
+          font-size="24" font-weight="700" letter-spacing="6">URA</text>
+    <text x="410" y="180" text-anchor="middle" fill="#fde68a"
+          font-family="system-ui, sans-serif"
+          font-size="30" font-weight="700" letter-spacing="4">ELITE</text>
+    <text x="410" y="220" text-anchor="middle" fill="#fcd34d" fill-opacity="0.4"
+          font-family="system-ui, monospace"
+          font-size="10" letter-spacing="2">VOUCHER</text>
+  </g>
+
+  <text x="400" y="510" text-anchor="middle" fill="#fcd34d" fill-opacity="0.5"
+        font-family="system-ui, sans-serif"
+        font-size="14" letter-spacing="3">CUPOM · MÁXIMO DESCONTO</text>
+</svg>

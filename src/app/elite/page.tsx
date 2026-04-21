@@ -12,6 +12,19 @@ import { instrumentsForEvent } from "@/lib/economic-events";
 import { InstrumentFilterStyle } from "@/components/elite/InstrumentFilterStyle";
 import { RecentSurpriseCard } from "@/components/elite/RecentSurpriseCard";
 import { loadLastReleasedEvent, loadTodayEvents } from "@/lib/events-today";
+import { getUserState } from "@/lib/ura-coin";
+import { DashboardHero } from "@/components/elite/DashboardHero";
+
+const BANNER_SLUGS = new Set([
+  "diamond-hands", "o-sol-bull", "a-torre-flash", "a-temperanca-rr",
+  "o-louco-yolo", "a-imperatriz-liquidez", "a-morte-cycle", "vegas-lambo",
+  "crypto-monastery", "phoenix-rebirth", "dragon-gold",
+  "neural-net", "cyber-samurai", "hologram-chart", "matrix-throne",
+  "smoke-mirrors", "warrior-king-bull",
+  "favela-3am", "saci-degen", "copacabana-cyber", "capoeira-bull-vs-bear",
+  "leao-dourado", "tigre-neon", "aguia-mercado", "orca-apex",
+  "ampulheta-bitcoin", "dojo-samurai",
+]);
 
 /** Código curto PT-BR do país pro header da agenda (mesma convenção de /elite/noticias). */
 function countryCode(country: string): string {
@@ -20,7 +33,8 @@ function countryCode(country: string): string {
 }
 
 function nyNowMinutes(): number {
-  const s = new Date().toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false });
+  // Agora em BRT — eventos sao armazenados em BRT pra alinhar com Forex Factory.
+  const s = new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false });
   const [h, m] = s.split(":").map(Number);
   return h * 60 + m;
 }
@@ -208,11 +222,14 @@ export default async function EliteDashboard() {
   const completedSteps = steps.filter(s => s.done).length;
   const tierAccent = isElite ? "#FF5500" : "#60A5FA";
 
-  const [curriculum, todayEvents, lastReleased] = await Promise.all([
+  const [curriculum, todayEvents, lastReleased, userState] = await Promise.all([
     getCurriculum(),
     isElite ? loadTodayEvents() : Promise.resolve([] as EconomicEvent[]),
     isElite ? loadLastReleasedEvent() : Promise.resolve(null),
+    session ? getUserState(session.userId, 0).catch(() => null) : Promise.resolve(null),
   ]);
+  const equippedBannerSlug = userState?.cosmetics.banner?.prize_slug ?? null;
+  const hasBanner = !!equippedBannerSlug && BANNER_SLUGS.has(equippedBannerSlug);
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   const stats = {
     lessonsCompleted: 0,
@@ -223,25 +240,33 @@ export default async function EliteDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]">
-        <div className="absolute top-0 right-0 w-[500px] h-[300px] blur-[120px] pointer-events-none"
-          style={{ backgroundColor: tierAccent + "08" }} />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_60%_at_70%_20%,#000_40%,transparent_100%)]" />
-
-        <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+      {/* ── Header ── banner 6:1 edge-to-edge como fundo (container matcha
+           aspectRatio da imagem pra NUNCA cortar). Conteúdo sobreposto.
+           Botão "ocultar banner" no canto pra quem não quiser a decoração. */}
+      <DashboardHero bannerSlug={hasBanner ? equippedBannerSlug : null} tierAccent={tierAccent}>
           <div className="flex items-center gap-4">
-            <Avatar src={avatar} name={displayName} size={60} className="rounded-xl ring-1 ring-white/[0.08]" />
+            <Avatar
+              src={avatar}
+              name={displayName}
+              size={60}
+              className={hasBanner
+                ? "rounded-xl ring-2 ring-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+                : "rounded-xl ring-1 ring-white/[0.08]"
+              }
+            />
             <div>
-              <p className="text-[11px] text-white/30 font-medium">{greeting},</p>
-              <h1 className="text-[26px] md:text-[30px] font-bold text-white leading-tight tracking-tight">{displayName}</h1>
+              <p className={`text-[11px] font-medium ${hasBanner ? "text-white/70 drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : "text-white/30"}`}>{greeting},</p>
+              <h1 className={`text-[26px] md:text-[30px] font-bold text-white leading-tight tracking-tight ${hasBanner ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]" : ""}`}>{displayName}</h1>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="w-1 h-1 rounded-full" style={{ backgroundColor: tierAccent }} />
-                <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase" style={{ color: tierAccent + "CC" }}>
+                <span
+                  className={`text-[9.5px] font-bold tracking-[0.25em] uppercase ${hasBanner ? "drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : ""}`}
+                  style={{ color: hasBanner ? tierAccent : tierAccent + "CC" }}
+                >
                   {tierLabelText}
                 </span>
-                <span className="text-white/20">·</span>
-                <span className="text-[10px] text-white/30">{dateStr}</span>
+                <span className={hasBanner ? "text-white/40" : "text-white/20"}>·</span>
+                <span className={`text-[10px] ${hasBanner ? "text-white/65 drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : "text-white/30"}`}>{dateStr}</span>
               </div>
             </div>
           </div>
@@ -250,28 +275,27 @@ export default async function EliteDashboard() {
           {stats.streak > 0 ? (
             <div className="text-right">
               <div className="flex items-baseline gap-3 justify-end">
-                <Flame className="w-6 h-6 shrink-0 text-amber-400" strokeWidth={1.5} />
-                <p className="text-[44px] md:text-[54px] font-bold text-white leading-none font-mono tabular-nums"><CountUp end={stats.streak} duration={1} /></p>
+                <Flame className={`w-6 h-6 shrink-0 text-amber-400 ${hasBanner ? "drop-shadow-[0_1px_6px_rgba(0,0,0,0.7)]" : ""}`} strokeWidth={1.5} />
+                <p className={`text-[44px] md:text-[54px] font-bold text-white leading-none font-mono tabular-nums ${hasBanner ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]" : ""}`}><CountUp end={stats.streak} duration={1} /></p>
               </div>
-              <p className="text-[10px] text-amber-400/70 uppercase tracking-[0.22em] mt-1">dias seguidos</p>
-              <p className="text-[10px] text-white/25 mt-2">
-                <span className="font-mono font-semibold tabular-nums text-white/35"><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></span>
+              <p className={`text-[10px] text-amber-400/80 uppercase tracking-[0.22em] mt-1 ${hasBanner ? "drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : ""}`}>dias seguidos</p>
+              <p className={`text-[10px] mt-2 ${hasBanner ? "text-white/60 drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : "text-white/25"}`}>
+                <span className={`font-mono font-semibold tabular-nums ${hasBanner ? "text-white/75" : "text-white/35"}`}><CountUp end={stats.daysRemaining} duration={1.5} delay={0.3} /></span>
                 {" dias na temporada"}
               </p>
             </div>
           ) : (
             <div className="text-right">
               <div className="flex items-baseline gap-2 justify-end">
-                <Flame className="w-4 h-4 shrink-0 text-white/15" strokeWidth={1.5} />
-                <p className="text-[22px] font-semibold text-white/50 leading-none">Primeiro dia</p>
+                <Flame className={`w-4 h-4 shrink-0 ${hasBanner ? "text-white/35 drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : "text-white/15"}`} strokeWidth={1.5} />
+                <p className={`text-[22px] font-semibold leading-none ${hasBanner ? "text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]" : "text-white/50"}`}>Primeiro dia</p>
               </div>
-              <p className="text-[10px] text-white/25 mt-1.5 max-w-[200px] leading-relaxed">
-                Comece a construir seu streak <span className="text-white/40">hoje</span>. São {stats.daysRemaining} dias na temporada.
+              <p className={`text-[10px] mt-1.5 max-w-[200px] leading-relaxed ${hasBanner ? "text-white/55 drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : "text-white/25"}`}>
+                Comece a construir seu streak <span className={hasBanner ? "text-white/75" : "text-white/40"}>hoje</span>. São {stats.daysRemaining} dias na temporada.
               </p>
             </div>
           )}
-        </div>
-      </div>
+      </DashboardHero>
 
       {/* ── Primary Action — context-aware (hour-of-day + live state) ── */}
       <Link
