@@ -558,17 +558,30 @@ export default function PraticaPage() {
       {/* ───── Grid principal: missão+modos (esquerda) · streak (direita) ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
         {/* Coluna esquerda — hierarquia: contexto > a\u00e7\u00e3o do dia > alternativas > descoberta */}
-        <div className="space-y-3">
-          <div className="animate-in-up delay-0">
-            <EventBonusTreinoCard />
-          </div>
+        <div className="space-y-6">
+          {/* Seção HOJE — foco do dia */}
+          <section className="space-y-3">
+            <div className="flex items-baseline gap-2 px-1">
+              <h2 className="text-[11px] font-bold tracking-[0.25em] uppercase text-white/50">Hoje</h2>
+              <span className="text-[10px] text-white/25">· o que fazer agora</span>
+            </div>
+            <div className="animate-in-up delay-0">
+              <EventBonusTreinoCard />
+            </div>
+            <div className="animate-in-up delay-1 relative">
+              <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl bg-brand-500/70 z-10" />
+              <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
+            </div>
+          </section>
 
-          <div className="animate-in-up delay-1">
-            <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
-          </div>
-
-          {/* Modos de treino — accent lateral por modo + ícone colorido, cor como acento */}
-          <div className="animate-in-up delay-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Seção EXPLORAR — modos livres */}
+          <section className="space-y-3">
+            <div className="flex items-baseline gap-2 px-1">
+              <h2 className="text-[11px] font-bold tracking-[0.25em] uppercase text-white/50">Explorar</h2>
+              <span className="text-[10px] text-white/25">· treine além da missão</span>
+            </div>
+            {/* Modos de treino — accent lateral por modo + ícone colorido */}
+            <div className="animate-in-up delay-2 grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { href: "/elite/treino/livre",   icon: Zap,    title: "Treino Livre", tag: "Infinito", count: totalScenarios, hint: "cenários · todos os temas",   accent: "#FF5500" },
               { href: "/elite/pratica/temas",  icon: Layers, title: "Por Tema",     tag: "Focado",   count: totalThemes,    hint: "temas · cenários filtrados",   accent: "#3B82F6" },
@@ -603,7 +616,8 @@ export default function PraticaPage() {
                 </div>
               </Link>
             ))}
-          </div>
+            </div>
+          </section>
 
           <div className="animate-in-up delay-3">
             <UncoveredThemesPanel streakVersion={streakVersion} />
