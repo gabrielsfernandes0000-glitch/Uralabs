@@ -299,7 +299,7 @@ export default async function EliteDashboard() {
               <p className="text-[12px] text-white/40 mt-0.5">{primaryAction.description}</p>
             </div>
           </div>
-          {primaryAction.id !== "rest" && (
+          {primaryAction.tag !== "Madrugada" && (
             <div className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-[12.5px] font-bold transition-colors shrink-0"
               style={{ borderColor: primaryAction.accent, color: primaryAction.accent }}>
               {primaryAction.isLive ? "Entrar" : "Ir agora"}

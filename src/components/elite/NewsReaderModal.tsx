@@ -16,7 +16,7 @@ interface ReadResponse {
   image_url: string | null;
   published_at: string;
   content: string;
-  content_source: "jina" | "summary" | "none";
+  content_source: "jina" | "guardian" | "summary" | "none";
 }
 
 export function NewsReaderModal({
