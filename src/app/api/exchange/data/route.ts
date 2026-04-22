@@ -62,12 +62,14 @@ export async function GET(req: Request) {
     } else {
       apiSecret = rawSecret;
     }
-  } catch {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "unknown";
+    console.error("[exchange/data] decrypt failed:", msg, "— iv len:", conn.iv?.length, "— enc len:", conn.api_key_encrypted?.length);
     await supabase
       .from("exchange_connections")
-      .update({ status: "error", error_message: "Falha ao descriptografar keys" })
+      .update({ status: "error", error_message: `Falha ao descriptografar: ${msg}` })
       .eq("id", conn.id);
-    return NextResponse.json({ connected: true, exchange, error: "Erro de criptografia — reconecte sua conta" }, { status: 500 });
+    return NextResponse.json({ connected: true, exchange, error: `Erro de criptografia: ${msg}` }, { status: 500 });
   }
 
   // 4. Fetch all data

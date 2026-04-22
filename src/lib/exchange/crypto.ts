@@ -13,6 +13,12 @@ function getEncryptionKey(): Buffer {
   if (!key || key.length < 32) {
     throw new Error("EXCHANGE_ENCRYPTION_KEY must be set (min 32 chars)");
   }
+  // Temp debug — loga fingerprint da key pra validar que encrypt e decrypt
+  // estão usando o mesmo valor em runtime. Remove depois de diagnosticar.
+  if (typeof console !== "undefined") {
+    const fp = key.slice(0, 6) + "…" + key.slice(-6) + ` (len=${key.length})`;
+    console.log("[exchange/crypto] key fingerprint:", fp);
+  }
   // Use first 32 bytes as key
   return Buffer.from(key.slice(0, KEY_LENGTH), "utf-8");
 }
