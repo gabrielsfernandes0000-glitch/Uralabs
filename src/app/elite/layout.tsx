@@ -45,8 +45,8 @@ export default async function EliteLayout({ children }: { children: React.ReactN
 
       <EliteSidebar session={session} coinBalance={coinBalance} bannerSlug={bannerSlug} frameSlug={frameSlug} effectSlug={effectSlug} />
 
-      <main className="relative z-10 flex-1 ml-0 lg:ml-[272px] min-h-screen">
-        <div className="px-5 py-6 lg:px-10 lg:py-8">
+      <main className="relative z-10 flex-1 min-w-0 ml-0 lg:ml-[272px] min-h-screen">
+        <div className="px-5 py-6 lg:px-10 lg:py-8 min-w-0 max-w-full overflow-x-hidden">
           {children}
         </div>
       </main>

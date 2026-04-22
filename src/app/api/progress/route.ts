@@ -14,6 +14,8 @@ interface ProgressResponse {
     streak: number;
     bestStreak: number;
     lastActivityDate: string | null;
+    accountBalance?: number;
+    onboardingCompletedAt?: string | null;
   };
 }
 

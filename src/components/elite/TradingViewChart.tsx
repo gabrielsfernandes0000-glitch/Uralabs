@@ -38,9 +38,18 @@ export interface TradingViewChartProps {
   hideTopToolbar?: boolean;
   allowSymbolChange?: boolean;
   studies?: string[];
+  /** Símbolos adicionais pra sobrepor (compare mode). Ex: ["BINANCE:ETHUSDT"]. */
+  compareSymbols?: string[];
   /** Quando true, remove borda e rounded — pra uso em cockpit full-bleed. */
   bare?: boolean;
 }
+
+/** Preset SMC — indicadores comuns pra análise Smart Money Concepts. */
+export const SMC_STUDIES = [
+  "MAExp@tv-basicstudies",
+  "VWAP@tv-basicstudies",
+  "Volume@tv-basicstudies",
+];
 
 export function TradingViewChart({
   symbol,
@@ -49,6 +58,7 @@ export function TradingViewChart({
   hideTopToolbar = false,
   allowSymbolChange = true,
   studies = [],
+  compareSymbols = [],
   bare = false,
 }: TradingViewChartProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -63,7 +73,7 @@ export function TradingViewChart({
 
     ensureTvScript().then(() => {
       if (cancelled || !window.TradingView) return;
-      new window.TradingView.widget({
+      const config: Record<string, unknown> = {
         container_id: containerIdRef.current,
         symbol,
         interval,
@@ -82,14 +92,19 @@ export function TradingViewChart({
         studies,
         backgroundColor: "#0a0a0c",
         gridColor: "rgba(255,255,255,0.04)",
-      });
+      };
+      if (compareSymbols.length > 0) {
+        config.studies_overrides = {};
+        config.compareSymbols = compareSymbols.map((s) => ({ symbol: s, position: "SameScale" }));
+      }
+      new window.TradingView.widget(config);
     });
 
     return () => {
       cancelled = true;
       if (host) host.innerHTML = "";
     };
-  }, [symbol, interval, hideTopToolbar, allowSymbolChange, studies]);
+  }, [symbol, interval, hideTopToolbar, allowSymbolChange, studies, compareSymbols]);
 
   return (
     <div

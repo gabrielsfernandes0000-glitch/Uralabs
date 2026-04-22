@@ -6,9 +6,9 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Menu, X, LogOut, Lock, Radio, Search, ChevronDown,
-  LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Newspaper, Gift, NotebookPen,
-  MessageCircle, Activity, Globe, GraduationCap, LineChart, type LucideIcon,
+  Menu, X, LogOut, Lock, Radio, ChevronDown,
+  LayoutDashboard, BookOpen, Crosshair, Trophy, Users, BarChart3, Gift, NotebookPen,
+  Globe, LineChart, type LucideIcon,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
@@ -17,7 +17,19 @@ import { AvatarWithCosmetics } from "@/components/elite/AvatarCosmetics";
 import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 
 type NavChild = { href: string; label: string; icon: LucideIcon; queryKey?: string; queryValue?: string };
-type NavItem = { href: string; icon: LucideIcon; label: string; exact?: boolean; eliteOnly?: boolean; children?: NavChild[] };
+type NavItem = {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  exact?: boolean;
+  eliteOnly?: boolean;
+  children?: NavChild[];
+  /** Quando o item é identificado por query param (ex: /elite/turma?view=mural). */
+  queryKey?: string;
+  queryValue?: string;
+  /** Se true, este item fica ativo também quando o queryKey está ausente da URL. */
+  queryIsDefault?: boolean;
+};
 type NavSection = { label: string; items: NavItem[] };
 
 const NAV_SECTIONS: NavSection[] = [
@@ -26,27 +38,17 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/elite",          icon: LayoutDashboard, label: "Dashboard",  exact: true },
       { href: "/elite/calls",    icon: Radio,           label: "Calls",      eliteOnly: true },
-      { href: "/elite/aulas",    icon: BookOpen,        label: "Aulas" },
       { href: "/elite/graficos", icon: LineChart,       label: "Gráficos" },
+      { href: "/elite/aulas",    icon: BookOpen,        label: "Aulas" },
       { href: "/elite/pratica",  icon: Crosshair,       label: "Prática",    eliteOnly: true },
       { href: "/elite/diario",   icon: NotebookPen,     label: "Diário",     eliteOnly: true },
+      { href: "/elite/noticias", icon: Globe,           label: "Notícias" },
     ],
   },
   {
     label: "Comunidade",
     items: [
-      { href: "/elite/membros",  icon: Users,    label: "Membros" },
-      {
-        href: "/elite/turma",
-        icon: GraduationCap,
-        label: "Turma",
-        children: [
-          { href: "/elite/turma?view=mural",   label: "Mural",       icon: Newspaper,     queryKey: "view", queryValue: "mural"   },
-          { href: "/elite/turma?view=review",  label: "Peer Review", icon: MessageCircle, queryKey: "view", queryValue: "review"  },
-          { href: "/elite/turma?view=ranking", label: "Ranking",     icon: Activity,      queryKey: "view", queryValue: "ranking" },
-        ],
-      },
-      { href: "/elite/noticias", icon: Globe,    label: "Notícias" },
+      { href: "/elite/membros", icon: Users, label: "Membros" },
     ],
   },
   {
@@ -58,6 +60,15 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
 ];
+
+/**
+ * Resolve path base (sem query) pra comparar com pathname.
+ * Ex: "/elite/turma?view=mural" → "/elite/turma"
+ */
+function pathOnly(href: string): string {
+  const q = href.indexOf("?");
+  return q >= 0 ? href.slice(0, q) : href;
+}
 
 /* ────────────────────────────────────────────
    NavMenu — nav completa, isolada em Suspense porque usa useSearchParams.
@@ -75,9 +86,9 @@ function NavMenu({
 }) {
   const searchParams = useSearchParams();
   return (
-    <nav className="flex-1 py-5 px-4 overflow-y-auto">
+    <nav className="flex-1 py-3 px-4 overflow-y-auto">
       {NAV_SECTIONS.map((section, idx) => (
-        <div key={section.label} className={idx > 0 ? "mt-4 pt-3 border-t border-white/[0.04]" : ""}>
+        <div key={section.label} className={idx > 0 ? "mt-3 pt-2 border-t border-white/[0.04]" : ""}>
           <p className="px-4 mb-1 text-[9px] font-bold uppercase tracking-[0.22em] text-white/25">
             {section.label}
           </p>
@@ -97,6 +108,7 @@ function NavMenu({
                   key={item.href}
                   item={item}
                   pathname={pathname}
+                  searchParams={searchParams}
                   isElite={isElite}
                   onNavigate={onNavigate}
                 />
@@ -112,18 +124,31 @@ function NavMenu({
 function NavRow({
   item,
   pathname,
+  searchParams,
   isElite,
   onNavigate,
 }: {
   item: NavItem;
   pathname: string;
+  searchParams: URLSearchParams;
   isElite: boolean;
   onNavigate: () => void;
 }) {
   const router = useRouter();
-  const isActive = item.exact
-    ? pathname === item.href
-    : pathname === item.href || pathname.startsWith(item.href + "/");
+  const basePath = pathOnly(item.href);
+  const onBase = item.exact
+    ? pathname === basePath
+    : pathname === basePath || pathname.startsWith(basePath + "/");
+  // Se o item tem queryKey/value, precisa bater com o searchParam atual (ou ser o default quando param ausente).
+  let isActive = onBase;
+  if (isActive && item.queryKey) {
+    const current = searchParams.get(item.queryKey);
+    if (current) {
+      isActive = current === item.queryValue;
+    } else {
+      isActive = !!item.queryIsDefault;
+    }
+  }
   const Icon = item.icon;
   const locked = Boolean(item.eliteOnly && !isElite);
   const href = locked ? "/elite/desbloquear" : item.href;
@@ -286,11 +311,6 @@ export function EliteSidebar({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [kbdShortcut, setKbdShortcut] = useState("⌘K");
-  useEffect(() => {
-    const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
-    setKbdShortcut(isMac ? "⌘K" : "Ctrl K");
-  }, []);
   const avatar = avatarUrl(session.userId, session.avatar, 64);
   const displayName = session.globalName || session.username;
 
@@ -317,7 +337,7 @@ export function EliteSidebar({
 
         <div className="relative z-10 flex flex-col h-full">
           {/* Logo */}
-          <div className="px-7 pt-8 pb-6">
+          <div className="px-7 pt-6 pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3.5">
                 <div className="relative shrink-0">
@@ -342,26 +362,8 @@ export function EliteSidebar({
 
           <div className="mx-6 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-          {/* Quick search trigger — dispara Cmd+K programaticamente */}
-          <div className="px-4 pt-4">
-            <button
-              onClick={() => {
-                const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
-                window.dispatchEvent(new KeyboardEvent("keydown", {
-                  key: "k",
-                  metaKey: isMac,
-                  ctrlKey: !isMac,
-                  bubbles: true,
-                }));
-              }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.10] transition-all text-white/40 hover:text-white/70 group"
-              title="Buscar aulas, treinos e páginas"
-            >
-              <Search className="w-3.5 h-3.5" />
-              <span className="text-[12px] flex-1 text-left">Buscar…</span>
-              <kbd className="text-[9px] font-mono text-white/35 border border-white/[0.10] rounded px-1 py-0.5">{kbdShortcut}</kbd>
-            </button>
-          </div>
+          {/* Busca: trigger visual removido pra liberar espaço vertical; Cmd/Ctrl+K
+              segue funcional (listener global registrado pelo CommandPalette). */}
 
           {/* Navigation — `useSearchParams` exige Suspense boundary no Next 16 */}
           <Suspense fallback={<nav className="flex-1" />}>
@@ -379,7 +381,7 @@ export function EliteSidebar({
             <Link
               href="/elite/loja"
               onClick={() => setMobileOpen(false)}
-              className="mx-4 mb-2 flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/[0.08] hover:border-white/[0.18] transition-colors"
+              className="mx-4 mb-1.5 flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/[0.08] hover:border-white/[0.18] transition-colors"
             >
               <UraCoinIcon className="w-4 h-4" />
               <span className="text-[12px] font-semibold tabular-nums text-amber-300">
@@ -392,7 +394,7 @@ export function EliteSidebar({
           )}
 
           {/* User — avatar + nome clicáveis → /elite/perfil (personalização) */}
-          <div className="p-4">
+          <div className="p-3">
             <div className="flex items-center gap-2 px-2 py-2.5 rounded-xl bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.05] hover:border-white/[0.08] transition-all">
               <Link
                 href="/elite/perfil"

@@ -11,6 +11,7 @@ import {
   type MarketNews,
 } from "@/lib/market-news";
 import { NoticiasFeedClient } from "@/components/elite/NoticiasFeedClient";
+import { TickerTape } from "@/components/elite/TickerTape";
 import { NewsFiltersBar, CalendarFiltersBar } from "@/components/elite/NoticiasFilters";
 import {
   parseNewsFilters,
@@ -150,6 +151,10 @@ export default async function NoticiasPage({
 
   return (
     <div className="space-y-5">
+      {/* Ticker tape — preços real-time pra contextualizar notícias */}
+      <div className="animate-in-up">
+        <TickerTape />
+      </div>
       {/* ───── HERO compacto ───── */}
       <div className="animate-in-up relative overflow-hidden rounded-2xl bg-[#0e0e10] border border-white/[0.06]">
         <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">

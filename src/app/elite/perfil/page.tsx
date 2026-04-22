@@ -1,7 +1,5 @@
 import { getSession } from "@/lib/session";
 import { avatarUrl } from "@/lib/discord";
-import { Calendar, Trophy, Flame, Target, BookOpen, Zap, ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { PersonalizationSection } from "@/components/elite/PersonalizationSection";
 import { CosmeticBanner } from "@/components/elite/CosmeticBanner";
 import { getUserState } from "@/lib/ura-coin";
@@ -120,78 +118,10 @@ export default async function PerfilPage() {
           ) : null}
         </div>
 
-        {/* Stats 4-up */}
-        <div className="p-7">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { icon: Calendar, label: "Turma", value: "4.0", color: "#ffffff" },
-              { icon: BookOpen, label: "Aulas", value: "0/17", color: "#ffffff" },
-              { icon: Trophy, label: "Badges", value: "0", color: "#ffffff" },
-              { icon: Flame, label: "Streak", value: "0 dias", color: "#ffffff" },
-            ].map((s, i) => (
-              <div key={i} className="relative overflow-hidden rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
-                <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${s.color}20, transparent)` }} />
-                <s.icon className="w-4 h-4 mb-2.5" style={{ color: s.color + "60" }} />
-                <p className="text-[18px] font-bold text-white leading-none">{s.value}</p>
-                <p className="text-[11px] text-white/30 mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Goal ── */}
-      <div className="animate-in-up delay-1 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-500/[0.02] to-transparent" />
-
-        <div className="relative z-10 p-7">
-          <div className="flex items-center gap-3 mb-6">
-            <Target className="w-4 h-4 text-green-500/50" />
-            <h2 className="text-[14px] font-semibold text-white/80">Meta do Semestre</h2>
-          </div>
-
-          <div className="flex flex-col items-center py-6">
-            <div className="w-14 h-14 rounded-xl bg-white/[0.02] border border-dashed border-white/[0.06] flex items-center justify-center mb-4">
-              <Target className="w-5 h-5 text-white/20" />
-            </div>
-            <p className="text-[13px] text-white/30 mb-1">Nenhuma meta definida</p>
-            <p className="text-[11px] text-white/30 mb-5 max-w-xs text-center">
-              Ex: &quot;Aprovar mesa $25k&quot; · &quot;3 semanas no verde&quot;
-            </p>
-            <button className="interactive-tap inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 font-medium hover:text-green-500 hover:border-green-500/20 transition-all">
-              <Zap className="w-3.5 h-3.5" />
-              Definir Meta
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* ── Personalização (cosméticos) ── */}
-      <div className="animate-in-up delay-2"><PersonalizationSection /></div>
-
-      {/* ── Badges showcase ── */}
-      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
-        <div className="relative z-10 p-7">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Trophy className="w-4 h-4 text-yellow-500/50" />
-              <h2 className="text-[14px] font-semibold text-white/80">Badges</h2>
-            </div>
-            <Link href="/elite/conquistas" className="text-[11px] text-white/30 hover:text-brand-500 transition-colors flex items-center gap-1">
-              Ver todas <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-
-          <div className="flex flex-col items-center py-8">
-            <div className="flex gap-2 mb-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="w-11 h-11 rounded-xl bg-white/[0.02] border border-dashed border-white/[0.04]" />
-              ))}
-            </div>
-            <p className="text-[12px] text-white/30">Complete aulas para desbloquear</p>
-          </div>
-        </div>
-      </div>
+      <div className="animate-in-up delay-1"><PersonalizationSection /></div>
     </div>
   );
 }

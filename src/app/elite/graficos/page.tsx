@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, Maximize2, Minimize2, Plus, X, Loader2, Info } from "lucide-react";
-import { TradingViewChart } from "@/components/elite/TradingViewChart";
+import { Search, Maximize2, Minimize2, Plus, X, Loader2, Info, Zap, GitCompare, Square, Grid2x2, Rows2, Flame } from "lucide-react";
+import { TradingViewChart, SMC_STUDIES } from "@/components/elite/TradingViewChart";
+import { HeatmapWidget } from "@/components/elite/HeatmapWidget";
 
 /* ────────────────────────────────────────────
    Instrumento — pode vir da nossa lista curada OU da API pública do TradingView.
@@ -379,12 +380,18 @@ function DataBadge({ exchange, type }: { exchange?: string; type?: string }) {
    Página
    ──────────────────────────────────────────── */
 
+type Layout = "single" | "2x1" | "2x2" | "heatmap-crypto" | "heatmap-stocks";
+
 export default function GraficosPage() {
   const [active, setActive] = useState<Instrument>(ALL_SUGGESTED[0]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [watchlist, setWatchlist] = useState<string[]>(DEFAULT_WATCHLIST);
   const [meta, setMeta] = useState<Record<string, { short: string; label: string }>>({});
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [layout, setLayout] = useState<Layout>("single");
+  const [smcEnabled, setSmcEnabled] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareWith, setCompareWith] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -511,6 +518,59 @@ export default function GraficosPage() {
           )}
         </div>
 
+        <div className="w-px h-4 bg-white/[0.06]" />
+
+        {/* Layout selector */}
+        <div className="flex items-center gap-0.5" title="Layout">
+          {[
+            { v: "single" as Layout,         Icon: Square,  label: "1 chart" },
+            { v: "2x1" as Layout,            Icon: Rows2,   label: "2 charts lado a lado" },
+            { v: "2x2" as Layout,            Icon: Grid2x2, label: "4 charts" },
+            { v: "heatmap-crypto" as Layout, Icon: Flame,   label: "Heatmap crypto" },
+          ].map(({ v, Icon, label }) => (
+            <button
+              key={v}
+              onClick={() => setLayout(v)}
+              title={label}
+              className={`p-1.5 rounded-md transition-colors ${
+                layout === v ? "bg-white/[0.08] text-white" : "text-white/35 hover:text-white hover:bg-white/[0.04]"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-4 bg-white/[0.06]" />
+
+        {/* SMC preset */}
+        <button
+          onClick={() => setSmcEnabled((v) => !v)}
+          title="Ativa preset SMC (EMA + VWAP + Volume)"
+          className={`shrink-0 flex items-center gap-1.5 px-2 h-7 rounded-md text-[10.5px] font-bold uppercase tracking-[0.15em] transition-colors ${
+            smcEnabled
+              ? "bg-emerald-500/[0.12] text-emerald-300 border border-emerald-500/30"
+              : "text-white/40 hover:text-white hover:bg-white/[0.04] border border-transparent"
+          }`}
+        >
+          <Zap className="w-3 h-3" strokeWidth={2} />
+          SMC
+        </button>
+
+        {/* Compare */}
+        <button
+          onClick={() => setCompareOpen((v) => !v)}
+          title="Sobrepor segundo ativo"
+          className={`shrink-0 flex items-center gap-1.5 px-2 h-7 rounded-md text-[10.5px] font-bold uppercase tracking-[0.15em] transition-colors ${
+            compareWith
+              ? "bg-purple-500/[0.12] text-purple-300 border border-purple-500/30"
+              : "text-white/40 hover:text-white hover:bg-white/[0.04] border border-transparent"
+          }`}
+        >
+          <GitCompare className="w-3 h-3" strokeWidth={2} />
+          {compareWith ? `+ ${resolveMeta(compareWith).short}` : "Comparar"}
+        </button>
+
         <button
           onClick={toggleFullscreen}
           title={isFullscreen ? "Sair do fullscreen" : "Fullscreen"}
@@ -520,14 +580,87 @@ export default function GraficosPage() {
         </button>
       </div>
 
+      {/* Compare picker dropdown */}
+      {compareOpen && (
+        <div className="shrink-0 border-b border-white/[0.05] bg-[#0b0b0d] px-3 py-2 flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">Sobrepor com</span>
+          {watchlistItems.filter((w) => w.tvSymbol !== active.tvSymbol).map((w) => (
+            <button
+              key={w.tvSymbol}
+              onClick={() => { setCompareWith(w.tvSymbol); setCompareOpen(false); }}
+              className="px-2 py-1 rounded text-[10.5px] font-bold font-mono text-white/55 hover:text-white bg-white/[0.03] hover:bg-white/[0.06]"
+            >
+              {w.short}
+            </button>
+          ))}
+          {compareWith && (
+            <button
+              onClick={() => { setCompareWith(null); setCompareOpen(false); }}
+              className="ml-auto px-2 py-1 rounded text-[10px] text-red-300 hover:bg-red-500/[0.08]"
+            >
+              Remover sobreposição
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 min-h-0 relative">
-        <TradingViewChart
-          symbol={active.tvSymbol}
-          height="100%"
-          allowSymbolChange={false}
-          bare
-        />
-        <DataBadge exchange={active.exchange} type={active.type} />
+        {layout === "single" && (
+          <>
+            <TradingViewChart
+              symbol={active.tvSymbol}
+              height="100%"
+              allowSymbolChange={false}
+              studies={smcEnabled ? SMC_STUDIES : []}
+              compareSymbols={compareWith ? [compareWith] : []}
+              bare
+            />
+            <DataBadge exchange={active.exchange} type={active.type} />
+          </>
+        )}
+        {layout === "2x1" && (
+          <div className="grid grid-cols-2 gap-px h-full bg-white/[0.04]">
+            {[active.tvSymbol, watchlistItems[0]?.tvSymbol ?? active.tvSymbol].slice(0, 2).map((s, i) => (
+              <TradingViewChart
+                key={`${i}-${s}`}
+                symbol={s}
+                height="100%"
+                allowSymbolChange={false}
+                hideTopToolbar
+                studies={smcEnabled ? SMC_STUDIES : []}
+                bare
+              />
+            ))}
+          </div>
+        )}
+        {layout === "2x2" && (
+          <div className="grid grid-cols-2 grid-rows-2 gap-px h-full bg-white/[0.04]">
+            {(() => {
+              const symbols = [active.tvSymbol];
+              for (const w of watchlistItems) {
+                if (symbols.length >= 4) break;
+                if (w.tvSymbol !== active.tvSymbol) symbols.push(w.tvSymbol);
+              }
+              while (symbols.length < 4) symbols.push(active.tvSymbol);
+              return symbols.map((s, i) => (
+                <TradingViewChart
+                  key={`${i}-${s}`}
+                  symbol={s}
+                  height="100%"
+                  allowSymbolChange={false}
+                  hideTopToolbar
+                  studies={smcEnabled ? SMC_STUDIES : []}
+                  bare
+                />
+              ));
+            })()}
+          </div>
+        )}
+        {(layout === "heatmap-crypto" || layout === "heatmap-stocks") && (
+          <div className="h-full">
+            <HeatmapWidget kind={layout === "heatmap-crypto" ? "crypto" : "stocks-us"} height={10000} />
+          </div>
+        )}
       </div>
 
       <SymbolPicker

@@ -4,8 +4,19 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, ExternalLink, Clock, Loader2 } from "lucide-react";
-import { categoryMeta, impactMeta, formatRelative, type MarketNews } from "@/lib/market-news";
+import { categoryMeta, impactMeta, formatRelative, type MarketNews, type NewsCategory } from "@/lib/market-news";
 import { NewsThumbFallback } from "@/components/elite/NewsThumbFallback";
+import { TradingViewChart } from "@/components/elite/TradingViewChart";
+
+/** Símbolo TradingView default por categoria de notícia, pra mini-chart contextual. */
+function defaultSymbolForCategory(cat: NewsCategory): { symbol: string; label: string } {
+  switch (cat) {
+    case "crypto": return { symbol: "BINANCE:BTCUSDT", label: "Bitcoin" };
+    case "forex":  return { symbol: "FX:EURUSD",       label: "EUR/USD" };
+    case "stocks": return { symbol: "NASDAQ:NDX",      label: "Nasdaq 100" };
+    default:       return { symbol: "TVC:DXY",         label: "Dólar Index" };
+  }
+}
 
 interface ReadResponse {
   ok: boolean;
@@ -150,6 +161,29 @@ export function NewsReaderModal({
           <p className="text-[11px] text-white/30 font-mono tabular-nums mt-2">
             Publicado em {published.toLocaleString("pt-BR", { dateStyle: "medium", timeStyle: "short" })}
           </p>
+        </div>
+
+        {/* Mini chart contextual — ativo relacionado à categoria da notícia */}
+        <div className="relative z-10 px-6 lg:px-8 pb-3">
+          {(() => {
+            const d = defaultSymbolForCategory(item.category);
+            return (
+              <div className="rounded-xl overflow-hidden border border-white/[0.06] bg-[#0a0a0c]">
+                <div className="px-3 h-9 flex items-center justify-between border-b border-white/[0.05]">
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+                    Contexto · <span className="text-white/70 font-mono">{d.label}</span>
+                  </span>
+                  <Link
+                    href={`/elite/graficos`}
+                    className="text-[10px] text-white/30 hover:text-white/70"
+                  >
+                    Abrir gráfico completo →
+                  </Link>
+                </div>
+                <TradingViewChart symbol={d.symbol} height={220} hideTopToolbar allowSymbolChange={false} bare />
+              </div>
+            );
+          })()}
         </div>
 
         {/* Body — enquanto Jina busca mostra skeleton; depois mostra artigo completo */}

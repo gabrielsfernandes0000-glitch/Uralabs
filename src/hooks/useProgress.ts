@@ -8,11 +8,23 @@ import {
   saveChecklist,
   savePrep,
   saveTrade,
+  importTrades,
+  deleteTradeEntry,
+  updateTradeEntry,
+  saveWeeklyReview,
+  saveGoal,
+  deleteGoal,
+  saveAccountBalance,
+  completeOnboarding,
+  completeTour,
+  resetTour,
   computeStats,
   loadCachedProgress,
   type EliteProgress,
   type PrepData,
   type TradeEntry,
+  type WeeklyReview,
+  type Goal,
 } from "@/lib/progress";
 
 /**
@@ -51,6 +63,50 @@ export function useProgress() {
     setProgress((await saveTrade(data)) ?? null);
   }, []);
 
+  const doImportTrades = useCallback(async (
+    incoming: Array<Omit<TradeEntry, "id"> & { date: string }>,
+  ) => {
+    const result = await importTrades(incoming);
+    setProgress(result.progress);
+    return { imported: result.imported, skipped: result.skipped };
+  }, []);
+
+  const doDeleteTrade = useCallback(async (tradeId: string) => {
+    setProgress((await deleteTradeEntry(tradeId)) ?? null);
+  }, []);
+
+  const doUpdateTrade = useCallback(async (tradeId: string, patch: Partial<Omit<TradeEntry, "id" | "date">>) => {
+    setProgress((await updateTradeEntry(tradeId, patch)) ?? null);
+  }, []);
+
+  const doSaveReview = useCallback(async (review: WeeklyReview) => {
+    setProgress((await saveWeeklyReview(review)) ?? null);
+  }, []);
+
+  const doSaveGoal = useCallback(async (goal: Goal) => {
+    setProgress((await saveGoal(goal)) ?? null);
+  }, []);
+
+  const doDeleteGoal = useCallback(async (goalId: string) => {
+    setProgress((await deleteGoal(goalId)) ?? null);
+  }, []);
+
+  const doSaveBalance = useCallback(async (balance: number | null) => {
+    setProgress((await saveAccountBalance(balance)) ?? null);
+  }, []);
+
+  const doCompleteOnboarding = useCallback(async () => {
+    setProgress((await completeOnboarding()) ?? null);
+  }, []);
+
+  const doCompleteTour = useCallback(async () => {
+    setProgress((await completeTour()) ?? null);
+  }, []);
+
+  const doResetTour = useCallback(async () => {
+    setProgress((await resetTour()) ?? null);
+  }, []);
+
   const stats = progress ? computeStats(progress) : null;
 
   return {
@@ -62,5 +118,15 @@ export function useProgress() {
     saveChecklist: doSaveChecklist,
     savePrep: doSavePrep,
     saveTrade: doSaveTrade,
+    importTrades: doImportTrades,
+    deleteTrade: doDeleteTrade,
+    updateTrade: doUpdateTrade,
+    saveReview: doSaveReview,
+    saveGoal: doSaveGoal,
+    deleteGoal: doDeleteGoal,
+    saveAccountBalance: doSaveBalance,
+    completeOnboarding: doCompleteOnboarding,
+    completeTour: doCompleteTour,
+    resetTour: doResetTour,
   };
 }

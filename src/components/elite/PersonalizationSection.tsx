@@ -241,11 +241,6 @@ function CosmeticCard({
             />
           </div>
         )}
-        {!bannerOK && !frameSlug && !auraSlug && (
-          <div className="absolute inset-0 flex items-center justify-center text-white/25 text-[11px]">
-            preview em breve
-          </div>
-        )}
         {cosmetic.equipped && (
           <div className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm text-[10px] font-semibold text-white border border-white/15">
             <Check className="w-2.5 h-2.5" strokeWidth={2.5} /> Equipado
