@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { decrypt } from "@/lib/exchange/crypto";
+import { decrypt, keyFingerprint } from "@/lib/exchange/crypto";
 import { getBalance, getPositions, getTradeHistory, getIncome, computeMetrics, EXCHANGES, type ExchangeId } from "@/lib/exchange";
 
 export const dynamic = "force-dynamic";
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
       .from("exchange_connections")
       .update({ status: "error", error_message: `Falha ao descriptografar: ${msg}` })
       .eq("id", conn.id);
-    return NextResponse.json({ connected: true, exchange, error: `Erro de criptografia: ${msg}` }, { status: 500 });
+    return NextResponse.json({ connected: true, exchange, error: `Erro de criptografia: ${msg}`, _kfp: keyFingerprint() }, { status: 500 });
   }
 
   // 4. Fetch all data

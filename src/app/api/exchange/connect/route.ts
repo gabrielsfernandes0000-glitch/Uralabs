@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { encrypt } from "@/lib/exchange/crypto";
+import { encrypt, keyFingerprint } from "@/lib/exchange/crypto";
 import { validateCredentials, EXCHANGES, type ExchangeId } from "@/lib/exchange";
 
 const VALID_EXCHANGES = EXCHANGES.map((e) => e.id);
@@ -102,5 +102,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true, message: `${meta.name} conectada com sucesso` });
+  return NextResponse.json({ ok: true, message: `${meta.name} conectada com sucesso`, _kfp: keyFingerprint() });
 }

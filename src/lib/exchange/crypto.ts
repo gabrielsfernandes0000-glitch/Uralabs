@@ -20,6 +20,15 @@ function getEncryptionKey(): Buffer {
   return createHash("sha256").update(raw.trim()).digest();
 }
 
+/** Temp debug — expose key hash pra comparar encrypt vs decrypt lambdas. */
+export function keyFingerprint(): string {
+  try {
+    return getEncryptionKey().toString("hex").slice(0, 16);
+  } catch {
+    return "no-key";
+  }
+}
+
 export function encrypt(plaintext: string): { encrypted: string; iv: string } {
   const key = getEncryptionKey();
   const iv = randomBytes(IV_LENGTH);
