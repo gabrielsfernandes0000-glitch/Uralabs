@@ -42,12 +42,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Falha ao validar: ${msg}` }, { status: 400 });
   }
 
-  // 2. Encrypt keys
-  const { encrypted: apiKeyEnc, iv } = encrypt(apiKey.trim());
-  const { encrypted: apiSecretEnc } = encrypt(apiSecret.trim());
-  // Store passphrase appended to apiSecret if present (same IV)
-  const secretToStore = passphrase ? `${apiSecret.trim()}|||${passphrase.trim()}` : apiSecret.trim();
-  const { encrypted: secretEnc } = encrypt(secretToStore);
+  // 2. Encrypt keys — lança se EXCHANGE_ENCRYPTION_KEY faltar.
+  // Protege pra nunca propagar uncaught (que viraria HTML 500 sem JSON e
+  // cairia no fallback genérico "exchange fora do ar" no client).
+  let apiKeyEnc: string, iv: string, secretEnc: string;
+  try {
+    const a = encrypt(apiKey.trim());
+    apiKeyEnc = a.encrypted; iv = a.iv;
+    const secretToStore = passphrase ? `${apiSecret.trim()}|||${passphrase.trim()}` : apiSecret.trim();
+    secretEnc = encrypt(secretToStore).encrypted;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "erro de encryption";
+    console.error("[exchange/connect] encrypt failed:", msg);
+    return NextResponse.json(
+      { error: "Servidor sem chave de encryption. Avise o suporte (EXCHANGE_ENCRYPTION_KEY ausente)." },
+      { status: 500 }
+    );
+  }
 
   // 3. Upsert connection
   let supabase;
