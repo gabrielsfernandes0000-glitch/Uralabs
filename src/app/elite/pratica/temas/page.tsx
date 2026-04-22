@@ -32,14 +32,14 @@ export default function PraticaTemasPage() {
           <div className="flex items-end gap-5 shrink-0">
             <div className="text-right">
               <p className="text-[30px] font-bold text-white leading-none font-mono">{total}</p>
-              <p className="text-[10px] text-white/30 uppercase tracking-[0.15em] mt-1">cenários</p>
+              <p className="text-[10px] text-white/30 mt-1">cenários</p>
             </div>
             <div className="h-10 w-px bg-white/[0.08]" />
             <div className="text-right">
               <p className="text-[30px] font-bold text-white leading-none font-mono">
                 {TREINO_CATEGORIES.length}
               </p>
-              <p className="text-[10px] text-white/30 uppercase tracking-[0.15em] mt-1">temas</p>
+              <p className="text-[10px] text-white/30 mt-1">temas</p>
             </div>
           </div>
         </div>

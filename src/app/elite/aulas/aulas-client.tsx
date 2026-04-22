@@ -31,13 +31,13 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
 
   return (
     <div
-      className="relative cursor-pointer"
+      className="relative cursor-pointer h-full"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
     >
       <div
-        className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+        className={`relative overflow-hidden rounded-xl border transition-all duration-300 h-full flex flex-col ${
           lesson.locked
             ? "border-white/[0.04] opacity-45"
             : "border-white/[0.08] hover:border-white/[0.18] hover:-translate-y-0.5"
@@ -92,9 +92,10 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
           )}
         </div>
 
-        {/* Content — compact, title already on thumb */}
-        <div className="px-4 py-3 bg-[#141417] flex flex-col gap-2">
-          <p className={`text-[11px] leading-relaxed line-clamp-2 ${lesson.locked ? "text-white/20" : "text-white/45"}`}>
+        {/* Content — altura fixa pra uniformizar cards entre módulos
+            (senão descrição de 1 linha vs 2 linhas deixa altura diferente). */}
+        <div className="px-4 py-3 bg-[#141417] flex flex-col gap-2 min-h-[82px]">
+          <p className={`text-[11px] leading-relaxed line-clamp-2 flex-1 ${lesson.locked ? "text-white/20" : "text-white/45"}`}>
             {lesson.subtitle}
           </p>
 
@@ -134,7 +135,7 @@ function ModuleSection({ mod }: { mod: Module }) {
           <h2 className="text-[22px] font-bold text-white tracking-tight">{mod.title}</h2>
           <span className="text-[13px] text-white/40 font-medium">{mod.subtitle}</span>
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141417]">
+        <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#141417]">
           <div className="absolute inset-0" style={{
             background: `radial-gradient(ellipse 60% 60% at 70% 30%, ${mod.accentHex}12, transparent)`
           }} />
@@ -145,7 +146,7 @@ function ModuleSection({ mod }: { mod: Module }) {
                   <div className="w-3 h-3 bg-red-500 rounded-full" />
                   <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping opacity-40" />
                 </div>
-                <span className="text-[13px] text-red-400 font-bold uppercase tracking-wider">Ao Vivo</span>
+                <span className="text-[12px] font-semibold text-brand-500">Ao Vivo</span>
               </div>
               <h3 className="text-[24px] font-bold text-white mb-3">Calls de Operação</h3>
               <p className="text-[14px] text-white/45 leading-relaxed max-w-lg">
@@ -153,12 +154,12 @@ function ModuleSection({ mod }: { mod: Module }) {
               </p>
             </div>
             <div className="flex gap-4">
-              <div className="px-6 py-5 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
-                <p className="text-[10px] text-white/35 uppercase tracking-wider mb-1.5">Horário</p>
+              <div className="px-6 py-5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                <p className="text-[11px] text-white/45 mb-1.5">Horário</p>
                 <p className="text-[18px] text-white font-bold">10:30 — 12:30</p>
               </div>
-              <div className="px-6 py-5 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
-                <p className="text-[10px] text-white/35 uppercase tracking-wider mb-1.5">Requer</p>
+              <div className="px-6 py-5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                <p className="text-[11px] text-white/45 mb-1.5">Requer</p>
                 <p className="text-[18px] text-white font-bold">Módulo 04</p>
               </div>
             </div>
@@ -187,7 +188,7 @@ function ModuleSection({ mod }: { mod: Module }) {
       </div>
 
       {/* Grid — responsive, no scroll */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {mod.lessons.map((lesson, idx) => (
           <NetflixCard key={lesson.id} lesson={lesson} mod={mod} index={idx} />
         ))}
@@ -221,7 +222,7 @@ function Hero({ curriculum }: { curriculum: Module[] }) {
   const heroAccent = next?.mod.accentHex || "#FF5500";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08]" style={{ background: "#111114" }}>
+    <div className="relative overflow-hidden rounded-xl border border-white/[0.08]" style={{ background: "#111114" }}>
       {/* Background effects — subtler */}
       <div className="absolute inset-0" style={{
         background: `radial-gradient(ellipse 60% 80% at 85% 40%, ${heroAccent}12, transparent 60%)`
@@ -234,13 +235,13 @@ function Hero({ curriculum }: { curriculum: Module[] }) {
         {/* Left — lesson info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: heroAccent + "CC" }}>
+            <span className="text-[11px] font-medium" style={{ color: heroAccent }}>
               Turma 4.0
             </span>
             {next && (
               <>
                 <span className="text-white/20">·</span>
-                <span className="text-[10px] font-semibold text-white/35 uppercase tracking-wider">
+                <span className="text-[11px] font-medium text-white/55">
                   Módulo {next.mod.number} · Aula {String(next.idx + 1).padStart(2, "0")}
                 </span>
               </>
@@ -290,7 +291,7 @@ function Hero({ curriculum }: { curriculum: Module[] }) {
           </div>
           <div>
             <p className="text-[15px] text-white font-bold leading-none">{completedLessons}<span className="text-white/30 font-medium">/{totalLessons}</span></p>
-            <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">aulas completas</p>
+            <p className="text-[11px] text-white/45 mt-1">aulas completas</p>
           </div>
         </div>
       </div>
@@ -399,10 +400,12 @@ function LiveThumbArt({ type }: { type: LiveRecording["type"] }) {
 function LiveCard({ live }: { live: LiveRecording }) {
   const [hovered, setHovered] = useState(false);
 
+  // Tags tipo sem rainbow — todos usam brand como acento unificado.
+  // A distinção fica pelo label ("Trade" / "Aula" / "Revisão"), não pela cor.
   const typeColors: Record<string, { accent: string; label: string }> = {
-    trade: { accent: "#EF4444", label: "Trade" },
-    aula: { accent: "#A855F7", label: "Aula" },
-    revisao: { accent: "#F59E0B", label: "Revisão" },
+    trade: { accent: "#FF5500", label: "Trade" },
+    aula: { accent: "#FF5500", label: "Aula" },
+    revisao: { accent: "#FF5500", label: "Revisão" },
   };
   const tc = typeColors[live.type];
 
@@ -453,7 +456,7 @@ function LiveCard({ live }: { live: LiveRecording }) {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tc.accent }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: tc.accent + "BB" }}>{tc.label}</span>
+              <span className="text-[11px] font-semibold" style={{ color: tc.accent + "BB" }}>{tc.label}</span>
             </div>
             <div className="flex items-center gap-1 text-white/30">
               <Calendar className="w-3 h-3" />

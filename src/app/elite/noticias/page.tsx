@@ -1,18 +1,22 @@
-import { CalendarClock, Check, Zap, BookOpen, TrendingUp, TrendingDown, Minus, ArrowUpRight, ChevronDown } from "lucide-react";
-import Link from "next/link";
-import { eventExplanation, eventCategory, computeSurprise, lessonsForCategory, instrumentsForEvent, type Surprise } from "@/lib/economic-events";
-import { findLesson } from "@/lib/curriculum";
-import { InstrumentFilterStyle } from "@/components/elite/InstrumentFilterStyle";
+import { TrendingUp } from "lucide-react";
 import { getSupabaseAnon } from "@/lib/supabase";
-import {
-  impactMeta,
-  type EventImpact,
-  type EconomicEvent,
-  type MarketNews,
-} from "@/lib/market-news";
-import { NoticiasFeedClient } from "@/components/elite/NoticiasFeedClient";
-import { TickerTape } from "@/components/elite/TickerTape";
-import { NewsFiltersBar, CalendarFiltersBar } from "@/components/elite/NoticiasFilters";
+import type { EconomicEvent, MarketNews, NewsCategory } from "@/lib/market-news";
+import { NoticiasFeedV2 } from "@/components/elite/NoticiasFeedV2";
+import { NewsFiltersBar } from "@/components/elite/NoticiasFilters";
+import { NowCard } from "@/components/elite/NowCard";
+import { EventsTimeline } from "@/components/elite/EventsTimeline";
+import { UpcomingAgenda } from "@/components/elite/UpcomingAgenda";
+import { NoticiasSidebar } from "@/components/elite/NoticiasSidebar";
+import { KillzoneBanner, KillzoneWarmup } from "@/components/elite/KillzoneBanner";
+import { CryptoPulseBar } from "@/components/elite/CryptoPulseBar";
+import { MultiAssetTape } from "@/components/elite/MultiAssetTape";
+import { PushToggle } from "@/components/elite/PushToggle";
+import { TimestampAgo } from "@/components/elite/LiveBadge";
+import { fetchFearGreedSnapshot } from "@/lib/fear-greed";
+import { fetchGlobalStats, fetchAltSeasonIndex } from "@/lib/crypto-pulse";
+import { fetchUpcomingEarnings } from "@/lib/earnings";
+import { fetchNextFedMeetingProb } from "@/lib/fed-watch";
+import { fetchPriceSnapshots } from "@/lib/price-snapshot";
 import {
   parseNewsFilters,
   parseCalendarFilters,
@@ -23,13 +27,6 @@ import {
   type NewsFilters,
   type CalendarFilters as CalFilters,
 } from "@/lib/noticias-filters";
-import type { NewsCategory } from "@/lib/market-news";
-
-/* ────────────────────────────────────────────
-   Notícias — agenda econômica + manchetes.
-   Server Component: fetch Supabase. Cards interativos via NoticiasFeedClient
-   (client-side pra gerenciar modal de leitura).
-   ──────────────────────────────────────────── */
 
 export const revalidate = 60;
 
@@ -45,7 +42,6 @@ async function loadData(
   const sincePeriod = new Date(Date.now() - hours * 3600_000).toISOString();
   const minScore = scoreThreshold(newsFilters.score);
 
-  // Calendar query
   let calQuery = sb
     .from("economic_events")
     .select("id, event_time, country, event, impact, previous, forecast, actual, event_date")
@@ -67,8 +63,6 @@ async function loadData(
   }
   calQuery = calQuery.order("event_date").order("event_time", { ascending: true });
 
-  // News query — IGNORA cat filter aqui pra que a lista carregada cubra todas as categorias.
-  // Filtro de categoria aplicado em memória + counts computados a partir do mesmo dataset.
   let newsQuery = sb
     .from("market_news_deduped")
     .select("id, source, headline, summary, url, image_url, category, importance, published_at, full_content_source, relevance_score")
@@ -79,7 +73,6 @@ async function loadData(
     .gte("published_at", sincePeriod);
 
   if (newsFilters.q.trim().length >= 2) {
-    // Simple ilike no headline+summary (full-text search seria via RPC pra melhor performance)
     const q = `%${newsFilters.q.replace(/%/g, "\\%")}%`;
     newsQuery = newsQuery.or(`headline.ilike.${q},summary.ilike.${q}`);
   }
@@ -130,638 +123,151 @@ export default async function NoticiasPage({
   const sp = await searchParams;
   const newsFilters = parseNewsFilters(sp);
   const calFilters = parseCalendarFilters(sp);
-  const { events, news, counts: catCounts } = await loadData(newsFilters, calFilters);
+  const [dataRes, fgSnapshot, globalStats, altSeason, earnings, fedProb, priceSnaps] = await Promise.all([
+    loadData(newsFilters, calFilters),
+    fetchFearGreedSnapshot().catch(() => ({ crypto: null, equities: null })),
+    fetchGlobalStats().catch(() => null),
+    fetchAltSeasonIndex().catch(() => null),
+    fetchUpcomingEarnings(7).catch(() => []),
+    fetchNextFedMeetingProb().catch(() => null),
+    fetchPriceSnapshots(["NQ", "BTC", "ETH", "DXY", "GOLD"]).catch(() => ({} as Record<string, null>)),
+  ]);
+  const { events, news, counts: catCounts } = dataRes;
   const filtersActive = hasActiveNewsFilters(newsFilters);
 
-  const counts: Record<EventImpact, number> = { high: 0, medium: 0, low: 0 };
-  events.forEach((e) => counts[e.impact]++);
-
-  // Featured event — proximo evento cronologico (qualquer impacto).
-  // Antes priorizava high-impact, mas isso causava mismatch de ETA com a AgendaPanel
-  // que mostra o proximo qualquer. Unificado pra "proximo mesmo" — badge de impacto no card.
-  const nowMinsNy = nyNowMinutes();
-  const upcomingEvents = events.filter((e) => {
-    const m = parseEventMinutes(e.time);
-    return m === null || m >= nowMinsNy;
-  });
-  const featuredEvent = upcomingEvents[0] ?? events[0] ?? null;
-
-  const highlights = news.filter((n) => n.importance === "high").length;
+  const totalEvents = events.length;
+  const highImpact = events.filter((e) => e.impact === "high").length;
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
 
   return (
     <div className="space-y-5">
-      {/* Ticker tape — preços real-time pra contextualizar notícias */}
-      <div className="animate-in-up">
-        <TickerTape />
-      </div>
-      {/* ───── HERO compacto ───── */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-[#0e0e10] border border-white/[0.06]">
-        <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
-          <span
-            className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-[#C9A461] pr-10"
-            style={{ fontSize: "150px", letterSpacing: "-0.06em", lineHeight: 1 }}
-          >
-            NOTÍCIAS
+      {/* ── Header 1-line — substitui hero gigante ── */}
+      <div className="flex items-center justify-between gap-3 flex-wrap animate-in-up">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-[14px] font-bold text-white/85 tracking-tight capitalize">{today}</h1>
+          <span className="text-[11px] font-mono tabular-nums text-white/45">
+            {totalEvents} {totalEvents === 1 ? "evento" : "eventos"}
           </span>
-        </div>
-        <div className="absolute top-[-40%] left-[5%] w-[500px] h-[280px] bg-[#C9A461]/[0.04] blur-[140px] pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C9A461]/35 to-transparent" />
-
-        <div className="relative z-10 p-5 lg:p-6">
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-1 h-1 rounded-full bg-white/40" />
-                <span className="text-[9.5px] font-bold tracking-[0.3em] uppercase text-white/40">
-                  Agenda econômica
-                </span>
-              </div>
-              <h1 className="text-[26px] lg:text-[30px] font-bold text-white tracking-tight leading-[1.05]">
-                Notícias
-              </h1>
-              <p className="text-[12.5px] text-white/45 mt-2 max-w-lg leading-relaxed">
-                Agenda econômica filtrada por impacto e manchetes relevantes das últimas 12 horas.
-                Sem spam, sem clickbait, só o que movimenta preço.
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[32px] lg:text-[40px] font-bold text-white leading-none font-mono tabular-nums">
-                {events.length}
-              </p>
-              <p className="text-[10px] text-white/40 uppercase tracking-[0.22em] mt-1.5">eventos hoje</p>
-              {counts.high > 0 && (
-                <p className="text-[10px] text-white/30 mt-2">
-                  <span className="font-mono font-semibold tabular-nums text-red-400/80">{counts.high}</span>
-                  {" alto impacto"}
-                  {highlights > 0 && <>
-                    <span className="text-white/15 mx-1.5">·</span>
-                    <span className="font-mono font-semibold tabular-nums text-white/50">{highlights}</span>
-                    {" manchetes"}
-                  </>}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ───── FEATURED EVENT (só quando faz sentido) ───── */}
-      {featuredEvent && (
-        <div className="animate-in-up delay-1">
-          <FeaturedEventCard event={featuredEvent} />
-        </div>
-      )}
-
-      {/* ───── AGENDA ECONÔMICA full-width em grid ───── */}
-      <div className="animate-in-up delay-2">
-        <AgendaPanel events={events} today={today} calFilters={calFilters} />
-      </div>
-
-      {/* ───── FEED DE MANCHETES — filtros agora moram aqui, junto do conte\u00fado que filtram ───── */}
-      <NoticiasFeedClient
-        feed={news}
-        filtersActive={filtersActive}
-        filtersBar={
-          <NewsFiltersBar
-            current={newsFilters}
-            counts={catCounts}
-            resultLabel={news.length === catCounts.all ? `${news.length} manchetes` : `${news.length} de ${catCounts.all}`}
-          />
-        }
-      />
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   Featured Event — hero principal com explicação PT-BR
-   ──────────────────────────────────────────── */
-
-function FeaturedEventCard({ event: ev }: { event: EconomicEvent }) {
-  const m = impactMeta(ev.impact);
-  const explanation = eventExplanation(ev.event);
-  const category = eventCategory(ev.event);
-  const evMins = parseEventMinutes(ev.time);
-  const nowMins = nyNowMinutes();
-  const diffMins = evMins !== null ? evMins - nowMins : null;
-  const isUpcoming = diffMins !== null && diffMins >= 0;
-  const isNow = diffMins !== null && diffMins >= 0 && diffMins < 15;
-  const released = !!ev.actual;
-  const surprise = released ? computeSurprise(ev.actual, ev.forecast) : null;
-
-  // Aulas do currículo recomendadas pra revisar antes de operar esse evento
-  const relatedLessonIds = lessonsForCategory(category);
-  const relatedLessons = relatedLessonIds
-    .map((id) => {
-      const found = findLesson(id);
-      return found ? { id: found.lesson.id, title: found.lesson.title, moduleAccent: found.mod.accentHex } : null;
-    })
-    .filter((x): x is { id: string; title: string; moduleAccent: string } => x !== null)
-    .slice(0, 3);
-
-  // Densidade de informação: sem explicação + sem valores meaningful = card compacto.
-  // Evita espaço vazio quando evento obscuro (ex: Loan Prime Rate sem descrição).
-  const hasValues = !!(ev.previous || ev.forecast || ev.actual);
-  const isSparse = !explanation && !released;
-
-  // ── Modo compacto — pouco info, card minimal ──
-  if (isSparse) {
-    return (
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
-        <div
-          className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{ background: `linear-gradient(90deg, transparent, ${m.dotBg}55, transparent)` }}
-        />
-        <div className="relative z-10 p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-3.5 h-3.5" strokeWidth={2} style={{ color: m.dotBg }} />
-            <span className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: m.dotBg }}>
-              Próximo evento
-            </span>
-            {isUpcoming && diffMins !== null && (
-              <>
-                <span className="text-white/15 text-[10px]">·</span>
-                <div className="flex items-center gap-1.5">
-                  {isNow && <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />}
-                  <span className="text-[11px] font-mono tabular-nums text-white/60">{etaLabel(diffMins)}</span>
-                </div>
-              </>
-            )}
-            <span className={`ml-auto text-[9.5px] font-bold tracking-[0.22em] uppercase ${m.color}`}>
-              · {m.label}
-            </span>
-          </div>
-
-          <div className="flex items-end gap-5">
-            <div className="shrink-0">
-              <p className="text-[44px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
-              <p className="text-[10px] text-white/35 font-mono uppercase tracking-[0.22em] mt-2">
-                {countryCode(ev.country)} · BRT
-              </p>
-            </div>
-            <div className="h-[70px] w-px bg-white/[0.06]" />
-            <div className="min-w-0 flex-1 pb-0.5">
-              <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/30 mb-1.5">
-                {category === "outros" ? "Indicador" : category}
-              </p>
-              <h3 className="text-[18px] font-bold text-white leading-[1.2] tracking-tight">{ev.event}</h3>
-              {hasValues && (
-                <div className="flex items-center gap-4 mt-2.5 text-[10.5px] font-mono">
-                  {ev.previous && (
-                    <span className="inline-flex items-baseline gap-1">
-                      <span className="uppercase tracking-wider text-[8.5px] text-white/25">ant</span>
-                      <span className="text-white/55 tabular-nums">{ev.previous}</span>
-                    </span>
-                  )}
-                  {ev.forecast && (
-                    <span className="inline-flex items-baseline gap-1">
-                      <span className="uppercase tracking-wider text-[8.5px] text-white/25">prev</span>
-                      <span className="text-white/55 tabular-nums">{ev.forecast}</span>
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {relatedLessons.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-white/[0.04] flex flex-wrap items-center gap-2">
-              <BookOpen className="w-3 h-3 text-white/30 shrink-0" strokeWidth={2} />
-              <span className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-white/35 mr-1">Prepare-se:</span>
-              {relatedLessons.map((l) => (
-                <Link
-                  key={l.id}
-                  href={`/elite/aulas/${l.id}`}
-                  className="interactive-tap inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-white/[0.06] hover:border-white/[0.18] transition-colors text-[10.5px] font-semibold text-white/65 hover:text-white group"
-                >
-                  <span className="w-1 h-1 rounded-full" style={{ backgroundColor: l.moduleAccent }} />
-                  {l.title}
-                  <ArrowUpRight className="w-2.5 h-2.5 opacity-30 group-hover:opacity-80 transition-opacity" strokeWidth={2.2} />
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── Modo completo — evento com explicação, valores, ou released ──
-  return (
-    <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
-      {/* Glow sutil no canto superior direito */}
-      <div className="absolute top-[-30%] right-[-10%] w-[400px] h-[240px] rounded-full opacity-[0.12] blur-[120px] pointer-events-none"
-        style={{ backgroundColor: m.dotBg }} />
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent to-transparent"
-        style={{ backgroundImage: `linear-gradient(90deg, transparent, ${m.dotBg}66, transparent)` }} />
-
-      {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-6 pt-5 pb-3 border-b border-white/[0.04]">
-        <div className="flex items-center gap-2">
-          <Zap className="w-3.5 h-3.5" strokeWidth={2} style={{ color: m.dotBg }} />
-          <span className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: m.dotBg }}>
-            {released ? "Evento concluído" : isUpcoming ? "Próximo evento" : "Em andamento"}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {isUpcoming && diffMins !== null && (
-            <div className="flex items-center gap-1.5">
-              {isNow && <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />}
-              <span className="text-[11px] font-mono tabular-nums text-white/70">{etaLabel(diffMins)}</span>
-            </div>
-          )}
-          <span className={`text-[9.5px] font-bold tracking-[0.22em] uppercase ${m.color}`}>· {m.label} impacto</span>
-        </div>
-      </div>
-
-      {/* Corpo */}
-      <div className="relative z-10 px-6 py-5">
-        <div className="flex items-start gap-5">
-          {/* Time + country */}
-          <div className="shrink-0">
-            <p className="text-[42px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
-            <p className="text-[10px] text-white/35 font-mono uppercase tracking-[0.22em] mt-2">
-              {countryCode(ev.country)} · BRT
-            </p>
-          </div>
-
-          <div className="h-[80px] w-px bg-white/[0.06]" />
-
-          {/* Nome + categoria */}
-          <div className="min-w-0 flex-1 pt-1">
-            <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/35 mb-1.5">
-              {category === "outros" ? "Indicador" : category}
-            </p>
-            <h3 className="text-[22px] font-bold text-white leading-[1.15] tracking-tight">{ev.event}</h3>
-          </div>
-        </div>
-
-        {/* Explicação — collapsible por default (progressive disclosure) */}
-        {explanation ? (
-          <details className="group mt-4 [&[open]>summary>svg:last-child]:rotate-180">
-            <summary className="cursor-pointer list-none flex items-center gap-2 text-[11px] text-white/45 hover:text-white/75 transition-colors select-none">
-              <BookOpen className="w-3.5 h-3.5" strokeWidth={1.8} />
-              <span className="font-semibold">Entender esse evento</span>
-              <ChevronDown className="w-3.5 h-3.5 transition-transform ml-auto" strokeWidth={2} />
-            </summary>
-            <div className="mt-3 space-y-3 pl-5">
-              <div>
-                <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/35 mb-1">o que é</p>
-                <p className="text-[12.5px] text-white/70 leading-relaxed">{explanation.what}</p>
-              </div>
-              <div>
-                <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/35 mb-1">por que importa</p>
-                <p className="text-[12.5px] text-white/70 leading-relaxed">{explanation.whyMatters}</p>
-              </div>
-            </div>
-          </details>
-        ) : null}
-
-        {/* Números — só renderiza se tem pelo menos um dado */}
-        {(ev.previous || ev.forecast || ev.actual) && (
-          <div className="mt-6 pt-5 border-t border-white/[0.04]">
-            <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/35 mb-3">
-              Números que o mercado vai comparar
-            </p>
-            <div className="grid grid-cols-3 gap-4">
-              <StatBlock
-                label="Anterior"
-                sublabel="último resultado divulgado"
-                value={ev.previous}
-              />
-              <StatBlock
-                label="Consenso"
-                sublabel="o que o mercado espera"
-                value={ev.forecast}
-              />
-              <StatBlock
-                label="Real"
-                sublabel={released ? "resultado divulgado agora" : "sai quando o evento acontecer"}
-                value={ev.actual}
-                highlight={released}
-                surprise={surprise}
-              />
-            </div>
-            {released && surprise && (
-              <div className="mt-4 rounded-lg border border-white/[0.06] bg-white/[0.01] px-3 py-2.5 flex items-start gap-2.5">
-                <div className={`shrink-0 mt-0.5 ${
-                  surprise.direction === "up" ? "text-emerald-400" :
-                  surprise.direction === "down" ? "text-red-400" : "text-white/40"
-                }`}>
-                  {surprise.direction === "up" ? <TrendingUp className="w-4 h-4" strokeWidth={2} /> :
-                   surprise.direction === "down" ? <TrendingDown className="w-4 h-4" strokeWidth={2} /> :
-                   <Minus className="w-4 h-4" strokeWidth={2} />}
-                </div>
-                <p className="text-[11.5px] text-white/65 leading-relaxed">
-                  {surprise.direction === "flat" ? (
-                    <>Veio <span className="font-semibold text-white/80">em linha com o consenso</span> — impacto geralmente menor no preço.</>
-                  ) : (
-                    <>Resultado <span className="font-semibold text-white/85">{surprise.direction === "up" ? "acima" : "abaixo"} do consenso</span> por <span className="font-mono text-white/85">{surprise.label}</span>. Surpresas movem preço — compare com a direção esperada em "Por que importa" acima.</>
-                  )}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Aulas relacionadas — bridge curriculum ↔ evento */}
-        {!released && relatedLessons.length > 0 && (
-          <div className="mt-6 pt-5 border-t border-white/[0.04]">
-            <div className="flex items-center gap-2 mb-3">
-              <BookOpen className="w-3.5 h-3.5 text-white/35" strokeWidth={1.8} />
-              <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/35">
-                Pra se preparar — revise antes
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {relatedLessons.map((l) => (
-                <Link
-                  key={l.id}
-                  href={`/elite/aulas/${l.id}`}
-                  className="interactive-tap inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] text-[11px] font-semibold text-white/70 hover:text-white hover:border-white/[0.18] transition-colors group"
-                >
-                  <span className="w-1 h-1 rounded-full" style={{ backgroundColor: l.moduleAccent }} />
-                  {l.title}
-                  <ArrowUpRight className="w-3 h-3 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" strokeWidth={2} />
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function StatBlock({ label, sublabel, value, highlight, surprise }: {
-  label: string;
-  sublabel: string;
-  value?: string;
-  highlight?: boolean;
-  surprise?: Surprise | null;
-}) {
-  const hasValue = !!value;
-  const displayValue = value ?? "—";
-  return (
-    <div>
-      <p className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-white/40">{label}</p>
-      <p className="text-[10.5px] text-white/30 leading-snug mt-1 mb-3">{sublabel}</p>
-      <div className="flex items-baseline gap-2 flex-wrap">
-        <p className={`text-[22px] font-bold font-mono tabular-nums leading-none ${
-          hasValue ? (highlight ? "text-white" : "text-white/75") : "text-white/15"
-        }`}>
-          {displayValue}
-        </p>
-        {surprise && (
-          <span className={`inline-flex items-center gap-0.5 text-[11px] font-mono tabular-nums font-semibold ${
-            surprise.direction === "up" ? "text-emerald-400/90" :
-            surprise.direction === "down" ? "text-red-400/90" : "text-white/40"
-          }`}>
-            {surprise.direction === "up" && "↑"}
-            {surprise.direction === "down" && "↓"}
-            {surprise.direction === "flat" && "≈"}
-            {surprise.label}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-
-/* ────────────────────────────────────────────
-   Agenda Panel (server component — estático)
-   ──────────────────────────────────────────── */
-
-/* ────────────────────────────────────────────
-   Helpers de tempo — comparação em ET (NY)
-   ──────────────────────────────────────────── */
-
-function nyNowMinutes(): number {
-  // Agora em BRT (Sao Paulo) — eventos sao armazenados em BRT pra alinhar com Forex Factory.
-  const s = new Date().toLocaleString("en-US", {
-    timeZone: "America/Sao_Paulo",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const [h, m] = s.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function parseEventMinutes(time: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
-  if (!match) return null;
-  return Number(match[1]) * 60 + Number(match[2]);
-}
-
-function etaLabel(diffMins: number): string {
-  if (diffMins < 1) return "agora";
-  if (diffMins < 60) return `em ${diffMins}min`;
-  const h = Math.floor(diffMins / 60);
-  const m = diffMins % 60;
-  return m > 0 ? `em ${h}h${String(m).padStart(2, "0")}` : `em ${h}h`;
-}
-
-function countryCode(country: string): string {
-  const map: Record<string, string> = { US: "EUA", EU: "UE", BR: "BR", UK: "UK", CN: "CN", JP: "JP", CA: "CA", AU: "AU", NZ: "NZ" };
-  return map[country] ?? country;
-}
-
-function AgendaPanel({ events, today, calFilters }: { events: EconomicEvent[]; today: string; calFilters: CalFilters }) {
-  const headerLabel = calFilters.period === "today" ? "Hoje no Mercado" : calFilters.period === "tomorrow" ? "Amanhã" : "Próxima Semana";
-  const isToday = calFilters.period === "today";
-  const nowMins = isToday ? nyNowMinutes() : -1;
-
-  // Separa passado vs futuro (só pro "hoje")
-  const past: EconomicEvent[] = [];
-  const future: EconomicEvent[] = [];
-  if (isToday) {
-    for (const ev of events) {
-      const m = parseEventMinutes(ev.time);
-      if (m !== null && m < nowMins && !ev.actual) past.push(ev);
-      else if (m !== null && m < nowMins && ev.actual) past.push(ev);
-      else future.push(ev);
-    }
-  }
-
-  const ordered: EconomicEvent[] = isToday ? [...past, ...future] : events;
-  const nextEv = isToday ? future[0] : events[0];
-  const nextEta = nextEv ? (() => {
-    const m = parseEventMinutes(nextEv.time);
-    return m !== null && isToday ? etaLabel(Math.max(0, m - nowMins)) : null;
-  })() : null;
-
-  const nextEvId = (isToday ? future[0]?.id : events[0]?.id) ?? null;
-
-  return (
-    <div className="relative">
-      {/* Header da agenda — horizontal clean */}
-      <div className="flex items-end justify-between gap-4 mb-3 flex-wrap">
-        <div className="flex items-center gap-2.5">
-          <CalendarClock className="w-4 h-4 text-white/50" strokeWidth={1.8} />
-          <h2 className="text-[13px] font-bold text-white/85 uppercase tracking-wider">{headerLabel}</h2>
-          <span className="text-white/15 text-[10px]">·</span>
-          <span className="text-[11px] font-mono tabular-nums text-white/40">{events.length} eventos</span>
-          {nextEta && (
+          {highImpact > 0 && (
             <>
               <span className="text-white/15 text-[10px]">·</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-[11px] font-mono tabular-nums text-amber-400/90">próximo {nextEta}</span>
-              </div>
+              <span className="text-[11px] font-mono tabular-nums text-brand-500">{highImpact} alto impacto</span>
             </>
           )}
+          <TimestampAgo iso={new Date().toISOString()} prefix="sync" className="ml-2" />
         </div>
-        <p className="text-[10.5px] text-white/30 font-mono uppercase tracking-[0.18em]">{today}</p>
+        <div className="flex items-center gap-2">
+          <PushToggle />
+        </div>
       </div>
 
-      {/* Filtros + footer unificados num card fino */}
-      <div className="relative z-30 mb-3 rounded-lg border border-white/[0.05] bg-[#0c0c0e] px-4 py-2.5">
-        <CalendarFiltersBar current={calFilters} />
+      {/* ── Killzone banners (contextuais, só aparecem quando relevantes) ── */}
+      <div className="space-y-2 empty:hidden">
+        <KillzoneBanner />
+        <KillzoneWarmup />
       </div>
 
-      <InstrumentFilterStyle />
+      {/* ── Preço multi-ativo (NQ/BTC/ETH/DXY/GOLD) — rotação de risco numa linha ── */}
+      <div className="animate-in-up">
+        <MultiAssetTape snapshots={priceSnaps} />
+      </div>
 
-      {/* Grid de cards — key baseado nos filtros força remount e replay da anima\u00e7\u00e3o fade-in quando user aplica filtro novo. */}
-      {events.length === 0 ? (
-        <div
-          key={`empty-${calFilters.period}-${calFilters.country}-${calFilters.impact}`}
-          className="animate-in-fade rounded-2xl bg-white/[0.02] py-14 flex flex-col items-center text-center px-6"
-        >
-          <CalendarClock className="w-8 h-8 text-white/25 mb-3.5" strokeWidth={1.5} />
-          <p className="text-[13px] font-semibold text-white/70 mb-1">Mercado calmo</p>
-          <p className="text-[11.5px] text-white/40 max-w-sm leading-relaxed">
-            Sem evento relevante no filtro atual. Dia pra operar o que o gráfico entrega.
-          </p>
-        </div>
-      ) : (
-        <div
-          key={`grid-${calFilters.period}-${calFilters.country}-${calFilters.impact}`}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
-        >
-          {ordered.map((ev, i) => {
-            const isEvPast = isToday && past.includes(ev);
-            const isNext = ev.id === nextEvId && !isEvPast;
-            const evInstruments = instrumentsForEvent(ev.event, ev.country).join(" ");
-            return (
-              <div
-                key={ev.id}
-                data-filterable-event
-                data-instruments={evInstruments}
-                className="animate-in-fade"
-                style={{ animationDelay: `${Math.min(i * 25, 250)}ms` }}
-              >
-                <EventCard event={ev} isPast={isEvPast} isNext={isNext} />
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* ── Regime bar — 4 indicadores de sentimento + dominance ── */}
+      <div className="animate-in-up">
+        <CryptoPulseBar
+          fearGreedCrypto={fgSnapshot.crypto}
+          fearGreedEquities={fgSnapshot.equities}
+          globalStats={globalStats}
+          altSeason={altSeason}
+        />
+      </div>
 
-      <p className="text-[9.5px] font-mono text-white/25 tracking-[0.18em] uppercase mt-3">
-        ET (NY) · impacto ≥ médio
-      </p>
+      {/* ── Hero section: NowCard + EventsTimeline (main) + Sidebar (direita) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
+        <div className="min-w-0 space-y-5">
+          {/* NOW CARD — único hero da página, contextual */}
+          <div className="animate-in-up">
+            <NowCard events={events} news={news} />
+          </div>
+
+          {/* Timeline horizontal — 2h atrás ↔ 6h à frente */}
+          <div className="animate-in-up">
+            <EventsTimeline events={events} />
+          </div>
+        </div>
+
+        {/* Sidebar sticky — watchlist + saved + toolbar */}
+        <NoticiasSidebar />
+      </div>
+
+      {/* ── Conteúdo full-width abaixo do hero (não compete por coluna com a sidebar) ── */}
+      <div className="space-y-5">
+        {/* Agenda estendida — calendário de eventos vem ANTES das manchetes
+            (mais acionável pro trader: o que vai impactar o mercado hoje/semana) */}
+        <div className="animate-in-up">
+          <UpcomingAgenda events={events} earnings={earnings} today={today} />
+        </div>
+
+        {/* FedWatch — card único, segue a lógica macro */}
+        <div className="animate-in-up">
+          <FedProbCard prob={fedProb} />
+        </div>
+
+        {/* Feed de manchetes — 3 hero + lista compacta (contexto pós-agenda) */}
+        <NoticiasFeedV2
+          feed={news}
+          filtersActive={filtersActive}
+          filtersBar={
+            <NewsFiltersBar
+              current={newsFilters}
+              counts={catCounts}
+              resultLabel={news.length === catCounts.all ? `${news.length} manchetes` : `${news.length} de ${catCounts.all}`}
+            />
+          }
+        />
+      </div>
     </div>
   );
 }
 
-function EventCard({ event: ev, isPast, isNext }: { event: EconomicEvent; isPast: boolean; isNext: boolean }) {
-  const m = impactMeta(ev.impact);
-  const released = !!ev.actual;
-  const hasValues = ev.previous || ev.forecast || ev.actual;
-  const instruments = instrumentsForEvent(ev.event, ev.country).join(" ");
-  const surprise = released ? computeSurprise(ev.actual, ev.forecast) : null;
+function FedProbCard({ prob }: { prob: Awaited<ReturnType<typeof fetchNextFedMeetingProb>> }) {
+  if (!prob) return null; // escondido sem dados — evita ruído
 
-  const evMins = parseEventMinutes(ev.time);
-  const nowMins = nyNowMinutes();
-  const diff = evMins !== null ? evMins - nowMins : null;
-  const eta = isNext && diff !== null && diff >= 0 ? etaLabel(diff) : null;
+  const meeting = new Date(`${prob.meetingDate}T00:00:00`);
+  const meetingLabel = meeting.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  const color = prob.dominant.direction === "cut" ? "#10B981" : prob.dominant.direction === "hike" ? "#EF4444" : "rgba(255,255,255,0.7)";
+
+  const rows: Array<[string, number]> = [
+    ["Corte 50bps", prob.cuts50],
+    ["Corte 25bps", prob.cuts25],
+    ["Manter", prob.hold],
+    ["Alta 25bps", prob.hikes25],
+    ["Alta 50bps", prob.hikes50],
+  ];
 
   return (
-    <div
-      data-filterable-event
-      data-instruments={instruments}
-      className={`relative rounded-xl border bg-[#0e0e10] p-3.5 transition-all hover:bg-white/[0.015] ${
-        isNext ? "border-white/[0.18]" : "border-white/[0.05] hover:border-white/[0.12]"
-      } ${isPast ? "opacity-45" : ""}`}
-      style={isNext ? { boxShadow: `0 0 0 1px ${m.dotBg}22, 0 8px 24px -12px ${m.dotBg}30` } : undefined}
-    >
-      {/* Subtle top accent só pro "próximo" */}
-      {isNext && (
-        <div
-          className="absolute top-0 left-2 right-2 h-px rounded-full opacity-70"
-          style={{ background: `linear-gradient(90deg, transparent, ${m.dotBg}, transparent)` }}
-          aria-hidden
-        />
-      )}
-
-      {/* Top row: dot + impact label + next badge / released check */}
-      <div className="flex items-center gap-1.5 mb-2.5">
-        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: m.dotBg }} />
-        <span className="text-[8.5px] font-bold tracking-[0.22em] uppercase text-white/50">
-          {m.label}
-        </span>
-        {released && (
-          <span className="inline-flex items-center gap-1 text-[8.5px] font-bold tracking-[0.2em] uppercase text-white/40 ml-auto">
-            <Check className="w-2.5 h-2.5 text-emerald-400/80" strokeWidth={2.6} />
-            divulgado
-          </span>
-        )}
-        {isNext && !released && eta && (
-          <span className="ml-auto text-[9.5px] font-mono tabular-nums text-white/60">{eta}</span>
-        )}
-      </div>
-
-      {/* Time + country stacked */}
-      <div className="mb-2.5">
-        <p className="text-[24px] font-bold font-mono tabular-nums text-white leading-none">{ev.time || "—"}</p>
-        <p className="text-[9px] text-white/35 font-mono uppercase tracking-[0.2em] mt-1.5">{countryCode(ev.country)} · ET</p>
-      </div>
-
-      {/* Event name — 2 linhas reservadas pra evitar jump de altura */}
-      <h4 className="text-[12.5px] font-semibold text-white/90 leading-snug line-clamp-2 min-h-[32px] mb-2.5">
-        {ev.event}
-      </h4>
-
-      {/* Valores — só se existir */}
-      {hasValues && (
-        <div className="flex items-center gap-2.5 text-[10.5px] font-mono pt-2.5 border-t border-white/[0.04] flex-wrap">
-          {ev.previous && (
-            <span className="inline-flex items-baseline gap-1">
-              <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/25">ant</span>
-              <span className="text-white/55 tabular-nums">{ev.previous}</span>
-            </span>
-          )}
-          {ev.forecast && (
-            <span className="inline-flex items-baseline gap-1">
-              <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/25">prev</span>
-              <span className="text-white/55 tabular-nums">{ev.forecast}</span>
-            </span>
-          )}
-          {ev.actual && (
-            <span className="inline-flex items-baseline gap-1 ml-auto">
-              <span className="uppercase tracking-[0.12em] text-[8.5px] text-white/40">real</span>
-              <span className="text-white font-semibold tabular-nums">{ev.actual}</span>
-              {surprise && (
-                <span
-                  className={`text-[9.5px] font-semibold ml-0.5 ${
-                    surprise.direction === "up"
-                      ? "text-emerald-400"
-                      : surprise.direction === "down"
-                      ? "text-red-400"
-                      : "text-white/40"
-                  }`}
-                >
-                  {surprise.direction === "up" ? "↑" : surprise.direction === "down" ? "↓" : "≈"}
-                </span>
-              )}
-            </span>
-          )}
+    <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e] p-5">
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-3.5 h-3.5 text-white/55" strokeWidth={1.8} />
+          <h3 className="text-[12px] font-bold text-white/75">FedWatch</h3>
+          <span className="text-[10px] font-mono tabular-nums text-white/35">{meetingLabel}</span>
         </div>
-      )}
+        <span className="text-[14px] font-bold" style={{ color }}>
+          {prob.dominant.label} <span className="text-white/40 text-[11px] font-mono">{(prob.dominant.pct * 100).toFixed(0)}%</span>
+        </span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+        {rows.map(([label, pct]) => (
+          <div key={label}>
+            <p className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-white/35">{label}</p>
+            <p className="text-[14px] font-bold font-mono tabular-nums text-white/85 mt-1">{(pct * 100).toFixed(0)}%</p>
+            <div className="mt-1.5 h-[3px] rounded-full bg-white/[0.05] overflow-hidden">
+              <div className="h-full rounded-full bg-white/60" style={{ width: `${Math.min(100, pct * 100)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-

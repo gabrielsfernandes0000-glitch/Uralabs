@@ -50,7 +50,20 @@ export async function POST(req: Request) {
   const { encrypted: secretEnc } = encrypt(secretToStore);
 
   // 3. Upsert connection
-  const supabase = getSupabaseAdmin();
+  let supabase;
+  try {
+    supabase = getSupabaseAdmin();
+  } catch (err) {
+    // getSupabaseAdmin() lança quando SUPABASE_SERVICE_ROLE_KEY não está no env
+    // (cenário típico em localhost). Retorna msg explícita pro front, não genérico.
+    const msg = err instanceof Error ? err.message : "config do servidor";
+    console.error("[exchange/connect] admin client failed:", msg);
+    return NextResponse.json(
+      { error: "Servidor sem permissão pra salvar conexões. Avise o suporte (SERVICE_ROLE_KEY ausente)." },
+      { status: 500 }
+    );
+  }
+
   const meta = EXCHANGES.find((e) => e.id === exchange)!;
 
   const { error } = await supabase
@@ -71,8 +84,11 @@ export async function POST(req: Request) {
     );
 
   if (error) {
-    console.error("Supabase upsert error:", error);
-    return NextResponse.json({ error: "Erro ao salvar conexao" }, { status: 500 });
+    console.error("[exchange/connect] supabase upsert error:", error);
+    return NextResponse.json(
+      { error: `Erro ao salvar: ${error.message || "falha no banco"}` },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ ok: true, message: `${meta.name} conectada com sucesso` });

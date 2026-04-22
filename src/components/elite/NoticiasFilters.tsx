@@ -73,10 +73,10 @@ export function NewsFiltersBar({ current, counts, resultLabel }: { current: News
       <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">
         <ChipGroup>
           <Chip active={current.cat === "all"} onClick={() => setParam("cat", "all")} count={counts?.all}>Todas</Chip>
-          <Chip active={current.cat === "crypto"} onClick={() => setParam("cat", "crypto")} accent="#A855F7" count={counts?.crypto}>Crypto</Chip>
-          <Chip active={current.cat === "forex"} onClick={() => setParam("cat", "forex")} accent="#3B82F6" count={counts?.forex}>Forex</Chip>
-          <Chip active={current.cat === "stocks"} onClick={() => setParam("cat", "stocks")} accent="#10B981" count={counts?.stocks}>Ações</Chip>
-          <Chip active={current.cat === "general"} onClick={() => setParam("cat", "general")} accent="#C9A461" count={counts?.general}>Macro</Chip>
+          <Chip active={current.cat === "crypto"} onClick={() => setParam("cat", "crypto")} count={counts?.crypto}>Crypto</Chip>
+          <Chip active={current.cat === "forex"} onClick={() => setParam("cat", "forex")} count={counts?.forex}>Forex</Chip>
+          <Chip active={current.cat === "stocks"} onClick={() => setParam("cat", "stocks")} count={counts?.stocks}>Ações</Chip>
+          <Chip active={current.cat === "general"} onClick={() => setParam("cat", "general")} count={counts?.general}>Macro</Chip>
         </ChipGroup>
 
         <button
@@ -108,7 +108,7 @@ export function NewsFiltersBar({ current, counts, resultLabel }: { current: News
 
         <div className="ml-auto flex items-center gap-2">
           {resultLabel && (
-            <span className="text-[9.5px] font-mono uppercase tracking-[0.18em] text-white/30 tabular-nums hidden sm:inline">
+            <span className="text-[11px] font-mono text-white/35 tabular-nums hidden sm:inline">
               {resultLabel}
             </span>
           )}
@@ -152,7 +152,7 @@ export function NewsFiltersBar({ current, counts, resultLabel }: { current: News
             <ChipGroup>
               <Chip active={current.score === "all"} onClick={() => setParam("score", "all")} small>Tudo</Chip>
               <Chip active={current.score === "good"} onClick={() => setParam("score", "good")} small>Relevantes</Chip>
-              <Chip active={current.score === "premium"} onClick={() => setParam("score", "premium")} accent="#F87171" small>Top</Chip>
+              <Chip active={current.score === "premium"} onClick={() => setParam("score", "premium")} small>Top</Chip>
             </ChipGroup>
           </div>
         </div>
@@ -228,13 +228,13 @@ export function CalendarFiltersBar({ current }: { current: CalendarFilters }) {
           type="button"
           onClick={() => setParam("cal_impact", highOnly ? "medium_plus" : "high")}
           aria-pressed={highOnly}
-          className={`interactive-tap rounded-md border px-2 py-0.5 text-[10px] font-semibold inline-flex items-center gap-1.5 transition-colors ${
+          className={`interactive-tap rounded-md border px-2 py-0.5 text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors ${
             highOnly
-              ? "border-red-400/40 text-red-400"
-              : "border-white/[0.06] text-white/45 hover:text-white/75 hover:border-white/[0.12]"
+              ? "border-brand-500/40 text-brand-500"
+              : "border-white/[0.06] text-white/45 hover:text-white/75 hover:border-white/[0.20]"
           }`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
           Só alto
         </button>
 
@@ -301,7 +301,7 @@ function ChipGroup({ children }: { children: React.ReactNode }) {
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/30 select-none">
+    <span className="text-[11px] text-white/40 select-none">
       {children}
     </span>
   );

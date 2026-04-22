@@ -89,7 +89,7 @@ export function QuickTradeForm({
 
   if (saved) {
     return (
-      <div className="rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/25 p-6 flex items-center justify-center gap-3">
+      <div className="rounded-xl surface-card border-l-2 border-l-emerald-500 p-6 flex items-center justify-center gap-3">
         <Check className="w-5 h-5 text-emerald-400" strokeWidth={2} />
         <p className="text-[13px] text-emerald-200 font-medium">Trade registrado. Suas estatísticas foram atualizadas.</p>
       </div>
@@ -97,7 +97,7 @@ export function QuickTradeForm({
   }
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-[13px] font-bold text-white/90">Registrar trade</h3>
         <div className="flex gap-1 rounded-lg bg-white/[0.04] p-0.5">
@@ -105,7 +105,7 @@ export function QuickTradeForm({
             <button
               key={d}
               onClick={() => setDirection(d)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10.5px] font-bold transition-colors ${
                 direction === d
                   ? d === "long" ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"
                   : "text-white/40 hover:text-white/70"
@@ -128,7 +128,7 @@ export function QuickTradeForm({
       </div>
 
       <div>
-        <label className="block text-[9.5px] uppercase tracking-[0.18em] text-white/40 mb-1.5">Status</label>
+        <label className="block text-[9.5px] text-white/40 mb-1.5">Status</label>
         <div className="flex gap-1 flex-wrap">
           {([
             { v: "open", label: "Aberto", color: "#F59E0B" },
@@ -153,7 +153,7 @@ export function QuickTradeForm({
       </div>
 
       <div>
-        <label className="block text-[9.5px] uppercase tracking-[0.18em] text-white/40 mb-1.5">Estado emocional</label>
+        <label className="block text-[9.5px] text-white/40 mb-1.5">Estado emocional</label>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -172,7 +172,7 @@ export function QuickTradeForm({
       </div>
 
       <div>
-        <label className="block text-[9.5px] uppercase tracking-[0.18em] text-white/40 mb-1.5">Notas</label>
+        <label className="block text-[9.5px] text-white/40 mb-1.5">Notas</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -184,7 +184,7 @@ export function QuickTradeForm({
 
       {/* Foto do gráfico */}
       <div>
-        <label className="block text-[9.5px] uppercase tracking-[0.18em] text-white/40 mb-1.5">Screenshot do gráfico</label>
+        <label className="block text-[9.5px] text-white/40 mb-1.5">Screenshot do gráfico</label>
         {photoBase64 ? (
           <div className="relative rounded-lg overflow-hidden border border-white/[0.06]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -243,7 +243,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[9.5px] uppercase tracking-[0.18em] text-white/40 mb-1">{label}</label>
+      <label className="block text-[9.5px] text-white/40 mb-1">{label}</label>
       <div className="relative flex items-center rounded-lg bg-[#0a0a0c] border border-white/[0.06] focus-within:border-white/[0.16] transition-colors">
         <input
           type={type}

@@ -40,7 +40,7 @@ export function PerformanceHeatmap() {
   const hasAnyTrade = cells.some((c) => c.trades > 0);
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-brand-500" strokeWidth={1.8} />

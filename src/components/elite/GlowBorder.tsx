@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 /**
  * Canvas-based glowing light that travels around a rounded rectangle border.
- * Place inside a `relative overflow-hidden rounded-2xl` container.
+ * Place inside a `relative overflow-hidden rounded-xl` container.
  */
 export function GlowBorder({
   color = "#FF5500",

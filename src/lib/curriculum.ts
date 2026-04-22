@@ -114,7 +114,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Leitura SMC",
     subtitle: "Smart Money Concepts",
     description: "Order Blocks, FVG, Premium & Discount, Liquidez.",
-    accentHex: "#3B82F6",
+    accentHex: "#FF5500",
     lessons: [
       {
         id: "order-blocks",
@@ -193,7 +193,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Estratégia",
     subtitle: "Setup Operacional",
     description: "AMD, Sessões, Daily Bias, SMT.",
-    accentHex: "#A855F7",
+    accentHex: "#FF5500",
     lessons: [
       {
         id: "sessoes",
@@ -271,7 +271,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Execução",
     subtitle: "Na Prática",
     description: "Entrada, saída, mesas proprietárias.",
-    accentHex: "#10B981",
+    accentHex: "#FF5500",
     lessons: [
       {
         id: "entrada-saida",
@@ -332,7 +332,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Operação",
     subtitle: "Prática Real",
     description: "Calls ao vivo, revisão de trades, accountability.",
-    accentHex: "#EF4444",
+    accentHex: "#FF5500",
     lessons: [],
   },
 ];

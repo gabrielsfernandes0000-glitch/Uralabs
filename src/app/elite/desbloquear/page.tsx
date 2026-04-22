@@ -23,13 +23,12 @@ export default async function DesbloquearPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-6">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
-        <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-brand-500/[0.08] blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_70%_50%_at_60%_20%,#000_40%,transparent_100%)]" />
+      <div className="relative overflow-hidden rounded-xl surface-card">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-500/40" />
         <div className="relative z-10 p-8 md:p-10">
           <div className="flex items-center gap-2 mb-4">
             <Flame className="w-4 h-4 text-brand-500" fill="currentColor" />
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-brand-500">Upgrade para Elite</span>
+            <span className="text-[11px] font-medium text-brand-500">Upgrade para Elite</span>
           </div>
           <h1 className="text-[28px] md:text-[36px] font-bold text-white tracking-tight leading-tight max-w-2xl">
             Essa área é <span className="text-brand-500">Elite</span>.
@@ -81,7 +80,7 @@ export default async function DesbloquearPage() {
       </div>
 
       {/* Comparison table */}
-      <div className="rounded-2xl bg-white/[0.02] overflow-hidden">
+      <div className="rounded-xl bg-white/[0.02] overflow-hidden">
         <div className="px-5 py-3.5 border-b border-white/[0.04]">
           <h2 className="text-[13px] font-bold text-white/85">VIP × Elite</h2>
         </div>
@@ -112,9 +111,9 @@ export default async function DesbloquearPage() {
             </div>
           ))}
           <div className="grid grid-cols-[1fr_80px_80px] items-center gap-3 px-5 py-3 bg-white/[0.02]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-white/35">Plano</span>
-            <span className="text-center text-[11px] font-bold text-blue-400/80 uppercase tracking-wider">VIP</span>
-            <span className="text-center text-[11px] font-bold text-brand-500 uppercase tracking-wider">Elite</span>
+            <span className="text-[10px] font-bold text-white/35">Plano</span>
+            <span className="text-center text-[11px] font-bold text-blue-400/80">VIP</span>
+            <span className="text-center text-[11px] font-bold text-brand-500">Elite</span>
           </div>
         </div>
       </div>

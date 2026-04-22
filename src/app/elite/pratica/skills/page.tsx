@@ -39,7 +39,7 @@ export default function PraticaSkillsPage() {
             <p className="text-[30px] font-bold text-white leading-none font-mono">
               {GUIDED_TREINOS.length}
             </p>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.15em] mt-1">skills</p>
+            <p className="text-[10px] text-white/30 mt-1">skills</p>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default function PraticaSkillsPage() {
             <section key={moduleName} className="space-y-2.5">
               <div className="flex items-center gap-3 px-1">
                 <div className="w-1 h-4 rounded-full" style={{ backgroundColor: moduleColor + "80" }} />
-                <h4 className="text-[11.5px] font-semibold text-white/55 uppercase tracking-wider">
+                <h4 className="text-[11.5px] font-semibold text-white/55">
                   {moduleName}
                 </h4>
                 <span className="text-[10px] text-white/25 font-mono">{treinos.length}</span>

@@ -352,7 +352,7 @@ function ScenarioChart({ type }: { type: string }) {
 
   return (
     <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0c] p-4 mb-5 overflow-hidden">
-      <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3 font-mono">Cenário</p>
+      <p className="text-[10px] text-white/30 mb-3 font-mono">Cenário</p>
       {charts[type]}
     </div>
   );
@@ -530,7 +530,7 @@ function QuizSection({ questions, accent, onComplete }: {
         {/* Explanation — shown after reveal */}
         {revealed && q.explanation && (
           <div className="mt-5 px-5 py-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-            <p className="text-[11px] text-white/25 uppercase tracking-wider font-bold mb-2">Por que?</p>
+            <p className="text-[11px] text-white/25 font-bold mb-2">Por que?</p>
             <p className="text-[13px] text-white/60 leading-relaxed">{q.explanation}</p>
           </div>
         )}
@@ -654,7 +654,7 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
         >
           <div className={`relative w-full min-h-[240px] transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? "[transform:rotateY(180deg)]" : ""}`}>
             {/* Front — the question */}
-            <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl border border-white/[0.08] bg-[#111114] overflow-hidden">
+            <div className="absolute inset-0 [backface-visibility:hidden] rounded-xl border border-white/[0.08] bg-[#111114] overflow-hidden">
               {/* Accent glow */}
               <div className="absolute inset-0" style={{
                 background: `radial-gradient(ellipse 50% 50% at 50% 30%, ${accent}08, transparent)`
@@ -667,13 +667,13 @@ function FlashcardsSection({ cards, accent }: { cards: Flashcard[]; accent: stri
                 {/* CTA */}
                 <div className="mt-6 flex items-center gap-2">
                   <span className="text-[11px] text-white/30">Pensou na resposta?</span>
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: accent + "A0" }}>· Clique pra virar</span>
+                  <span className="text-[11px] font-bold" style={{ color: accent + "A0" }}>· Clique pra virar</span>
                 </div>
               </div>
             </div>
 
             {/* Back — the answer */}
-            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl border bg-[#111114] overflow-hidden"
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl border bg-[#111114] overflow-hidden"
               style={{ borderColor: accent + "30" }}>
               {/* Accent glow */}
               <div className="absolute inset-0" style={{
@@ -776,7 +776,7 @@ function Section({ title, icon: Icon, defaultOpen, accent, children }: {
   const [open, setOpen] = useState(defaultOpen ?? false);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden hover:border-white/[0.10] transition-all duration-300">
+    <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden hover:border-white/[0.10] transition-all duration-300">
       <button
         onClick={() => setOpen(!open)}
         className="interactive-tap w-full flex items-center justify-between px-6 py-5 text-left hover:bg-white/[0.01] transition-colors"
@@ -879,7 +879,7 @@ function UpcomingEventsBanner({ events, accent }: { events: UpcomingEventPreview
       <div className="relative z-10 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="w-3.5 h-3.5" style={{ color: accent }} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: accent + "CC" }}>
+          <span className="text-[11px] text-white/55" style={{ color: accent + "CC" }}>
             Essa aula puxa esses eventos
           </span>
           <span className="text-white/15 text-[10px]">·</span>
@@ -897,7 +897,7 @@ function UpcomingEventsBanner({ events, accent }: { events: UpcomingEventPreview
               }`} />
               <span className="font-mono text-white/60 tabular-nums">{dateLabel(ev.date)}</span>
               <span className="text-white/20">·</span>
-              <span className="font-mono text-white/40 text-[10px] uppercase tracking-wider">{countryLabel(ev.country)}</span>
+              <span className="font-mono text-white/40 text-[11px]">{countryLabel(ev.country)}</span>
               <span className="text-white/20">·</span>
               <span className="font-semibold text-white/80 group-hover:text-white max-w-[200px] truncate">{ev.event}</span>
               <span className="text-white/30 font-mono text-[10px]">{ev.time}</span>
@@ -978,7 +978,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
           Voltar para aulas
         </Link>
         <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
-          <span className="text-[10px] font-bold font-mono uppercase tracking-[0.2em]"
+          <span className="text-[10px] font-bold font-mono"
             style={{ color: accent + "CC" }}>
             · Módulo {mod.number} · Aula {String(index + 1).padStart(2, "0")}
           </span>
@@ -1002,7 +1002,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
       <div className="grid md:grid-cols-3 gap-5">
         {/* Video */}
         <div className="md:col-span-2">
-          <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0a0a0c]">
+          <div className="relative aspect-video rounded-xl overflow-hidden border border-white/[0.08] bg-[#0a0a0c]">
             {lesson.videoUrl ? (
               <iframe src={lesson.videoUrl} className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -1018,7 +1018,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
                 <div className="relative z-10 flex flex-col items-center gap-5">
                   <Play className="w-12 h-12" style={{ color: accent + "60" }} strokeWidth={1.2} />
                   <div className="text-center">
-                    <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2" style={{ color: accent + "90" }}>Vídeo em breve</p>
+                    <p className="text-[11px] text-white/55 mb-2" style={{ color: accent + "90" }}>Vídeo em breve</p>
                     <p className="text-[12px] text-white/40 leading-relaxed max-w-[280px]">A gravação será disponibilizada nesta área quando pronta</p>
                   </div>
                 </div>
@@ -1029,7 +1029,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
 
         {/* Resources sidebar */}
         <aside className="md:col-span-1 flex flex-col gap-2">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-0.5 pl-1">Recursos da aula</p>
+          <p className="text-[11px] font-semibold text-white/30 mb-0.5 pl-1">Recursos da aula</p>
 
           {lesson.hasPdf && (
             <button onClick={() => {}} className="interactive group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border border-white/[0.06] bg-[#0e0e10] hover:border-white/[0.14] transition-colors text-left">
@@ -1127,7 +1127,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
           <div className="mt-auto pt-4">
             <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0c] p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Progresso</p>
+                <p className="text-[11px] font-semibold text-white/30">Progresso</p>
                 <span className="text-[11px] font-bold text-white/60 font-mono">
                   {[quizPassed].filter(Boolean).length}/{[lesson.hasQuiz, hasFlashcards, hasChecklist, hasTreinos].filter(Boolean).length}
                 </span>
@@ -1148,7 +1148,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
 
       {/* Active resource panel — renders only the selected resource */}
       {activeResource && (
-        <div id="active-resource-panel" className="scroll-mt-6 rounded-2xl bg-white/[0.02] p-6 md:p-8 relative overflow-hidden">
+        <div id="active-resource-panel" className="scroll-mt-6 rounded-xl bg-white/[0.02] p-6 md:p-8 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
             background: `linear-gradient(90deg, transparent, ${accent}70 30%, ${accent}50 70%, transparent)`
           }} />
@@ -1197,8 +1197,8 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
                   }} />
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded" style={{ backgroundColor: accent + "15", color: accent + "DD" }}>Treino</span>
-                      <span className="text-[10px] text-white/30 font-semibold uppercase tracking-wider">{treino.difficulty}</span>
+                      <span className="text-[9px] font-bold px-2 py-1 rounded" style={{ backgroundColor: accent + "15", color: accent + "DD" }}>Treino</span>
+                      <span className="text-[10px] text-white/30 font-semibold">{treino.difficulty}</span>
                     </div>
                     <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
                   </div>
@@ -1226,7 +1226,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
             className="interactive flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-left group">
             <ArrowLeft className="w-4 h-4 text-white/25 group-hover:text-white/50 transition-colors" />
             <div>
-              <p className="text-[10px] text-white/30 uppercase tracking-wider">Anterior</p>
+              <p className="text-[10px] text-white/30">Anterior</p>
               <p className="text-[13px] text-white/60 font-medium">{prev.lesson.title}</p>
             </div>
           </button>
@@ -1235,7 +1235,7 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
           <button onClick={() => router.push(`/elite/aulas/${next.lesson.id}`)}
             className="interactive flex items-center gap-3 px-5 py-3 rounded-xl border border-white/[0.06] hover:border-white/[0.12] transition-all text-right group">
             <div>
-              <p className="text-[10px] text-white/30 uppercase tracking-wider">Próxima</p>
+              <p className="text-[10px] text-white/30">Próxima</p>
               <p className="text-[13px] text-white/60 font-medium">{next.lesson.title}</p>
             </div>
             <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white/50 transition-colors" />

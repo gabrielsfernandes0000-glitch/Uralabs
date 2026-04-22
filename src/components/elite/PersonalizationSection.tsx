@@ -87,7 +87,7 @@ export function PersonalizationSection() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-6">
+      <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-6">
         <div className="flex items-center gap-3 mb-2">
           <Palette className="w-4 h-4 text-brand-500/60" />
           <h2 className="text-[14px] font-semibold text-white/80">Personalização</h2>
@@ -99,7 +99,7 @@ export function PersonalizationSection() {
 
   if (!items) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-6">
+      <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-6">
         <div className="flex items-center gap-3 mb-4">
           <Palette className="w-4 h-4 text-brand-500/60" />
           <h2 className="text-[14px] font-semibold text-white/80">Personalização</h2>
@@ -118,7 +118,7 @@ export function PersonalizationSection() {
   };
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-7 space-y-7">
+    <div className="rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-7 space-y-7">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Palette className="w-4 h-4 text-brand-500/60" />
@@ -141,9 +141,35 @@ export function PersonalizationSection() {
         </div>
       )}
 
+      {(() => {
+        // Quando molduras + auras estão vazias, fundimos num único empty compacto
+        // em vez de 2 blocos idênticos ocupando ~200px de scroll.
+        const frames = byType.avatar_frame;
+        const auras = byType.avatar_effect;
+        const bothEmpty = frames.length === 0 && auras.length === 0;
+        if (!bothEmpty) return null;
+        return (
+          <div className="rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] px-5 py-6">
+            <div className="flex items-start gap-3">
+              <Lock className="w-4 h-4 text-white/25 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[13px] font-bold text-white/85">Molduras &amp; Auras</h3>
+                <p className="text-[11px] text-white/35 mt-0.5 leading-relaxed">
+                  Frames em volta do avatar (coroa, asas, halo) e auras pulsantes (fogo, raios, cosmos).
+                  Caem nas caixas da <a className="text-brand-500/70 hover:text-brand-500" href="/elite/loja">Loja</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {(["banner", "avatar_frame", "avatar_effect"] as const).map((type) => {
         const meta = TYPE_META[type];
         const list = byType[type];
+        // Se molduras+auras ambos vazios, já mostramos o empty combinado acima — pula aqui
+        const avatarBothEmpty = byType.avatar_frame.length === 0 && byType.avatar_effect.length === 0;
+        if (type !== "banner" && avatarBothEmpty) return null;
         return (
           <div key={type} className="space-y-3">
             <div>
@@ -157,7 +183,7 @@ export function PersonalizationSection() {
               </div>
             ) : (
               <div
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3"
                 style={{
                   // Browser pula render de cards fora do viewport. Reserva 180px
                   // por card (altura real ~160px + gap) pra scrollbar não pular

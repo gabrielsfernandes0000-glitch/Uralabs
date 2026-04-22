@@ -70,7 +70,7 @@ export default async function NewsReaderPage({ params }: { params: Promise<{ id:
         <span>Voltar pra Notícias</span>
       </Link>
 
-      <article className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]">
+      <article className="animate-in-up relative overflow-hidden rounded-xl bg-white/[0.02]">
         {/* Cover image */}
         {item.imageUrl && (
           <div className="relative aspect-[16/7] w-full overflow-hidden bg-[#0a0a0c]">
@@ -91,11 +91,11 @@ export default async function NewsReaderPage({ params }: { params: Promise<{ id:
         <div className="relative z-10 px-6 lg:px-8 pt-6 pb-3">
           <div className="flex items-center gap-2 flex-wrap mb-3">
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: imp.dotBg }} />
-            <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase" style={{ color: cat.accent }}>
+            <span className="text-[11px] text-white/55" style={{ color: cat.accent }}>
               {cat.label}
             </span>
             <span className="text-white/15 text-[10px]">·</span>
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55">{item.source}</span>
+            <span className="text-[11px] text-white/55 text-white/55">{item.source}</span>
             <span className="text-white/15 text-[10px]">·</span>
             <span className="inline-flex items-center gap-1 text-[10px] text-white/35 font-mono tabular-nums">
               <Clock className="w-2.5 h-2.5" strokeWidth={2.2} />
@@ -150,7 +150,7 @@ export default async function NewsReaderPage({ params }: { params: Promise<{ id:
         <div className="animate-in-up delay-1">
           <div className="flex items-center gap-3 px-1 mb-3">
             <div className="w-1 h-4 rounded-full bg-white/[0.25]" />
-            <h2 className="text-[12px] font-bold text-white/80 uppercase tracking-wider">Relacionadas</h2>
+            <h2 className="text-[12px] font-bold text-white/80">Relacionadas</h2>
             <span className="text-[10.5px] text-white/30">{cat.label}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -179,7 +179,7 @@ function RelatedCard({ item }: { item: MarketNews }) {
       )}
       <div className="flex-1 min-w-0 py-3 pr-4">
         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-          <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/55">{item.source}</span>
+          <span className="text-[11px] text-white/55 text-white/55">{item.source}</span>
           <span className="text-white/15 text-[10px]">·</span>
           <span className="text-[10px] text-white/35 font-mono tabular-nums">{formatRelative(item.publishedAt)}</span>
         </div>

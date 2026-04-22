@@ -17,51 +17,49 @@ export function RecentSurpriseCard({ event: ev }: { event: EconomicEvent }) {
 
   const directionColor = surprise
     ? surprise.direction === "up"
-      ? "#10B981"
+      ? "#22C55E"
       : surprise.direction === "down"
       ? "#EF4444"
-      : "#6B7280"
-    : "#6B7280";
+      : "rgba(255,255,255,0.45)"
+    : "rgba(255,255,255,0.45)";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#141417] to-[#0e0e10] p-5">
+    <div className="relative overflow-hidden rounded-xl surface-card p-5">
       <div
-        className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${directionColor}66, transparent)` }}
+        className="absolute top-0 left-0 right-0 h-[1px]"
+        style={{ backgroundColor: `${directionColor}40` }}
       />
-      <div className="absolute top-[-30%] right-[-10%] w-[300px] h-[180px] rounded-full blur-[100px] pointer-events-none"
-        style={{ backgroundColor: directionColor + "12" }} />
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             {surprise?.direction === "up" ? (
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" strokeWidth={2} />
+              <TrendingUp className="w-3.5 h-3.5" style={{ color: directionColor }} strokeWidth={2} />
             ) : surprise?.direction === "down" ? (
-              <TrendingDown className="w-3.5 h-3.5 text-red-400" strokeWidth={2} />
+              <TrendingDown className="w-3.5 h-3.5" style={{ color: directionColor }} strokeWidth={2} />
             ) : (
               <Minus className="w-3.5 h-3.5 text-white/40" strokeWidth={2} />
             )}
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/50">
+            <span className="text-[12px] font-semibold text-white/85">
               Último release · {category}
             </span>
           </div>
-          <span className="text-[10px] text-white/35 font-mono tabular-nums">{countryCode(ev.country)} · {ev.time}</span>
+          <span className="text-[11px] text-white/40 font-mono tabular-nums">{countryCode(ev.country)} · {ev.time}</span>
         </div>
 
-        <h3 className="text-[16px] font-bold text-white leading-tight tracking-tight mb-2">{ev.event}</h3>
+        <h3 className="text-[16px] font-semibold text-white leading-tight tracking-tight mb-2">{ev.event}</h3>
 
         <div className="grid grid-cols-3 gap-3 mb-3 pt-2 border-t border-white/[0.04]">
           <div>
-            <p className="text-[8.5px] font-bold tracking-[0.2em] uppercase text-white/30 mb-1">Consenso</p>
+            <p className="text-[11px] text-white/40 mb-1">Consenso</p>
             <p className="text-[15px] font-mono font-semibold text-white/60 tabular-nums">{ev.forecast ?? "—"}</p>
           </div>
           <div>
-            <p className="text-[8.5px] font-bold tracking-[0.2em] uppercase text-white/30 mb-1">Real</p>
+            <p className="text-[11px] text-white/40 mb-1">Real</p>
             <p className="text-[15px] font-mono font-semibold text-white tabular-nums">{ev.actual ?? "—"}</p>
           </div>
           <div>
-            <p className="text-[8.5px] font-bold tracking-[0.2em] uppercase text-white/30 mb-1">Surpresa</p>
+            <p className="text-[11px] text-white/40 mb-1">Surpresa</p>
             {surprise ? (
               <p className="text-[15px] font-mono font-bold tabular-nums" style={{ color: directionColor }}>
                 {surprise.direction === "up" ? "↑" : surprise.direction === "down" ? "↓" : "≈"} {surprise.label}

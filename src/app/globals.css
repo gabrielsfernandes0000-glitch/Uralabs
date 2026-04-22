@@ -18,8 +18,35 @@
   --color-dark-900: #111114;
   --color-dark-950: #09090b;
 
-  /* ── Fonts ── */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* ── Design System v3 — paleta restrita tipo Bloomberg/Linear.
+     3 cores funcionais, 2 surfaces, 2 radii, 1 tracking. Fim.                */
+
+  /* Surface — só 2 layers */
+  --color-surface-base:     #0a0a0c;   /* background da tela */
+  --color-surface-elevated: #131316;   /* cards, painéis */
+  --color-surface-sunken:   #070708;   /* inputs */
+
+  /* Semantic — 3 cores funcionais + brand. Fim.
+     brand = atenção/URA (alto impacto, CTA, foco)
+     up    = ganho/positivo/divulgado OK
+     down  = perda/negativo/alerta */
+  --color-semantic-brand: #FF5500;
+  --color-semantic-up:    #22C55E;
+  --color-semantic-down:  #EF4444;
+
+  /* Impact usa brand (não red) — consistente com Bloomberg (laranja-âmbar para atenção). */
+  --color-impact-high:   var(--color-semantic-brand);
+  --color-impact-medium: rgba(255, 255, 255, 0.55);    /* médio = branco muted, não amarelo */
+  --color-impact-low:    rgba(255, 255, 255, 0.25);
+
+  /* Radii — 2 valores apenas */
+  --radius-pill: 6px;
+  --radius-card: 12px;
+
+  /* ── Fonts — Geist primary (Vercel) + JetBrains Mono pra dados numéricos.
+     Inter mantido como fallback pra componentes legados.                    */
+  --font-sans: var(--font-geist-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-pro), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* ── Animations ── */
   --animate-fade-in-up: fadeInUp 0.8s ease-out forwards;
@@ -45,8 +72,17 @@
 
 /* ── Base Styles ── */
 body {
-  background-color: #09090b;
+  background-color: #0a0a0c;
   color: #f0f0f2;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";       /* Geist stylistic sets — mais editorial */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Números sempre em mono alternativo — substitui font-mono do tailwind */
+.font-mono, .font-mono *, [class*="tabular-nums"] {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum", "zero";       /* tabular + slashed zero = trading-grade */
 }
 
 .gradient-text {
@@ -163,3 +199,67 @@ body {
 }
 .modal-in-backdrop { animation: modalBackdropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 .modal-in-panel    { animation: modalPanelIn 220ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+
+/* ── Design System v2 utility classes — aplicar em componentes novos pra
+   consolidar sistema. Components antigos seguem com tailwind arbitrário. */
+
+/* Card surface — 1 definição, acabou */
+.surface-card {
+  background-color: var(--color-surface-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.surface-panel {
+  background-color: var(--color-surface-base);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Uppercase mini-label — tracking unificado em 0.2em */
+.label-xs {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  line-height: 1;
+}
+.label-sm {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  line-height: 1;
+}
+
+/* Live pulse — dado ao vivo tem pulse sutil. Aplicar em dot/badge de dado streaming. */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.live-pulse {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* Live ring — anel pulsante ao redor de elemento ativo */
+@keyframes live-ring {
+  0%   { box-shadow: 0 0 0 0 currentColor; opacity: 0.5; }
+  70%  { box-shadow: 0 0 0 6px currentColor; opacity: 0; }
+  100% { box-shadow: 0 0 0 0 currentColor; opacity: 0; }
+}
+.live-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  animation: live-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Typescale constrained (pro paleta) — use estes, não arbitrary px
+   Escala: 10, 11, 12, 13, 14, 16, 20, 28, 40 */
+.t-10 { font-size: 10px;  line-height: 14px; }
+.t-11 { font-size: 11px;  line-height: 15px; }
+.t-12 { font-size: 12px;  line-height: 17px; }
+.t-13 { font-size: 13px;  line-height: 18px; }
+.t-14 { font-size: 14px;  line-height: 20px; }
+.t-16 { font-size: 16px;  line-height: 22px; }
+.t-20 { font-size: 20px;  line-height: 26px; }
+.t-28 { font-size: 28px;  line-height: 32px; line-height: 32px; letter-spacing: -0.01em; }
+.t-40 { font-size: 40px;  line-height: 44px; letter-spacing: -0.02em; }

@@ -71,7 +71,7 @@ export function TradesList() {
 
   if (allTrades.length === 0) {
     return (
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-8 text-center">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-8 text-center">
         <p className="text-[13px] text-white/60 font-semibold mb-1">Nenhum trade registrado</p>
         <p className="text-[11px] text-white/35 max-w-sm mx-auto">
           Depois de fechar um trade, registre acima — o histórico aparece aqui com setup, R, erros e emoção.
@@ -86,7 +86,7 @@ export function TradesList() {
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1.5 text-[11px] text-white/45">
           <Filter className="w-3.5 h-3.5" />
-          <span className="font-semibold uppercase tracking-wider">Filtros</span>
+          <span className="font-semibold">Filtros</span>
         </div>
         <FilterSelect label="Setup" value={setupFilter} onChange={setSetupFilter} options={[
           { id: "all", label: "Todos" },
@@ -120,7 +120,7 @@ export function TradesList() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-8 text-center">
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-8 text-center">
           <p className="text-[12px] text-white/40">Nenhum trade com esses filtros.</p>
         </div>
       ) : (
@@ -197,7 +197,7 @@ function DateGroup({
   const label = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] overflow-hidden">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] overflow-hidden">
       <div className="px-3 sm:px-5 py-3 border-b border-white/[0.04] flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <div className="w-1 h-5 rounded-full" style={{ backgroundColor: dayAccent + "80" }} />
@@ -327,7 +327,7 @@ function TradeRowDetailed({
           {/* Mistakes */}
           {mistakes.length > 0 && (
             <div>
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-amber-400/75 mb-1.5">Erros</p>
+              <p className="text-[9.5px] font-bold text-amber-400/75 mb-1.5">Erros</p>
               <div className="flex flex-wrap gap-1.5">
                 {mistakes.map((m) => {
                   if (!m) return null;
@@ -365,7 +365,7 @@ function TradeRowDetailed({
           {/* Intraday chart — só quando trade tem symbol (busca lazy) */}
           {trade.symbol && (
             <div>
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Candles do dia</p>
+              <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Candles do dia</p>
               <TradeIntradayChart trade={trade} />
             </div>
           )}
@@ -373,7 +373,7 @@ function TradeRowDetailed({
           {/* Screenshot */}
           {trade.screenshotUrl && (
             <div>
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Screenshot do chart</p>
+              <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Screenshot do chart</p>
               <div className="rounded-lg overflow-hidden border border-white/[0.06] bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={trade.screenshotUrl} alt="Screenshot do trade" className="w-full max-h-[420px] object-contain" />
@@ -384,7 +384,7 @@ function TradeRowDetailed({
           {/* Notes */}
           {trade.notes && (
             <div>
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1">Aprendizado</p>
+              <p className="text-[9.5px] font-bold text-white/40 mb-1">Aprendizado</p>
               <p className="text-[12px] text-white/70 leading-relaxed whitespace-pre-wrap">{trade.notes}</p>
             </div>
           )}
@@ -493,7 +493,7 @@ function EditTradeInline({
 
   return (
     <div className="px-3 sm:px-5 pb-4 pt-3 space-y-3 border-t border-white/[0.03] bg-white/[0.015]">
-      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+      <div className="flex items-center gap-2 text-[10px] font-bold text-white/45">
         <Pencil className="w-3 h-3" /> Editando
       </div>
 
@@ -508,7 +508,7 @@ function EditTradeInline({
 
       {/* Result */}
       <div>
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Resultado</p>
+        <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Resultado</p>
         <div className="grid grid-cols-3 gap-1.5">
           {([
             { id: "win" as const,  label: "Win",  color: "#10B981" },
@@ -538,7 +538,7 @@ function EditTradeInline({
 
       {/* Setup picker — compact */}
       <div>
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Setup</p>
+        <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Setup</p>
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setSetupId("")}
@@ -571,7 +571,7 @@ function EditTradeInline({
 
       {/* Mistakes */}
       <div>
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Erros</p>
+        <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Erros</p>
         <div className="flex flex-wrap gap-1.5">
           {MISTAKE_TAGS.map((m) => {
             const active = mistakes.includes(m.id);
@@ -601,7 +601,7 @@ function EditTradeInline({
       {/* Plan + emotional */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Seguiu o plano?</p>
+          <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Seguiu o plano?</p>
           <div className="flex gap-1.5">
             <button
               onClick={() => setFollowedPlan(true)}
@@ -622,7 +622,7 @@ function EditTradeInline({
           </div>
         </div>
         <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Emoção depois</p>
+          <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Emoção depois</p>
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((v) => {
               const colors = ["#EF4444", "#F59E0B", "#6B7280", "#10B981", "#3B82F6"];
@@ -646,7 +646,7 @@ function EditTradeInline({
 
       {/* Notes */}
       <div>
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Aprendizado</p>
+        <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Aprendizado</p>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -656,7 +656,7 @@ function EditTradeInline({
 
       {/* Screenshot */}
       <div>
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/40 mb-1.5">Screenshot</p>
+        <p className="text-[9.5px] font-bold text-white/40 mb-1.5">Screenshot</p>
         <ScreenshotUploader value={screenshot} onChange={setScreenshot} />
       </div>
 
@@ -695,7 +695,7 @@ function MiniField({
 }) {
   return (
     <div className="rounded-lg bg-[#0a0a0c] border border-white/[0.05] hover:border-white/[0.10] transition-colors px-2.5 py-1.5">
-      <p className="text-[8.5px] font-bold uppercase tracking-[0.2em]" style={{ color: accent + (accent.startsWith("#") ? "AA" : "") }}>{label}</p>
+      <p className="text-[8.5px] font-bold" style={{ color: accent + (accent.startsWith("#") ? "AA" : "") }}>{label}</p>
       <input
         type="text"
         inputMode="decimal"
@@ -710,7 +710,7 @@ function MiniField({
 function KV({ label, value, accent = "rgba(255,255,255,0.5)" }: { label: string; value: string; accent?: string }) {
   return (
     <div>
-      <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: accent + (accent.startsWith("#") ? "AA" : "") }}>{label}</p>
+      <p className="text-[9px] font-bold" style={{ color: accent + (accent.startsWith("#") ? "AA" : "") }}>{label}</p>
       <p className="text-[11.5px] font-mono tabular-nums text-white/80 truncate">{value}</p>
     </div>
   );
@@ -726,7 +726,7 @@ function FilterSelect({
 }) {
   return (
     <div className="relative inline-flex items-center rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-colors">
-      <span className="pl-2.5 pr-1.5 text-[10px] font-bold uppercase tracking-wider text-white/35">{label}</span>
+      <span className="pl-2.5 pr-1.5 text-[10px] font-bold text-white/35">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}

@@ -77,7 +77,7 @@ function ThumbBase({ accent, tag, children }: { accent: string; tag?: string; ch
       {/* Tag da categoria — somente texto em caps, cor como acento */}
       {tag && (
         <div
-          className="absolute top-2.5 right-2.5 text-[9px] font-bold uppercase tracking-[0.2em] z-10"
+          className="absolute top-2.5 right-2.5 text-[9px] font-bold z-10"
           style={{ color: accent }}
         >
           · {tag}

@@ -260,7 +260,7 @@ export function StoreClient({
 // ── Onboarding: o user não tem coin suficiente pra abrir nada ────────────────
 function ZeroBalanceOnboarding({ needed }: { needed: number }) {
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.05] p-5">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-5">
       <div className="flex items-start gap-3 mb-4">
         <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.05] flex items-center justify-center shrink-0">
           <Sparkles className="w-4 h-4 text-white/70" strokeWidth={1.8} />
@@ -507,7 +507,7 @@ function BoxesTab({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] py-14 text-center">
+        <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] py-14 text-center">
           <p className="text-[13px] text-white/50">Nenhuma caixa bate com o filtro.</p>
           <button
             onClick={() => { setSearch(""); setTierFilter("all"); setAffordOnly(false); }}
@@ -529,13 +529,29 @@ function BoxesTab({
           ))}
         </div>
       )}
+
+      {/* Como ganhar mais coin — preenche o espaço abaixo do grid de caixas */}
+      {filtered.length > 0 && (
+        <div className="mt-10">
+          <div className="flex items-center gap-2 mb-4">
+            <UraCoinIcon className="w-3.5 h-3.5" />
+            <h3 className="text-[12px] font-bold text-white/85">Como acumular URA Coin</h3>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <HowTo title="Missão do dia" sub="3 cenários de prática · streak mantida" />
+            <HowTo title="Calls ao vivo" sub="Coin por presença e engajamento" />
+            <HowTo title="Drops aleatórios" sub="Mensagens surpresa no Discord" />
+            <HowTo title="Conquistas" sub="Bonus proporcional à raridade" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-10 md:p-14 max-w-2xl mx-auto text-center">
+    <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-10 md:p-14 max-w-2xl mx-auto text-center">
       <p className="text-[11px] text-white/40 tracking-[0.12em] mb-4">Próximas caixas em breve</p>
       <h3 className="text-[22px] md:text-[26px] font-semibold text-white tracking-tight mb-4 leading-tight">
         Acumule URA Coin enquanto a temporada não abre
@@ -602,7 +618,7 @@ function HistorySection({
 
   if (openings.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] py-16 text-center max-w-md mx-auto">
+      <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] py-16 text-center max-w-md mx-auto">
         <p className="text-[14px] text-white/60 font-medium mb-1.5">Nenhuma abertura ainda</p>
         <p className="text-[12px] text-white/35">Abra sua primeira caixa na aba Caixas.</p>
       </div>
@@ -640,7 +656,7 @@ function HistorySection({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] py-10 text-center">
+        <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] py-10 text-center">
           <p className="text-[12px] text-white/35">Nenhuma abertura nesse filtro.</p>
         </div>
       ) : (
@@ -649,7 +665,7 @@ function HistorySection({
             {grouped.map((group) => (
               <div key={group.label}>
                 <p className="text-[10.5px] text-white/35 tracking-[0.1em] mb-2">{group.label}</p>
-                <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] overflow-hidden">
+                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] overflow-hidden">
                   {group.items.map((op) => (
                     <RecentRow key={op.id} op={op} onClaim={onClaim} />
                   ))}

@@ -22,7 +22,7 @@ export function ThemeCard({ category }: { category: ThemeCategory }) {
   return (
     <Link
       href={`/elite/treino/livre?category=${encodeURIComponent(category.key)}`}
-      className="interactive group relative overflow-hidden rounded-2xl bg-white/[0.02] min-h-[180px] flex flex-col transition-colors"
+      className="interactive group relative overflow-hidden rounded-xl bg-white/[0.02] min-h-[180px] flex flex-col transition-colors"
     >
       {/* Wash da cor da categoria só no hover — reveal subtle de identidade como feedback da inten\u00e7\u00e3o */}
       <div
@@ -31,7 +31,7 @@ export function ThemeCard({ category }: { category: ThemeCategory }) {
       />
 
       <div className="relative z-10 p-5 flex-1 flex flex-col">
-        <p className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-white/35 mb-3">
+        <p className="text-[11px] text-white/55 text-white/35 mb-3">
           {category.tagline}
         </p>
 

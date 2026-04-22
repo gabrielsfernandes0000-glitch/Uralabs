@@ -27,11 +27,7 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
       </Link>
 
       {/* Hero badge — large render */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02]">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full blur-[100px] pointer-events-none" style={{
-          backgroundColor: isLegendary ? "#FF5500" : achievement.rarity === "gold" ? "#F59E0B" : achievement.rarity === "silver" ? "#CBD5E1" : "#C4833F",
-          opacity: isLegendary ? 0.10 : 0.05,
-        }} />
+      <div className="relative overflow-hidden rounded-xl surface-card">
         {isLegendary && (
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
             background: "linear-gradient(90deg, transparent, rgba(255,85,0,0.7), transparent)",
@@ -39,7 +35,7 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
         )}
         <div className="relative z-10 flex flex-col items-center py-12">
           <AchievementBadge achievement={achievement} size={240} />
-          <span className={`mt-6 text-[10px] font-bold tracking-[0.25em] uppercase ${rarity.className}`}>
+          <span className={`mt-6 text-[11px] font-semibold ${rarity.className}`}>
             {rarity.label}
           </span>
           <h1 className="text-[28px] md:text-[32px] font-bold text-white tracking-tight mt-1.5 text-center px-6">
@@ -52,12 +48,12 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
       {/* Meta grid */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-5">
-          <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1.5">Categoria</p>
+          <p className="text-[10px] text-white/25 mb-1.5">Categoria</p>
           <p className="text-[14px] text-white/80 font-bold">{category.label}</p>
           <p className="text-[11px] text-white/35 mt-1 leading-relaxed">{category.sub}</p>
         </div>
         <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-5">
-          <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1.5">Raridade</p>
+          <p className="text-[10px] text-white/25 mb-1.5">Raridade</p>
           <p className={`text-[14px] font-bold ${rarity.className}`}>{rarity.label}</p>
           <p className="text-[11px] text-white/35 mt-1">
             {isLegendary ? "Edição limitada · nunca mais emitida" : "Emissão contínua"}
@@ -66,17 +62,17 @@ export default async function BadgeDetailPage({ params }: { params: Promise<{ ba
       </div>
 
       {/* Distribution rules */}
-      <div className="rounded-2xl bg-white/[0.02] p-6">
+      <div className="rounded-xl bg-white/[0.02] p-6">
         <div className="flex items-center gap-2 mb-3">
           {achievement.autoDistribute ? (
             <>
               <Zap className="w-3.5 h-3.5 text-brand-500" />
-              <h3 className="text-[12px] font-bold text-white/85 uppercase tracking-wider">Distribuição automática</h3>
+              <h3 className="text-[12px] font-bold text-white/85">Distribuição automática</h3>
             </>
           ) : (
             <>
               <Shield className="w-3.5 h-3.5 text-yellow-500/70" />
-              <h3 className="text-[12px] font-bold text-white/85 uppercase tracking-wider">Validação manual</h3>
+              <h3 className="text-[12px] font-bold text-white/85">Validação manual</h3>
             </>
           )}
         </div>

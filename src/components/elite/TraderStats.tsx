@@ -15,7 +15,7 @@ export function TraderStats({ compact }: { compact?: boolean }) {
 
   if (stats.total === 0) {
     return (
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-8 text-center">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-8 text-center">
         <Target className="w-8 h-8 text-white/20 mx-auto mb-3" strokeWidth={1.5} />
         <p className="text-[13px] text-white/50 mb-1">Nenhum trade registrado ainda.</p>
         <p className="text-[11px] text-white/30">Registre seu primeiro trade no Diário pra começar a ver estatísticas.</p>
@@ -27,7 +27,7 @@ export function TraderStats({ compact }: { compact?: boolean }) {
   const hasClosed = closedCount > 0;
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Award className="w-4 h-4 text-brand-500" strokeWidth={1.8} />
@@ -40,7 +40,7 @@ export function TraderStats({ compact }: { compact?: boolean }) {
       </div>
 
       {!hasClosed && (
-        <div className="rounded-lg bg-amber-500/[0.06] border border-amber-500/25 px-3 py-2 flex items-start gap-2">
+        <div className="rounded-lg surface-card border-l-2 border-l-amber-500 px-3 py-2 flex items-start gap-2">
           <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
           <p className="text-[11px] text-amber-200/80">
             Feche um trade (marque win/loss/breakeven) pra começar a ver estatísticas.
@@ -86,10 +86,10 @@ export function TraderStats({ compact }: { compact?: boolean }) {
           {(stats.bestTrade || stats.worstTrade) && !compact && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-white/[0.04]">
               {stats.bestTrade && (
-                <div className="flex items-center gap-3 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/20 px-3 py-2.5">
+                <div className="flex items-center gap-3 rounded-lg surface-card border-l-2 border-l-emerald-500 px-3 py-2.5">
                   <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" strokeWidth={2} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9.5px] uppercase tracking-[0.2em] text-emerald-400/80 mb-0.5">Melhor trade</p>
+                    <p className="text-[9.5px] text-emerald-400/80 mb-0.5">Melhor trade</p>
                     <p className="text-[11px] font-mono text-white/80 truncate">
                       {stats.bestTrade.asset} · {stats.bestTrade.direction}
                     </p>
@@ -103,7 +103,7 @@ export function TraderStats({ compact }: { compact?: boolean }) {
                 <div className="flex items-center gap-3 rounded-lg bg-red-500/[0.04] border border-red-500/20 px-3 py-2.5">
                   <TrendingDown className="w-4 h-4 text-red-400 shrink-0" strokeWidth={2} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9.5px] uppercase tracking-[0.2em] text-red-400/80 mb-0.5">Pior trade</p>
+                    <p className="text-[9.5px] text-red-400/80 mb-0.5">Pior trade</p>
                     <p className="text-[11px] font-mono text-white/80 truncate">
                       {stats.worstTrade.asset} · {stats.worstTrade.direction}
                     </p>
@@ -124,7 +124,7 @@ export function TraderStats({ compact }: { compact?: boolean }) {
 function Stat({ label, value, sub, accent }: { label: string; value: string; sub: string; accent: string }) {
   return (
     <div className="rounded-lg bg-[#0a0a0c] border border-white/[0.05] p-3">
-      <p className="text-[9.5px] uppercase tracking-[0.22em] text-white/35">{label}</p>
+      <p className="text-[9.5px] text-white/35">{label}</p>
       <p className="text-[18px] font-bold font-mono tabular-nums mt-0.5" style={{ color: accent }}>
         {value}
       </p>

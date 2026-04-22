@@ -29,7 +29,7 @@ export function BoxCard({
   const enabled = !disabled && canAfford && box.any_available;
 
   return (
-    <div className="group relative rounded-2xl bg-white/[0.02] border border-white/[0.05] overflow-hidden transition-colors hover:border-white/[0.1]">
+    <div className="group relative rounded-xl bg-white/[0.02] border border-white/[0.05] overflow-hidden transition-colors hover:border-white/[0.1]">
       <BoxVisual box={box} />
 
       <div className="p-5 pt-4">

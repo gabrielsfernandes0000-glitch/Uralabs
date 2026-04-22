@@ -96,8 +96,8 @@ export function formatRelative(iso: string): string {
 
 export function impactMeta(impact: EventImpact): { label: string; color: string; dotBg: string } {
   switch (impact) {
-    case "high":   return { label: "Alto",   color: "text-red-400",   dotBg: "#F87171" };
-    case "medium": return { label: "Médio",  color: "text-amber-400", dotBg: "#FBBF24" };
+    case "high":   return { label: "Alto",   color: "text-brand-500", dotBg: "#FF5500" };
+    case "medium": return { label: "Médio",  color: "text-amber-400", dotBg: "#F59E0B" };
     case "low":    return { label: "Baixo",  color: "text-white/35",  dotBg: "rgba(255,255,255,0.25)" };
   }
 }
@@ -110,10 +110,12 @@ export function countryLabel(country: string): string {
 }
 
 export function categoryMeta(cat: NewsCategory): { label: string; accent: string } {
+  // Paleta restrita: categoria é label, não cor. Todos em branco muted.
+  const accent = "rgba(255,255,255,0.55)";
   switch (cat) {
-    case "general": return { label: "Geral",    accent: "#C9A461" };
-    case "forex":   return { label: "Forex",    accent: "#3B82F6" };
-    case "crypto":  return { label: "Crypto",   accent: "#A855F7" };
-    case "stocks":  return { label: "Ações",    accent: "#10B981" };
+    case "general": return { label: "Geral",  accent };
+    case "forex":   return { label: "Forex",  accent };
+    case "crypto":  return { label: "Crypto", accent };
+    case "stocks":  return { label: "Ações",  accent };
   }
 }

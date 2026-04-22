@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FileText, Sparkles, HelpCircle } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
-import { TickerTape } from "@/components/elite/TickerTape";
 import { PositionCalculator } from "@/components/elite/PositionCalculator";
 import { PreTradeChecklist } from "@/components/elite/PreTradeChecklist";
 import { TradeJournalForm } from "@/components/elite/TradeJournalForm";
@@ -89,11 +88,6 @@ export default function DiarioPage() {
           <HelpCircle className="w-3.5 h-3.5" />
           Tour guiado
         </button>
-      </div>
-
-      {/* Ticker tape */}
-      <div className="animate-in-up delay-1">
-        <TickerTape />
       </div>
 
       {/* Status bar unificada */}

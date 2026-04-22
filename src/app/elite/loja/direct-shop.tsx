@@ -128,7 +128,7 @@ export function DirectShop({
   return (
     <div>
       {/* Status banner — 1 vez, claro e grande */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.05] px-5 py-4 mb-5 flex items-start gap-3">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-5 py-4 mb-5 flex items-start gap-3">
         <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.05] flex items-center justify-center shrink-0">
           <Clock className="w-4 h-4 text-white/70" strokeWidth={1.8} />
         </div>
@@ -171,7 +171,7 @@ export function DirectShop({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] py-14 text-center">
+        <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] py-14 text-center">
           <p className="text-[13px] text-white/50">Nenhum produto nesse filtro.</p>
           <button
             onClick={() => setFilter("all")}
@@ -216,7 +216,7 @@ function ProductCard({
   const canBuyNow = product.available_now && canAfford;
 
   return (
-    <div className="group relative rounded-2xl bg-white/[0.02] border border-white/[0.05] overflow-hidden transition-colors hover:border-white/[0.1]">
+    <div className="group relative rounded-xl bg-white/[0.02] border border-white/[0.05] overflow-hidden transition-colors hover:border-white/[0.1]">
       <div className="relative w-full aspect-[4/3] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

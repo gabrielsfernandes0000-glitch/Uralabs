@@ -1229,7 +1229,7 @@ export function LessonChart({ scenario }: { scenario: ChartScenario }) {
   const stepByNum = new Map((data.steps ?? []).map((s) => [s.num, s]));
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.01)] min-h-[460px] flex flex-col">
+    <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.01)] min-h-[460px] flex flex-col">
       {/* Header */}
       <div className="px-5 py-3 border-b border-white/[0.04] flex items-center gap-2.5 bg-[#111114]">
         <div className="w-5 h-5 rounded-[5px] flex items-center justify-center" style={{ backgroundColor: C.brand + "18" }}>

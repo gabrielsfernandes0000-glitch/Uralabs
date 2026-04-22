@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { MetaPixel } from "@/components/landing/MetaPixel";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono-pro",
 });
 
 const SITE_URL = "https://www.uralabs.com.br";
@@ -57,8 +63,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} scroll-smooth`}>
-      <body className="min-h-screen bg-dark-950 text-white antialiased">
+    <html lang="pt-BR" className={`${inter.variable} ${jetbrainsMono.variable} ${GeistSans.variable} scroll-smooth`}>
+      <body className="min-h-screen bg-dark-950 text-white antialiased font-sans">
         {children}
         <MetaPixel />
         {GA_ID && (

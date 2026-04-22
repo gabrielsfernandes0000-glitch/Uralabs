@@ -209,7 +209,7 @@ function SymbolPicker({
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center pt-[10vh] px-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-xl rounded-2xl border border-white/[0.08] bg-[#0e0e10] shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-xl rounded-xl border border-white/[0.08] bg-[#0e0e10] shadow-2xl overflow-hidden">
         <div className="flex items-center gap-2.5 px-4 py-3 border-b border-white/[0.06]">
           {loading ? (
             <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
@@ -233,7 +233,7 @@ function SymbolPicker({
             <>
               {QUICK_SUGGESTIONS.map((group) => (
                 <div key={group.group} className="py-1">
-                  <p className="px-4 pt-2 pb-1 text-[9.5px] font-bold uppercase tracking-[0.22em] text-white/25">
+                  <p className="px-4 pt-2 pb-1 text-[9.5px] font-bold text-white/25">
                     {group.group}
                   </p>
                   {group.items.map((ins) => (
@@ -303,7 +303,7 @@ function PickerRow({
       <span className="flex-1 text-[12.5px] text-white/70 truncate">{ins.label}</span>
       <span className="font-mono text-[10px] text-white/30 truncate max-w-[180px]">{ins.exchange}</span>
       {ins.type && (
-        <span className="text-[9px] uppercase tracking-[0.15em] text-white/25 shrink-0">{ins.type}</span>
+        <span className="text-[9px] text-white/25 shrink-0">{ins.type}</span>
       )}
     </button>
   );
@@ -336,13 +336,13 @@ function DataBadge({ exchange, type }: { exchange?: string; type?: string }) {
     <div className="absolute top-3 right-3 z-20">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-bold uppercase tracking-[0.15em] backdrop-blur-sm transition-colors ${
+        className={`flex items-center gap-1.5 px-2 py-1 rounded-md border text-[11px] font-medium backdrop-blur-sm transition-colors ${
           live
-            ? "border-green-500/30 bg-green-500/[0.08] text-green-300 hover:bg-green-500/[0.12]"
-            : "border-amber-500/30 bg-amber-500/[0.08] text-amber-300 hover:bg-amber-500/[0.12]"
+            ? "border-white/25 bg-white/[0.04] text-white hover:bg-white/[0.06]"
+            : "border-white/[0.10] bg-white/[0.02] text-white/60 hover:text-white"
         }`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${live ? "bg-green-400 animate-pulse" : "bg-amber-400"}`} />
+        <span className={`w-1.5 h-1.5 rounded-full ${live ? "bg-[#22C55E] animate-pulse" : "bg-white/45"}`} />
         {live ? "Real-time" : "Delayed 15min"}
       </button>
 
@@ -547,10 +547,10 @@ export default function GraficosPage() {
         <button
           onClick={() => setSmcEnabled((v) => !v)}
           title="Ativa preset SMC (EMA + VWAP + Volume)"
-          className={`shrink-0 flex items-center gap-1.5 px-2 h-7 rounded-md text-[10.5px] font-bold uppercase tracking-[0.15em] transition-colors ${
+          className={`shrink-0 flex items-center gap-1.5 px-2 h-7 rounded-md text-[11px] font-medium transition-colors ${
             smcEnabled
-              ? "bg-emerald-500/[0.12] text-emerald-300 border border-emerald-500/30"
-              : "text-white/40 hover:text-white hover:bg-white/[0.04] border border-transparent"
+              ? "bg-white/[0.06] text-white border border-white/25"
+              : "text-white/45 hover:text-white hover:bg-white/[0.04] border border-transparent"
           }`}
         >
           <Zap className="w-3 h-3" strokeWidth={2} />
@@ -561,10 +561,10 @@ export default function GraficosPage() {
         <button
           onClick={() => setCompareOpen((v) => !v)}
           title="Sobrepor segundo ativo"
-          className={`shrink-0 flex items-center gap-1.5 px-2 h-7 rounded-md text-[10.5px] font-bold uppercase tracking-[0.15em] transition-colors ${
+          className={`shrink-0 flex items-center gap-1.5 px-2 h-7 rounded-md text-[11px] font-medium transition-colors ${
             compareWith
-              ? "bg-purple-500/[0.12] text-purple-300 border border-purple-500/30"
-              : "text-white/40 hover:text-white hover:bg-white/[0.04] border border-transparent"
+              ? "bg-white/[0.06] text-white border border-white/25"
+              : "text-white/45 hover:text-white hover:bg-white/[0.04] border border-transparent"
           }`}
         >
           <GitCompare className="w-3 h-3" strokeWidth={2} />
@@ -583,7 +583,7 @@ export default function GraficosPage() {
       {/* Compare picker dropdown */}
       {compareOpen && (
         <div className="shrink-0 border-b border-white/[0.05] bg-[#0b0b0d] px-3 py-2 flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">Sobrepor com</span>
+          <span className="text-[10px] text-white/35">Sobrepor com</span>
           {watchlistItems.filter((w) => w.tvSymbol !== active.tvSymbol).map((w) => (
             <button
               key={w.tvSymbol}

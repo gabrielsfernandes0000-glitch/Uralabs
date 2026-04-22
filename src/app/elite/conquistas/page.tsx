@@ -227,7 +227,7 @@ function BadgeCard({
     <button
       type="button"
       onClick={() => onOpen(achievement)}
-      className={`interactive group relative w-full text-left rounded-2xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-0.5`}
+      className={`interactive group relative w-full text-left rounded-xl border bg-[#111114] transition-all duration-500 overflow-hidden cursor-pointer ${borderClass} hover:-translate-y-0.5`}
     >
       {isLegendary && unlocked && (
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
@@ -236,7 +236,7 @@ function BadgeCard({
       {/* Manual flag — mostra em qualquer estado */}
       {!achievement.autoDistribute && (
         <div className="absolute top-3 left-3 z-10">
-          <span className="text-[8px] font-bold text-white/40 uppercase tracking-[0.2em]">· Manual</span>
+          <span className="text-[8px] font-bold text-white/40">· Manual</span>
         </div>
       )}
 
@@ -258,7 +258,7 @@ function BadgeCard({
         </div>
 
         <div className={`w-full ${large ? "mt-5" : "mt-4"}`}>
-          <span className={`block text-[9px] font-bold tracking-[0.22em] uppercase ${unlocked ? rarity.className : "text-white/35"} mb-1.5`}>
+          <span className={`block text-[11px] text-white/55 ${unlocked ? rarity.className : "text-white/35"} mb-1.5`}>
             {rarity.label}
           </span>
           <h4 className={`font-bold tracking-tight ${unlocked ? "text-white" : "text-white/55"} ${large ? "text-[18px] mb-1.5" : "text-[13.5px] mb-1"}`}>
@@ -306,7 +306,7 @@ function AchievementModal({
       onClick={onClose}
     >
       <div
-        className="modal-in-panel relative w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#141417] overflow-hidden shadow-2xl"
+        className="modal-in-panel relative w-full max-w-md rounded-xl border border-white/[0.08] bg-[#141417] overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -331,11 +331,11 @@ function AchievementModal({
         {/* Metadata */}
         <div className="px-7 pb-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className={`text-[9px] font-bold tracking-[0.22em] uppercase ${rarity.className}`}>
+            <span className={`text-[11px] text-white/55 ${rarity.className}`}>
               {rarity.label}
             </span>
             <span className="text-white/15">·</span>
-            <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/40">
+            <span className="text-[11px] text-white/55 text-white/40">
               {category.label}
             </span>
           </div>
@@ -349,7 +349,7 @@ function AchievementModal({
             <div className="flex items-start gap-3">
               <Check className="w-5 h-5 text-green-400 shrink-0 mt-0.5" strokeWidth={1.8} />
               <div>
-                <p className="text-[12px] font-bold text-green-400 uppercase tracking-wider mb-1">Desbloqueada</p>
+                <p className="text-[12px] font-bold text-green-400 mb-1">Desbloqueada</p>
                 <p className="text-[12px] text-white/50 leading-relaxed">
                   {unlockedAt ? `Conquistada em ${formatFullDate(unlockedAt)}.` : "Você já tem essa conquista."}
                 </p>
@@ -361,7 +361,7 @@ function AchievementModal({
                 <Lock className="w-4 h-4 text-white/50" />
               </div>
               <div>
-                <p className="text-[12px] font-bold text-white/60 uppercase tracking-wider mb-1">Como desbloquear</p>
+                <p className="text-[12px] font-bold text-white/60 mb-1">Como desbloquear</p>
                 <p className="text-[12px] text-white/55 leading-relaxed">{hint}</p>
               </div>
             </div>
@@ -428,16 +428,16 @@ function TimelineView({ unlocks }: { unlocks: UnlockMeta[] }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[13.5px] font-bold text-white/90 leading-tight">{ach.label}</span>
-                        <span className={`text-[9px] font-bold tracking-[0.18em] uppercase ${rarity.className}`}>
+                        <span className={`text-[11px] text-white/55 ${rarity.className}`}>
                           {rarity.label}
                         </span>
                       </div>
                       <p className="text-[11.5px] text-white/45 mt-0.5 truncate">{ach.detail}</p>
                     </div>
                     {u.coins_granted > 0 && (
-                      <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold tabular-nums text-amber-300">
+                      <span className="inline-flex items-center gap-1 shrink-0 text-[11px] font-semibold tabular-nums text-amber-300">
                         +{u.coins_granted.toLocaleString("pt-BR")}
-                        <span className="text-[9px] text-amber-300/60 uppercase tracking-wider font-normal">coin</span>
+                        <span className="text-[10px] text-amber-300/60 font-normal">coin</span>
                       </span>
                     )}
                   </div>
@@ -480,11 +480,11 @@ function SkillTreeView({ completedLessons }: { completedLessons: string[] }) {
             <p className="text-[22px] font-bold text-white leading-none font-mono tabular-nums">
               {doneLessons}<span className="text-white/25">/{totalLessons}</span>
             </p>
-            <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">aulas</p>
+            <p className="text-[10px] text-white/35 mt-1">aulas</p>
           </div>
           {currentNode && (
             <div className="pl-4 border-l border-white/[0.06] max-w-[180px]">
-              <p className="text-[10px] uppercase tracking-wider text-white/30 mb-0.5">Próximo node</p>
+              <p className="text-[11px] text-white/30 mb-0.5">Próximo node</p>
               <p className="text-[13px] font-bold truncate" style={{ color: currentNode.accentHex }}>
                 {currentNode.name}
               </p>
@@ -495,7 +495,7 @@ function SkillTreeView({ completedLessons }: { completedLessons: string[] }) {
 
       {/* Legenda de módulos */}
       <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.015]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Módulos</span>
+        <span className="text-[11px] font-semibold text-white/30">Módulos</span>
         {[
           { label: "Base", hex: MODULE_ACCENT.base },
           { label: "SMC", hex: MODULE_ACCENT.smc },
@@ -617,7 +617,7 @@ function SkillTreeView({ completedLessons }: { completedLessons: string[] }) {
                         />
                       </div>
                       <div className="flex items-center justify-between mt-1.5">
-                        <span className={`text-[9.5px] uppercase tracking-wider ${node.unlocked ? "text-white/40" : "text-white/20"}`}>
+                        <span className={`text-[11px] ${node.unlocked ? "text-white/40" : "text-white/20"}`}>
                           {!node.unlocked ? "Bloqueado" : isComplete ? "Completo" : node.progress > 0 ? "Em curso" : "A fazer"}
                         </span>
                         <span className={`text-[10px] font-mono tabular-nums ${node.unlocked ? "text-white/50" : "text-white/20"}`}>
@@ -688,7 +688,7 @@ function InsightsView() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Emotional avg */}
         <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Estado Emocional</p>
+          <p className="text-[10px] text-white/30 mb-3">Estado Emocional</p>
           <div className="flex items-end gap-2">
             <span className="text-[28px] leading-none">{avgEmotional > 0 ? emotionalEmojis[Math.round(avgEmotional)] : "—"}</span>
             <div>
@@ -705,14 +705,14 @@ function InsightsView() {
 
         {/* Discipline */}
         <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Disciplina</p>
+          <p className="text-[10px] text-white/30 mb-3">Disciplina</p>
           <p className="text-[28px] font-bold text-white leading-none">{totalTrades > 0 ? `${disciplineRate}%` : "—"}</p>
           <p className="text-[11px] text-white/35 mt-1">seguiu o plano</p>
         </div>
 
         {/* Win rate */}
         <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Win Rate</p>
+          <p className="text-[10px] text-white/30 mb-3">Win Rate</p>
           {totalTrades > 0 ? (
             <>
               <p className="text-[28px] font-bold text-white leading-none">{winRate}%</p>
@@ -728,7 +728,7 @@ function InsightsView() {
 
         {/* Streak */}
         <div className="rounded-xl bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-300">
-          <p className="text-[10px] text-white/30 uppercase tracking-wider mb-3">Streak</p>
+          <p className="text-[10px] text-white/30 mb-3">Streak</p>
           <p className="text-[28px] font-bold text-white leading-none">{streak}</p>
           <p className="text-[11px] text-white/35 mt-1">dias · recorde: {bestStreak}</p>
         </div>
@@ -981,13 +981,13 @@ export default function ConquistasPage() {
           <div className="h-10 w-px bg-white/[0.06]" />
           <div className="flex items-center gap-5">
             <div>
-              <p className="text-[22px] font-bold text-white leading-none font-mono">{unlockedCount}<span className="text-white/30">/{allIds.length}</span></p>
-              <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">badges</p>
+              <p className="text-[22px] font-semibold text-white leading-none font-mono">{unlockedCount}<span className="text-white/30">/{allIds.length}</span></p>
+              <p className="text-[11px] text-white/45 mt-1">badges</p>
             </div>
             <div className="h-8 w-px bg-white/[0.06]" />
             <div>
-              <p className="text-[22px] font-bold text-[#FF5500]/90 leading-none font-mono">{legendaryUnlocked}</p>
-              <p className="text-[10px] text-[#FF5500]/50 mt-1 uppercase tracking-wider">lendárias</p>
+              <p className="text-[22px] font-semibold text-brand-500 leading-none font-mono">{legendaryUnlocked}</p>
+              <p className="text-[11px] text-brand-500/60 mt-1">lendárias</p>
             </div>
           </div>
         </div>
@@ -1018,7 +1018,7 @@ export default function ConquistasPage() {
 
       {/* Rarity legend */}
       <div className="animate-in-up delay-1 flex flex-wrap items-center gap-4 px-4 py-2.5 rounded-lg border border-white/[0.05] bg-white/[0.02]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Raridade</span>
+        <span className="text-[11px] font-semibold text-white/30">Raridade</span>
         {(["bronze", "silver", "gold", "legendary"] as const).map((r) => (
           <div key={r} className="flex items-center gap-1.5">
             <span className={`w-1.5 h-1.5 rounded-full`} style={{
@@ -1051,7 +1051,7 @@ export default function ConquistasPage() {
                   <h2 className="text-[18px] font-bold text-white/90">{meta.label}</h2>
                   <span className="text-[12px] text-white/35">{meta.sub}</span>
                   {(isOG || isTrading) && (
-                    <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/35">
+                    <span className="text-[11px] text-white/55 text-white/35">
                       · Manual
                     </span>
                   )}
@@ -1059,8 +1059,8 @@ export default function ConquistasPage() {
 
                 <div className={
                   useLarge
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-                    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3"
+                    : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3"
                 }>
                   {items.map((a) => (
                     <BadgeCard key={a.id} achievement={a} unlocked={isUnlocked(a)} large={useLarge} onOpen={setSelected} />

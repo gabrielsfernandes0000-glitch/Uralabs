@@ -81,7 +81,7 @@ export function PositionCalculator({
   const canApply = isValid && directionMatches && targetMatches && position.sizeUsd > 0;
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function PositionCalculator({
             <button
               key={d}
               onClick={() => setDirection(d)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10.5px] font-bold uppercase tracking-wider transition-colors ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10.5px] font-bold transition-colors ${
                 direction === d
                   ? d === "long"
                     ? "bg-emerald-500/20 text-emerald-300"
@@ -151,7 +151,7 @@ export function PositionCalculator({
 
       {/* Validation warnings */}
       {isValid && !directionMatches && (
-        <div className="flex items-start gap-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/30 px-3 py-2">
+        <div className="flex items-start gap-2 rounded-lg surface-card border-l-2 border-l-amber-500 px-3 py-2">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
           <p className="text-[11px] text-amber-200/80 leading-relaxed">
             Stop inconsistente com direção <span className="font-bold">{direction}</span>.
@@ -160,7 +160,7 @@ export function PositionCalculator({
         </div>
       )}
       {targetNum != null && !targetMatches && (
-        <div className="flex items-start gap-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/30 px-3 py-2">
+        <div className="flex items-start gap-2 rounded-lg surface-card border-l-2 border-l-amber-500 px-3 py-2">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
           <p className="text-[11px] text-amber-200/80 leading-relaxed">
             Target do lado errado pra <span className="font-bold">{direction}</span>.
@@ -181,8 +181,8 @@ export function PositionCalculator({
       </div>
 
       {targetNum != null && payoffUsd > 0 && (
-        <div className="rounded-lg bg-emerald-500/[0.04] border border-emerald-500/20 px-3 py-2.5">
-          <p className="text-[10.5px] uppercase tracking-[0.2em] text-emerald-400/80 mb-0.5">Payoff potencial</p>
+        <div className="rounded-lg surface-card border-l-2 border-l-emerald-500 px-3 py-2.5">
+          <p className="text-[10.5px] text-emerald-400/80 mb-0.5">Payoff potencial</p>
           <p className="text-[15px] font-bold font-mono tabular-nums text-emerald-300">
             +${payoffUsd.toFixed(2)}
             <span className="text-[11px] text-white/40 ml-2">se bater target</span>
@@ -220,7 +220,7 @@ function LabeledInput({
 }) {
   return (
     <div>
-      <label className="block text-[9.5px] uppercase tracking-[0.18em] text-white/40 mb-1">{label}</label>
+      <label className="block text-[9.5px] text-white/40 mb-1">{label}</label>
       <div className="relative flex items-center rounded-lg bg-[#0a0a0c] border border-white/[0.06] focus-within:border-white/[0.16] transition-colors">
         <input
           type="number"
@@ -245,7 +245,7 @@ function LabeledInput({
 function ResultCell({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
     <div className="rounded-lg bg-[#0a0a0c] border border-white/[0.05] px-3 py-2.5">
-      <p className="text-[9.5px] uppercase tracking-[0.2em] text-white/35 mb-0.5">{label}</p>
+      <p className="text-[9.5px] text-white/35 mb-0.5">{label}</p>
       <p className="text-[14px] font-bold font-mono tabular-nums" style={{ color: accent ?? "#ffffff" }}>
         {value}
       </p>

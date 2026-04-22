@@ -55,7 +55,7 @@ export function NewsThumbFallback({
       {/* Ícone no canto */}
       <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/[0.06]">
         <Newspaper className="w-2.5 h-2.5" style={{ color: accent, opacity: 0.7 }} strokeWidth={2} />
-        <span className="text-[8.5px] font-bold tracking-[0.22em] uppercase text-white/55">{cat.label}</span>
+        <span className="text-[11px] text-white/55 text-white/55">{cat.label}</span>
       </div>
 
       {/* Top accent line */}

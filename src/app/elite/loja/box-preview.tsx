@@ -90,7 +90,7 @@ export function BoxPreview({
       onClick={onClose}
     >
       <div
-        className="rounded-2xl bg-[#0b0b0d] border border-white/[0.08] w-full max-w-3xl max-h-[88vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="rounded-xl bg-[#0b0b0d] border border-white/[0.08] w-full max-w-3xl max-h-[88vh] overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

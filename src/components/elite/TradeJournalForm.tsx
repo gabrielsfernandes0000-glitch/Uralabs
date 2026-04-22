@@ -15,12 +15,14 @@ import { ScreenshotUploader } from "./ScreenshotUploader";
 import { detectTilt } from "@/lib/tilt-detector";
 
 const TIMEFRAMES: Timeframe[] = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"];
+// Escala 1-5: não usar rainbow. Negativo = red semantic, neutro = branco muted,
+// positivo = green semantic. Intensidade pelo peso/opacity.
 const EMOTIONAL_LEVELS = [
   { v: 1, label: "Péssimo",   color: "#EF4444" },
-  { v: 2, label: "Ruim",      color: "#F59E0B" },
-  { v: 3, label: "Neutro",    color: "#6B7280" },
-  { v: 4, label: "Bom",       color: "#10B981" },
-  { v: 5, label: "Excelente", color: "#3B82F6" },
+  { v: 2, label: "Ruim",      color: "#EF4444" },
+  { v: 3, label: "Neutro",    color: "rgba(255,255,255,0.45)" },
+  { v: 4, label: "Bom",       color: "#22C55E" },
+  { v: 5, label: "Excelente", color: "#22C55E" },
 ] as const;
 
 interface Props {
@@ -181,7 +183,7 @@ export function TradeJournalForm({ onSaved }: Props) {
 
   if (saved) {
     return (
-      <div className="rounded-2xl bg-emerald-500/[0.05] border border-emerald-500/25 p-8 flex flex-col items-center text-center">
+      <div className="rounded-xl surface-card border-l-2 border-l-emerald-500 p-8 flex flex-col items-center text-center">
         <div className="w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center mb-3">
           <Check className="w-6 h-6 text-emerald-400" strokeWidth={2} />
         </div>
@@ -191,7 +193,7 @@ export function TradeJournalForm({ onSaved }: Props) {
         </p>
         <button
           onClick={resetForm}
-          className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-emerald-500/30 text-[12px] font-bold text-emerald-300 hover:bg-emerald-500/[0.08] transition-colors"
+          className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-md border border-white/15 text-[12px] font-medium text-white hover:border-white/30 hover:bg-white/[0.04] transition-colors"
         >
           Registrar outro trade
         </button>
@@ -202,7 +204,7 @@ export function TradeJournalForm({ onSaved }: Props) {
   return (
     <div className="space-y-4">
       {/* ───── Header ───── */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#151518] to-[#111114] p-4 sm:p-5">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-br from-[#151518] to-[#111114] p-4 sm:p-5">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
         <div className="relative z-10 flex items-center gap-3">
           <TrendingUp className="w-5 h-5 text-brand-500" strokeWidth={1.8} />
@@ -216,7 +218,7 @@ export function TradeJournalForm({ onSaved }: Props) {
       {/* ───── Row 1: Symbol + Timeframe + Direction ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_1fr] gap-3">
         <SymbolPicker value={symbol} onChange={setSymbol} custom={customSymbol} onCustomChange={setCustomSymbol} />
-        <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5 space-y-4">
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5 space-y-4">
           <TimeframeInline value={timeframe} onChange={setTimeframe} />
           <OpenTimeField value={openTime} onChange={setOpenTime} />
         </div>
@@ -224,11 +226,11 @@ export function TradeJournalForm({ onSaved }: Props) {
       </div>
 
       {/* ───── Row 2: Preços (entry / stop / target / exit) ───── */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <TargetIcon className="w-3.5 h-3.5 text-white/40" />
-            <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Preços</h4>
+            <h4 className="text-[13px] font-semibold text-white/85">Preços</h4>
           </div>
           <div className="flex items-center gap-3 text-[10.5px] font-mono tabular-nums">
             {plannedRR != null && plannedRR > 0 && (
@@ -247,10 +249,10 @@ export function TradeJournalForm({ onSaved }: Props) {
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          <PriceField label="Entry"  value={entry}  onChange={setEntry}  accent="#94A3B8" placeholder="18.100" />
+          <PriceField label="Entry"  value={entry}  onChange={setEntry}  accent="rgba(255,255,255,0.55)" placeholder="18.100" />
           <PriceField label="Stop"   value={stop}   onChange={setStop}   accent="#EF4444" placeholder="18.050" icon={<Shield className="w-3 h-3" />} />
-          <PriceField label="Target" value={target} onChange={setTarget} accent="#10B981" placeholder="18.250" icon={<TargetIcon className="w-3 h-3" />} />
-          <PriceField label="Exit"   value={exit}   onChange={setExit}   accent="#60A5FA" placeholder="18.235" hint="saída real" />
+          <PriceField label="Target" value={target} onChange={setTarget} accent="#22C55E" placeholder="18.250" icon={<TargetIcon className="w-3 h-3" />} />
+          <PriceField label="Exit"   value={exit}   onChange={setExit}   accent="#FF5500" placeholder="18.235" hint="saída real" />
         </div>
         <div className="mt-2.5">
           <PriceField label="Size / Contratos (opcional)" value={size} onChange={setSize} placeholder="1" compact />
@@ -261,11 +263,11 @@ export function TradeJournalForm({ onSaved }: Props) {
       <SetupPicker value={setupId} onChange={setSetupId} />
 
       {/* ───── Row 4: Result (auto-suggested) ───── */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Zap className="w-3.5 h-3.5 text-white/40" />
-            <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Resultado</h4>
+            <h4 className="text-[13px] font-semibold text-white/85">Resultado</h4>
           </div>
           {suggestedResult && !result && (
             <span className="text-[10px] text-white/40">
@@ -303,16 +305,16 @@ export function TradeJournalForm({ onSaved }: Props) {
       </div>
 
       {/* ───── Row 5: Mistakes (expandable) ───── */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
         <button
           onClick={() => setShowMistakes(!showMistakes)}
           className="w-full flex items-center justify-between gap-2"
         >
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-400/80" />
-            <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Erros cometidos</h4>
+            <h4 className="text-[13px] font-semibold text-white/85">Erros cometidos</h4>
             {mistakes.length > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[10px] font-bold bg-amber-500/[0.15] text-amber-300">
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[11px] font-mono tabular-nums text-white/70">
                 {mistakes.length}
               </span>
             )}
@@ -375,10 +377,10 @@ export function TradeJournalForm({ onSaved }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <EmotionalPicker label="Antes da entrada" icon={Brain} value={emotionalBefore} onChange={setEmotionalBefore} />
         <EmotionalPicker label="Depois do trade" icon={Brain} value={emotionalAfter} onChange={setEmotionalAfter} />
-        <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <BookOpen className="w-3.5 h-3.5 text-white/40" />
-            <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Seguiu o plano?</h4>
+            <h4 className="text-[13px] font-semibold text-white/85">Seguiu o plano?</h4>
           </div>
           <div className="flex gap-2">
             <button
@@ -402,10 +404,10 @@ export function TradeJournalForm({ onSaved }: Props) {
       </div>
 
       {/* ───── Row 7: Notas ───── */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1.5 h-4 rounded-full bg-white/[0.25]" />
-          <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Aprendizado</h4>
+          <h4 className="text-[13px] font-semibold text-white/85">Aprendizado</h4>
         </div>
         <textarea
           value={notes}
@@ -416,10 +418,10 @@ export function TradeJournalForm({ onSaved }: Props) {
       </div>
 
       {/* ───── Row 8: Screenshot do chart ───── */}
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-3">
           <ImagePlus className="w-3.5 h-3.5 text-white/40" />
-          <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Screenshot do chart</h4>
+          <h4 className="text-[13px] font-semibold text-white/85">Screenshot do chart</h4>
           <span className="text-[10px] text-white/30">opcional · aceita Ctrl+V direto do clipboard</span>
         </div>
         <ScreenshotUploader value={screenshot} onChange={setScreenshot} />
@@ -475,8 +477,8 @@ function SymbolPicker({
   value, onChange, custom, onCustomChange,
 }: { value: string; onChange: (v: string) => void; custom: string; onCustomChange: (v: string) => void }) {
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
-      <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em] mb-3">Símbolo</h4>
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <h4 className="text-[13px] font-semibold text-white/85 mb-3">Símbolo</h4>
       <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto">
         {SYMBOLS.map((s) => {
           const active = value === s.id;
@@ -523,7 +525,7 @@ function SymbolPicker({
 function TimeframeInline({ value, onChange }: { value: Timeframe | null; onChange: (v: Timeframe) => void }) {
   return (
     <div>
-      <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em] mb-2">Timeframe</h4>
+      <h4 className="text-[13px] font-semibold text-white/85 mb-2">Timeframe</h4>
       <div className="grid grid-cols-4 gap-1.5">
         {TIMEFRAMES.map((tf) => {
           const active = value === tf;
@@ -557,7 +559,7 @@ function OpenTimeField({ value, onChange }: { value: string; onChange: (v: strin
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-2">
-        <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Hora (BRT)</h4>
+        <h4 className="text-[13px] font-semibold text-white/85">Hora (BRT)</h4>
         <button
           onClick={handleNow}
           className="text-[10px] text-white/40 hover:text-white/75 transition-colors"
@@ -577,8 +579,8 @@ function OpenTimeField({ value, onChange }: { value: string; onChange: (v: strin
 
 function DirectionPicker({ value, onChange }: { value: "long" | "short" | null; onChange: (v: "long" | "short") => void }) {
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
-      <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em] mb-3">Direção</h4>
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+      <h4 className="text-[13px] font-semibold text-white/85 mb-3">Direção</h4>
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => onChange("long")}
@@ -618,13 +620,13 @@ function PriceField({
   compact?: boolean;
 }) {
   return (
-    <div className={`rounded-xl bg-[#0a0a0c] border border-white/[0.05] hover:border-white/[0.10] transition-colors ${compact ? "px-3 py-2" : "px-3 py-2.5"}`}>
+    <div className={`rounded-md bg-[#0a0a0c] border border-white/[0.05] hover:border-white/[0.10] transition-colors ${compact ? "px-3 py-2" : "px-3 py-2.5"}`}>
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] flex items-center gap-1" style={{ color: accent + "AA" }}>
+        <span className="text-[11px] font-medium flex items-center gap-1" style={{ color: accent }}>
           {icon}
           {label}
         </span>
-        {hint && <span className="text-[8.5px] text-white/30">{hint}</span>}
+        {hint && <span className="text-[10px] text-white/35">{hint}</span>}
       </div>
       <input
         type="text"
@@ -656,11 +658,11 @@ function SetupPicker({ value, onChange }: { value: string; onChange: (id: string
   };
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <BookOpen className="w-3.5 h-3.5 text-white/40" />
-          <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Setup operado</h4>
+          <h4 className="text-[13px] font-semibold text-white/85">Setup operado</h4>
         </div>
         {value && (
           <button
@@ -672,7 +674,7 @@ function SetupPicker({ value, onChange }: { value: string; onChange: (id: string
       <div className="space-y-2.5">
         {Array.from(byCategory.entries()).map(([cat, setups]) => (
           <div key={cat}>
-            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/30 mb-1.5 px-0.5">
+            <p className="text-[11px] text-white/40 mb-1.5 px-0.5">
               {categoryLabel[cat]}
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -710,10 +712,10 @@ function EmotionalPicker({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-3.5 h-3.5 text-white/40" />
-        <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">{label}</h4>
+        <h4 className="text-[13px] font-semibold text-white/85">{label}</h4>
       </div>
       <div className="flex gap-1">
         {EMOTIONAL_LEVELS.map((e) => {
@@ -735,8 +737,8 @@ function EmotionalPicker({
         })}
       </div>
       <div className="mt-1.5 flex justify-between px-0.5">
-        <span className="text-[9px] text-white/25 uppercase tracking-wider">Péssimo</span>
-        <span className="text-[9px] text-white/25 uppercase tracking-wider">Excelente</span>
+        <span className="text-[11px] text-white/30">Péssimo</span>
+        <span className="text-[11px] text-white/30">Excelente</span>
       </div>
       {value != null && (
         <p className="text-[11px] text-center mt-1.5 font-semibold" style={{ color: EMOTIONAL_LEVELS[value - 1].color }}>

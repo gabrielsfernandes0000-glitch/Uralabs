@@ -202,10 +202,10 @@ export default function TreinoPage() {
           <ChevronLeft className="w-3.5 h-3.5" /> Voltar
         </button>
 
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-10 text-center">
+        <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-10 text-center">
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${treino.moduleColor}40, transparent)` }} />
 
-          <div className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: pct >= 70 ? "#10B98115" : "#EF444415" }}>
+          <div className="w-20 h-20 rounded-xl mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: pct >= 70 ? "#10B98115" : "#EF444415" }}>
             {pct >= 70 ? <Trophy className="w-9 h-9 text-green-400" /> : <RotateCcw className="w-9 h-9 text-red-400" />}
           </div>
 
@@ -249,7 +249,7 @@ export default function TreinoPage() {
       <div className="animate-in-up delay-1 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-5 items-start">
         {/* LEFT — Chart */}
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={`chart-${currentStep}`} {...STEP_TRANSITION} className="rounded-2xl border border-white/[0.06] overflow-hidden">
+          <motion.div key={`chart-${currentStep}`} {...STEP_TRANSITION} className="rounded-xl border border-white/[0.06] overflow-hidden">
             <LessonChart scenario={step.chart} />
           </motion.div>
         </AnimatePresence>
@@ -321,7 +321,7 @@ export default function TreinoPage() {
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="rounded-xl bg-white/[0.02] p-4"
             >
-              <p className="text-[10.5px] text-white/30 uppercase tracking-wider font-semibold mb-1.5">Explicação</p>
+              <p className="text-[10.5px] text-white/30 font-semibold mb-1.5">Explicação</p>
               <p className="text-[12px] text-white/55 leading-relaxed">{step.explanation}</p>
 
               <button onClick={handleNext} className="interactive-tap mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12.5px] font-bold text-white hover:brightness-110" style={{ backgroundColor: treino.moduleColor }}>

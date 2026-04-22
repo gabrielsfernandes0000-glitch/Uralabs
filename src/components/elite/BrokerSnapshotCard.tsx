@@ -66,7 +66,7 @@ export function BrokerSnapshotCard() {
   }, []);
 
   const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="rounded-2xl bg-white/[0.02] p-5 h-full flex flex-col">{children}</div>
+    <div className="rounded-xl bg-white/[0.02] p-5 h-full flex flex-col">{children}</div>
   );
 
   if (state.status === "loading") {
@@ -74,7 +74,7 @@ export function BrokerSnapshotCard() {
       <Shell>
         <div className="flex items-center gap-2 mb-3">
           <BarChart3 className="w-3.5 h-3.5 text-white/30" />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/40">Corretora</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">Corretora</h3>
         </div>
         <div className="flex-1 flex items-center justify-start">
           <div className="w-24 h-7 rounded bg-white/[0.03] animate-pulse" />
@@ -85,10 +85,10 @@ export function BrokerSnapshotCard() {
 
   if (state.status === "no-connection" || state.status === "error") {
     return (
-      <Link href="/elite/corretora" className="interactive group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors">
+      <Link href="/elite/corretora" className="interactive group rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors">
         <div className="flex items-center gap-2 mb-3">
           <Plug className="w-3.5 h-3.5 text-white/40" />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">Corretora</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">Corretora</h3>
         </div>
         <div className="flex-1 flex flex-col items-start justify-center">
           <p className="text-[15px] font-semibold text-white/65 leading-tight">Conecte sua corretora</p>
@@ -108,13 +108,13 @@ export function BrokerSnapshotCard() {
   const PnLIcon = unrealized > 0 ? TrendingUp : unrealized < 0 ? TrendingDown : BarChart3;
 
   return (
-    <Link href="/elite/corretora" className="interactive group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors">
+    <Link href="/elite/corretora" className="interactive group rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <PnLIcon className="w-3.5 h-3.5" style={{ color: accent }} />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">Corretora</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">Corretora</h3>
         </div>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-white/30">
+        <span className="text-[10px] font-mono text-white/30">
           {data.exchange}
         </span>
       </div>
@@ -134,7 +134,7 @@ export function BrokerSnapshotCard() {
           >
             {unrealized > 0 ? "+" : ""}${unrealized.toFixed(2)}
           </p>
-          <p className="text-[10px] text-white/35 mt-1.5 font-mono uppercase tracking-wider">
+          <p className="text-[10px] text-white/35 mt-1.5 font-mono">
             Não realizado · {positions.length} {positions.length === 1 ? "posição" : "posições"}
           </p>
           <div className="flex flex-wrap gap-1.5 mt-2">

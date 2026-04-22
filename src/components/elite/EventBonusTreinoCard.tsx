@@ -56,7 +56,7 @@ export function EventBonusTreinoCard() {
     <div className="rounded-xl bg-white/[0.02] p-4">
       <div className="flex items-center gap-2 mb-2">
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} aria-hidden />
-        <span className={`text-[9.5px] font-bold tracking-[0.25em] uppercase ${labelColor}`}>
+        <span className={`text-[11px] text-white/55 ${labelColor}`}>
           Treine pro evento de hoje
         </span>
       </div>

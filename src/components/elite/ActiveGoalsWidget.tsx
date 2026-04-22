@@ -23,12 +23,12 @@ export function ActiveGoalsWidget() {
   return (
     <Link
       href="/elite/diario?tab=stats"
-      className="interactive group block rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-colors"
+      className="interactive group block rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-colors"
     >
       <div className="flex items-center justify-between mb-3 gap-2">
         <div className="flex items-center gap-2">
           <Target className="w-3.5 h-3.5 text-white/50" />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">Metas</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">Metas</h3>
         </div>
         <span className="text-[10px] font-mono tabular-nums text-white/40">
           {hitCount}/{evaluated.length} batidas

@@ -10,10 +10,8 @@ import { loadLastReleasedEvent, loadTodayEvents } from "@/lib/events-today";
 import { getUserState } from "@/lib/ura-coin";
 import { DashboardHero } from "@/components/elite/DashboardHero";
 import { TickerTape } from "@/components/elite/TickerTape";
-import { DayPnLCard } from "@/components/elite/DayPnLCard";
 import { NextHighImpactCard } from "@/components/elite/NextHighImpactCard";
-import { BrokerSnapshotCard } from "@/components/elite/BrokerSnapshotCard";
-import { ActiveGoalsWidget } from "@/components/elite/ActiveGoalsWidget";
+import { DashboardMetrics } from "@/components/elite/DashboardMetrics";
 
 const BANNER_SLUGS = new Set([
   "diamond-hands", "o-sol-bull", "a-torre-flash", "a-temperanca-rr",
@@ -102,7 +100,7 @@ function TradingDayBar() {
   const next = currentIdx >= 0 && currentIdx < SESSIONS.length - 1 ? SESSIONS[currentIdx + 1] : null;
   const minsLeft = current.endMin - brTotalMins;
 
-  const accent = current.emphasis === "killzone" ? "#10B981" : current.emphasis === "avoid" ? "#F59E0B" : "rgba(255,255,255,0.55)";
+  const accent = current.emphasis === "killzone" ? "#FF5500" : current.emphasis === "avoid" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)";
   const statusText = current.emphasis === "killzone"
     ? `Killzone ativa · termina em ${formatEta(minsLeft)}`
     : current.emphasis === "avoid"
@@ -121,12 +119,12 @@ function TradingDayBar() {
           const isCurrent = i === currentIdx;
           const isPast = i < currentIdx || (currentIdx === -1 && s.endMin <= brTotalMins);
           const segColor = isCurrent
-            ? s.emphasis === "killzone" ? "rgba(16,185,129,0.75)" : s.emphasis === "avoid" ? "rgba(245,158,11,0.55)" : "rgba(255,255,255,0.55)"
+            ? s.emphasis === "killzone" ? "#FF5500" : "rgba(255,255,255,0.45)"
             : isPast
             ? "rgba(255,255,255,0.12)"
             : "rgba(255,255,255,0.05)";
           const labelColor = isCurrent
-            ? s.emphasis === "killzone" ? "text-emerald-400" : s.emphasis === "avoid" ? "text-amber-400/80" : "text-white/75"
+            ? s.emphasis === "killzone" ? "text-brand-500" : "text-white/75"
             : isPast
             ? "text-white/30"
             : "text-white/25";
@@ -318,8 +316,8 @@ export default async function EliteDashboard() {
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="w-1 h-1 rounded-full" style={{ backgroundColor: tierAccent }} />
                 <span
-                  className={`text-[9.5px] font-bold tracking-[0.25em] uppercase ${hasBanner ? "drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : ""}`}
-                  style={{ color: hasBanner ? tierAccent : tierAccent + "CC" }}
+                  className={`text-[11px] font-medium ${hasBanner ? "drop-shadow-[0_1px_4px_rgba(0,0,0,0.85)]" : ""}`}
+                  style={{ color: tierAccent }}
                 >
                   {tierLabelText}
                 </span>
@@ -365,7 +363,7 @@ export default async function EliteDashboard() {
                   <span className="relative w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryAction.accent }} />
                 </span>
               )}
-              <span className="text-[9.5px] uppercase tracking-[0.22em] font-bold shrink-0" style={{ color: primaryAction.accent + "CC" }}>
+              <span className="text-[11px] font-medium shrink-0" style={{ color: primaryAction.accent }}>
                 {primaryAction.tag}
               </span>
               <span className="text-white/15 text-[10px] shrink-0">·</span>
@@ -390,10 +388,10 @@ export default async function EliteDashboard() {
           {lastReleased ? (
             <RecentSurpriseCard event={lastReleased} />
           ) : (
-            <div className="rounded-2xl bg-white/[0.02] p-5 h-full flex flex-col">
+            <div className="rounded-xl surface-card p-5 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3">
                 <CalendarClock className="w-3.5 h-3.5 text-white/30" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/40">Último release</h3>
+                <h3 className="text-[12px] font-semibold text-white/85">Último release</h3>
               </div>
               <div className="flex-1 flex items-center">
                 <p className="text-[12px] text-white/35 leading-relaxed">
@@ -407,15 +405,10 @@ export default async function EliteDashboard() {
 
       {/* ── Métricas pessoais: P&L + Corretora + Metas (quando existem) ── */}
       {isElite ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 animate-in-up delay-4">
-          <DayPnLCard />
-          <BrokerSnapshotCard />
-          <ActiveGoalsWidget />
-        </div>
+        <DashboardMetrics />
       ) : (
-        <Link href="/elite/desbloquear" className="interactive animate-in-up delay-3 group relative overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-[#1a0e05] to-[#0e0e10] p-5 hover:border-brand-500/40 transition-all block">
-          <div className="absolute top-0 right-0 w-[300px] h-[200px] bg-brand-500/[0.10] blur-[100px] pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
+        <Link href="/elite/desbloquear" className="interactive animate-in-up delay-3 group relative overflow-hidden rounded-xl border border-brand-500/20 bg-[#131316] p-5 hover:border-brand-500/40 transition-all block">
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-500/40" />
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-3.5 h-3.5 text-brand-500" fill="currentColor" />
@@ -469,7 +462,7 @@ function DashboardAgenda({ events }: { events: EconomicEvent[] }) {
   });
 
   return (
-    <div className="dashboard-agenda-scope relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.015] border border-white/[0.05] p-6 flex flex-col">
+    <div className="dashboard-agenda-scope relative overflow-hidden rounded-xl bg-gradient-to-br from-white/[0.04] to-white/[0.015] border border-white/[0.05] p-6 flex flex-col">
       {nextEvent && (
         <div
           className="absolute top-0 right-0 w-[360px] h-[260px] pointer-events-none opacity-60"
@@ -628,7 +621,7 @@ function AgendaRow({ group, nowMins, isNext }: { group: AgendaGroup; nowMins: nu
         <p className={`text-[14px] font-bold font-mono tabular-nums leading-none ${isNext ? "text-white" : "text-white/85"}`}>
           {group.time || "—"}
         </p>
-        <p className="text-[9px] text-white/35 font-mono uppercase tracking-[0.15em] mt-1">
+        <p className="text-[9px] text-white/35 font-mono mt-1">
           {countryCode(group.country)}
         </p>
       </div>
@@ -673,7 +666,7 @@ function AgendaRow({ group, nowMins, isNext }: { group: AgendaGroup; nowMins: nu
               {group.items[0].event}
             </p>
             {instrumentsLabel && (
-              <p className="text-[9.5px] text-white/35 font-mono uppercase tracking-[0.15em] mt-1">
+              <p className="text-[9.5px] text-white/35 font-mono mt-1">
                 {instrumentsLabel}
               </p>
             )}
@@ -683,14 +676,14 @@ function AgendaRow({ group, nowMins, isNext }: { group: AgendaGroup; nowMins: nu
 
       {isHigh && !isPast && (
         <span
-          className="shrink-0 text-[9px] font-bold tracking-[0.18em] uppercase mt-1 px-1.5 py-0.5 rounded"
-          style={{ color: m.dotBg, backgroundColor: `${m.dotBg}15` }}
+          className="shrink-0 text-[11px] font-medium mt-1"
+          style={{ color: m.dotBg }}
         >
           Alto
         </span>
       )}
       {allReleased && (
-        <span className="shrink-0 text-[10px] font-bold tracking-[0.15em] uppercase text-emerald-400/80 mt-1">
+        <span className="shrink-0 text-[11px] text-[#22C55E] mt-1">
           ✓
         </span>
       )}

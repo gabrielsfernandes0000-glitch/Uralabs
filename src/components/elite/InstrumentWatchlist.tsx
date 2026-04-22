@@ -128,7 +128,7 @@ export function WatchlistPicker() {
           className="absolute right-0 top-full mt-1 z-30 w-[220px] max-h-[360px] overflow-y-auto rounded-lg border border-white/[0.08] bg-[#121214] shadow-2xl"
         >
           <div className="sticky top-0 z-10 px-3 py-2 border-b border-white/[0.06] bg-[#121214] flex items-center justify-between">
-            <p className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/45">Watchlist</p>
+            <p className="text-[11px] text-white/55 text-white/45">Watchlist</p>
             <button
               type="button"
               onClick={() => setList([])}
@@ -140,7 +140,7 @@ export function WatchlistPicker() {
           </div>
           {Object.entries(groups).map(([groupName, items]) => (
             <div key={groupName} className="py-1">
-              <p className="px-3 py-1 text-[8.5px] font-bold tracking-[0.22em] uppercase text-white/25">{groupName}</p>
+              <p className="px-3 py-1 text-[11px] text-white/55 text-white/25">{groupName}</p>
               {items.map((inst) => {
                 const active = list.includes(inst.code);
                 return (

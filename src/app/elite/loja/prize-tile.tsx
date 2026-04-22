@@ -7,44 +7,34 @@ import { UraCoinIcon } from "@/components/elite/UraCoinIcon";
 
 /** Tile visual de prêmio — usado na grid da caixa, recent list e na animação. */
 
+/**
+ * Rarity = dot 4-6px + texto cinza. Sem bg colorido, sem glow colorido,
+ * sem pill "COMUM/INCOMUM" uppercase tracked. URA rejeitou rainbow-rarity 3x.
+ * Todas raridades usam a mesma superfície; diferenciação é no dot.
+ */
 const RARITY_STYLES: Record<
   PrizeRarity,
-  { bg: string; border: string; glow: string; text: string; label: string }
+  { dotColor: string; text: string; label: string; bg: string; border: string; glow: string }
 > = {
   common: {
-    bg: "bg-zinc-800/40",
-    border: "border-zinc-600/40",
-    glow: "shadow-zinc-500/10",
-    text: "text-zinc-300",
-    label: "Comum",
+    dotColor: "#6b7280", text: "text-white/65", label: "Comum",
+    bg: "bg-transparent", border: "border-white/[0.08]", glow: "",
   },
   uncommon: {
-    bg: "bg-emerald-900/20",
-    border: "border-emerald-500/30",
-    glow: "shadow-emerald-500/20",
-    text: "text-emerald-300",
-    label: "Incomum",
+    dotColor: "#22C55E", text: "text-white/85", label: "Incomum",
+    bg: "bg-transparent", border: "border-white/[0.08]", glow: "",
   },
   rare: {
-    bg: "bg-blue-900/20",
-    border: "border-blue-500/40",
-    glow: "shadow-blue-500/25",
-    text: "text-blue-300",
-    label: "Rara",
+    dotColor: "#3B82F6", text: "text-white/90", label: "Rara",
+    bg: "bg-transparent", border: "border-white/[0.10]", glow: "",
   },
   epic: {
-    bg: "bg-purple-900/25",
-    border: "border-purple-500/40",
-    glow: "shadow-purple-500/30",
-    text: "text-purple-300",
-    label: "Épica",
+    dotColor: "#A855F7", text: "text-white", label: "Épica",
+    bg: "bg-transparent", border: "border-white/[0.12]", glow: "",
   },
   legendary: {
-    bg: "bg-amber-900/20",
-    border: "border-amber-500/50",
-    glow: "shadow-amber-500/40",
-    text: "text-amber-300",
-    label: "Lendária",
+    dotColor: "#FF5500", text: "text-brand-500", label: "Lendária",
+    bg: "bg-transparent", border: "border-brand-500/30", glow: "",
   },
 };
 
@@ -157,13 +147,14 @@ export function PrizeTile({
         </div>
       )}
       <div
-        className={`px-2 py-0.5 text-[9px] uppercase tracking-wider text-center ${s.text} border-t ${s.border} bg-black/30 backdrop-blur-sm`}
+        className={`px-2 py-1 text-[10px] text-center ${s.text} border-t ${s.border} bg-black/30 backdrop-blur-sm flex items-center justify-center gap-1.5`}
       >
+        <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: s.dotColor }} />
         {s.label}
       </div>
       {exhausted && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-          <span className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">
+          <span className="text-[11px] text-white/75 font-medium">
             Esgotado hoje
           </span>
         </div>

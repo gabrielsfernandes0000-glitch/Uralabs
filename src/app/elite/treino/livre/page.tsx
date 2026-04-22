@@ -100,7 +100,7 @@ function ConceptVisual({ scenario }: { scenario: Scenario }) {
     : scenario.context.slice(0, 140) + (scenario.context.length > 140 ? "…" : "");
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] min-h-[460px] flex flex-col" style={{ backgroundColor: "#0e0e10" }}>
+    <div className="relative overflow-hidden rounded-xl border border-white/[0.06] min-h-[460px] flex flex-col" style={{ backgroundColor: "#0e0e10" }}>
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: `linear-gradient(90deg, transparent, ${a}80 30%, ${a}60 70%, transparent)`,
@@ -129,7 +129,7 @@ function ConceptVisual({ scenario }: { scenario: Scenario }) {
       <div className="relative z-10 flex-1 flex flex-col px-8 py-8 gap-5">
         {/* Pill da categoria + tagline */}
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold tracking-[0.15em] uppercase"
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] text-white/55"
             style={{ backgroundColor: a + "10", borderColor: a + "35", color: a }}>
             {scenario.category}
           </span>
@@ -164,7 +164,7 @@ function ConceptVisual({ scenario }: { scenario: Scenario }) {
             {scenario.id.replace(/^s/, "").padStart(2, "0")}
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: a + "cc" }}>
+            <span className="text-[11px] text-white/55" style={{ color: a + "cc" }}>
               cenário {scenario.id.replace(/^s/, "")}
             </span>
           </div>
@@ -173,7 +173,7 @@ function ConceptVisual({ scenario }: { scenario: Scenario }) {
         {/* Key terms do tema — rodapé sutil */}
         {keyTerms.length > 0 && (
           <div className="pt-3 border-t border-white/[0.04]">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-white/25 font-semibold mb-2">Tópicos do tema</p>
+            <p className="text-[9px] text-white/25 font-semibold mb-2">Tópicos do tema</p>
             <div className="flex flex-wrap gap-1.5">
               {keyTerms.map((term) => (
                 <span key={term}
@@ -295,7 +295,7 @@ function TreinoLivreInner() {
           <ChevronLeft className="w-3.5 h-3.5" /> Voltar
         </button>
 
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-10 text-center">
+        <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-10 text-center">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
 
           <div className="mx-auto mb-6 flex items-center justify-center">
@@ -340,7 +340,7 @@ function TreinoLivreInner() {
 
         <div className="flex items-center gap-3 flex-wrap">
           <Shuffle className="w-4 h-4 text-brand-500/50" />
-          <span className="text-[11px] text-white/30 uppercase tracking-wider font-semibold">Treino Livre</span>
+          <span className="text-[11px] text-white/30 font-semibold">Treino Livre</span>
           <span className="text-[11px] text-white/20">·</span>
           <span className="text-[11px] text-white/25">{scenario.category}</span>
           <span className="text-[11px] text-white/20">·</span>
@@ -446,7 +446,7 @@ function TreinoLivreInner() {
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="rounded-xl bg-white/[0.02] p-4"
             >
-              <p className="text-[10.5px] text-white/30 uppercase tracking-wider font-semibold mb-1.5">Explicação</p>
+              <p className="text-[10.5px] text-white/30 font-semibold mb-1.5">Explicação</p>
               <p className="text-[12px] text-white/55 leading-relaxed">{scenario.explanation}</p>
 
               <button onClick={handleNext} className="interactive-tap mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-500 text-[12.5px] font-bold text-white hover:brightness-110">

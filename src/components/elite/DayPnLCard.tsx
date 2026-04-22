@@ -28,8 +28,8 @@ function TradeRow({ trade }: { trade: TradeEntry }) {
   return (
     <div className="flex items-center gap-2 py-1.5">
       <DirIcon className={`w-3 h-3 shrink-0 ${dirColor}`} strokeWidth={2.5} />
-      <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 w-8 shrink-0 font-mono">
-        {isWin ? "Win" : isLoss ? "Loss" : "BE"}
+      <span className="text-[11px] text-white/45 w-8 shrink-0 font-mono">
+        {isWin ? "win" : isLoss ? "loss" : "be"}
       </span>
       <div className="min-w-0 flex-1 flex items-center gap-1.5 overflow-hidden">
         {symbol && (
@@ -59,10 +59,10 @@ export function DayPnLCard() {
 
   if (!progress) {
     return (
-      <div className="rounded-2xl bg-white/[0.02] p-5 h-full flex flex-col">
+      <div className="rounded-xl bg-white/[0.02] p-5 h-full flex flex-col">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="w-3.5 h-3.5 text-white/30" />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/40">P&L do dia</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">P&L do dia</h3>
         </div>
         <div className="flex-1 flex items-center">
           <div className="w-24 h-7 rounded bg-white/[0.03] animate-pulse" />
@@ -89,11 +89,11 @@ export function DayPnLCard() {
     return (
       <Link
         href="/elite/diario"
-        className="interactive group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors"
+        className="interactive group rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors"
       >
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="w-3.5 h-3.5 text-white/30" />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">P&L do dia</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">P&L do dia</h3>
         </div>
         <div className="flex-1 flex flex-col items-start justify-center gap-1">
           <p className="text-[22px] font-bold text-white/30 leading-none font-mono tabular-nums">—</p>
@@ -110,11 +110,11 @@ export function DayPnLCard() {
   const hiddenCount = trades.length - visibleTrades.length;
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] p-5 h-full flex flex-col">
+    <div className="rounded-xl bg-white/[0.02] p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-3.5 h-3.5" style={{ color: accent }} />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">P&L do dia</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">P&L do dia</h3>
         </div>
         <Link href="/elite/diario" className="text-[10px] text-white/35 hover:text-white/80 transition-colors flex items-center gap-1">
           Diário <ArrowRight className="w-3 h-3" />

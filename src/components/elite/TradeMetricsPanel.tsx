@@ -66,7 +66,7 @@ export function TradeMetricsPanel() {
 
   if (allTrades.length === 0) {
     return (
-      <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-10 text-center">
+      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-10 text-center">
         <BarChart3 className="w-10 h-10 text-white/15 mx-auto mb-3" />
         <p className="text-[14px] font-semibold text-white/60 mb-1">Nenhum dado ainda</p>
         <p className="text-[11.5px] text-white/35 max-w-md mx-auto">
@@ -278,7 +278,7 @@ function HeroCard({
     <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 sm:p-5">
       <div className="flex items-center gap-1.5 mb-2">
         {icon}
-        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">{label}</span>
+        <span className="text-[10px] font-bold text-white/45">{label}</span>
       </div>
       <p className="text-[22px] sm:text-[26px] font-bold leading-none font-mono tabular-nums" style={{ color }}>
         {value}
@@ -326,7 +326,7 @@ function KPI({
     <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
       <div className="flex items-center gap-1.5 mb-2">
         <Icon className="w-3 h-3" style={{ color: accent + (color ? "99" : "") }} />
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/45">{label}</span>
+        <span className="text-[9.5px] font-bold text-white/45">{label}</span>
       </div>
       <p className="text-[20px] font-bold leading-none font-mono tabular-nums" style={{ color: accent }}>
         {value}

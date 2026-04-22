@@ -55,7 +55,7 @@ export function StatsRow({
   }, [openings]);
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.05] px-5 py-4 md:px-6 md:py-5">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-5 py-4 md:px-6 md:py-5">
       <div className="flex items-center gap-6 flex-wrap">
         {/* Saldo — destaque moderado, não hero */}
         <div className="flex items-center gap-2.5 min-w-0">

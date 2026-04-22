@@ -49,7 +49,7 @@ const ROW_1: Testimonial[] = [
     role: "Elite há 8 dias",
     text: "3 dias depois de entrar peguei minha primeira conta em mesa proprietária. Hoje passei pra conta funded.",
     avatar: "C",
-    avatarBg: "bg-blue-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "Funded em 8 dias",
   },
   {
@@ -57,7 +57,7 @@ const ROW_1: Testimonial[] = [
     role: "Elite há 6 meses",
     text: "Se estivesse sozinho, levaria uns 3 anos pra aprender o que aprendi em 6 meses. O valor que paguei pra Elite, eu pagaria 3x.",
     avatar: "D",
-    avatarBg: "bg-purple-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "Pagaria 3x",
   },
   {
@@ -65,7 +65,7 @@ const ROW_1: Testimonial[] = [
     role: "Elite há 1 mês",
     text: "Entrei sem saber praticamente nada sobre trade. Já estou com uma conta financiada. Em menos de 2 meses terei o retorno do Elite só com os trades.",
     avatar: "R",
-    avatarBg: "bg-green-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "ROI em 2 meses",
   },
   {
@@ -73,14 +73,14 @@ const ROW_1: Testimonial[] = [
     role: "Elite 1.0",
     text: "Não sabia nem o que era bid e ask direito. Hoje mando calls. Ganhei sorteio de mesa de 25k, profits de cripto absurdos, e o conhecimento da galera da Elite.",
     avatar: "V",
-    avatarBg: "bg-amber-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Xing xing",
     role: "VIP há menos de 1 mês",
     text: "Vim pro VIP com menos de um mês. Em tão pouco tempo, resultados que me surpreenderam — comprado um kit rodas novo graças a uma única operação.",
     avatar: "X",
-    avatarBg: "bg-red-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "Rodas novas em 1 trade",
   },
   {
@@ -88,7 +88,7 @@ const ROW_1: Testimonial[] = [
     role: "Elite",
     text: "Entrei sem saber de futuros, via post de milhões sendo liquidado. URA deu atenção pras dúvidas. Peguei 1 mês no VIP pra aprender na prática e entrei na Elite sem medo.",
     avatar: "V",
-    avatarBg: "bg-teal-600",
+    avatarBg: "bg-white/[0.08]",
   },
 ];
 
@@ -98,42 +98,42 @@ const ROW_2: Testimonial[] = [
     role: "Elite",
     text: "As calls têm me ajudado muito e me motivado a continuar me aprofundando. Ganhei uma nova visão sobre diferentes maneiras de lucrar com cripto. Networking muito maneiro.",
     avatar: "L",
-    avatarBg: "bg-indigo-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Casali",
     role: "Há menos de 1 mês",
     text: "A comunidade vem crescendo e sempre trazendo uma quantidade incrível de informações. Em menos de um mês já aprendi muita coisa. O pessoal daqui é tri parceria.",
     avatar: "C",
-    avatarBg: "bg-rose-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Thiagym",
     role: "Elite desde fev/2026",
     text: "Desde que entrei, minha evolução tem sido constante. Ainda me considero iniciante, mas convicto de que estou no caminho das melhores operações.",
     avatar: "T",
-    avatarBg: "bg-cyan-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "giolos",
     role: "Prestes a entrar na Elite",
     text: "Não participo muito no servidor, mas as calls me ajudaram muito. Logo menos estarei na Elite aí com vocês.",
     avatar: "G",
-    avatarBg: "bg-emerald-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "ez1o",
     role: "Comunidade recente",
     text: "Entrei na comunidade faz pouco tempo, mas deu pra ver que o trampo é sério. Chama forra.",
     avatar: "E",
-    avatarBg: "bg-violet-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "vieira",
     role: "VIP",
     text: "Tô bem positivo nas calls. Bora pra cima.",
     avatar: "V",
-    avatarBg: "bg-pink-600",
+    avatarBg: "bg-white/[0.08]",
   },
 ];
 

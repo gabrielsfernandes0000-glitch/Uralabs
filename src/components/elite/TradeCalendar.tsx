@@ -89,7 +89,7 @@ export function TradeCalendar() {
       <div className="flex items-center justify-between mb-3 sm:mb-4 flex-wrap gap-2 sm:gap-3">
         <div className="flex items-center gap-2">
           <CalendarIcon className="w-3.5 h-3.5 text-white/50" />
-          <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Calendário</h4>
+          <h4 className="text-[12px] font-bold text-white/75">Calendário</h4>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -137,7 +137,7 @@ export function TradeCalendar() {
           { full: "Sex", short: "S" },
           { full: "Sáb", short: "S" },
         ].map((d, i) => (
-          <div key={i} className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 text-center py-1">
+          <div key={i} className="text-[9px] font-bold text-white/30 text-center py-1">
             <span className="hidden sm:inline">{d.full}</span>
             <span className="sm:hidden">{d.short}</span>
           </div>
@@ -163,7 +163,7 @@ function CalendarCell({ cell }: { cell: {
   isFuture: boolean;
 } }) {
   if (!cell.date) {
-    return <div className="aspect-square rounded-md bg-transparent" />;
+    return <div className="aspect-[5/3] rounded-md bg-transparent" />;
   }
 
   const { date, trades, totalR, isToday, isFuture } = cell;
@@ -189,8 +189,8 @@ function CalendarCell({ cell }: { cell: {
 
   const content = (
     <div
-      className={`relative aspect-square rounded-md border flex flex-col p-1 sm:p-1.5 overflow-hidden transition-all ${
-        isFuture ? "opacity-30" : "hover:scale-[1.02] hover:z-10"
+      className={`relative aspect-[5/3] rounded-md border flex flex-col p-1 sm:p-1.5 overflow-hidden transition-colors ${
+        isFuture ? "opacity-30" : "hover:border-white/20"
       } ${hasData ? "cursor-pointer" : ""}`}
       style={{ backgroundColor: bgColor, borderColor }}
       title={hasData ? `${date.toLocaleDateString("pt-BR")} · ${trades.length} trade${trades.length > 1 ? "s" : ""} · ${totalR > 0 ? "+" : ""}${totalR.toFixed(2)}R` : undefined}

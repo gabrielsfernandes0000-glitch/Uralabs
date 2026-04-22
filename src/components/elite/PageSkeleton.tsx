@@ -8,9 +8,9 @@ export function PageSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
       {/* Header skeleton */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-8">
+      <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-8">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-white/[0.04]" />
+          <div className="w-16 h-16 rounded-xl bg-white/[0.04]" />
           <div className="space-y-2.5">
             <div className="h-3 w-20 rounded bg-white/[0.04]" />
             <div className="h-6 w-32 rounded bg-white/[0.06]" />
@@ -20,9 +20,9 @@ export function PageSkeleton() {
       </div>
 
       {/* Action card skeleton */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-8">
+      <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-8">
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04]" />
+          <div className="w-14 h-14 rounded-xl bg-white/[0.04]" />
           <div className="space-y-2">
             <div className="h-2.5 w-28 rounded bg-white/[0.03]" />
             <div className="h-5 w-36 rounded bg-white/[0.06]" />

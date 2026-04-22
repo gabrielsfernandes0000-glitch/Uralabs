@@ -2,7 +2,7 @@ export default function AulasLoading() {
   return (
     <div className="space-y-10 animate-pulse">
       {/* Hero skeleton */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] p-10">
+      <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] p-10">
         <div className="space-y-3">
           <div className="h-8 w-48 rounded bg-white/[0.06]" />
           <div className="h-4 w-72 rounded bg-white/[0.03]" />

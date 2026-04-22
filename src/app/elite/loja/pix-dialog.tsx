@@ -75,24 +75,24 @@ export function PixDialog({
       </button>
 
       {success ? (
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 max-w-md w-full text-center">
-          <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">PIX enviado!</h3>
-          <p className="text-sm text-white/60">
+        <div className="rounded-xl surface-card border-l-2 border-l-[#22C55E] p-8 max-w-md w-full text-center">
+          <CheckCircle2 className="w-14 h-14 text-[#22C55E] mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">PIX enviado!</h3>
+          <p className="text-sm text-white/55">
             O URA processa manualmente. Vai chegar no seu banco nas próximas horas.
           </p>
         </div>
       ) : (
         <form
           onSubmit={submit}
-          className="rounded-2xl border border-white/[0.08] bg-[#0a0a0c] p-6 max-w-md w-full animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+          className="rounded-xl border border-white/[0.08] bg-[#0a0a0c] p-6 max-w-md w-full animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-              <DollarSign className="w-5 h-5 text-emerald-400" />
+            <div className="p-2 rounded-md border border-white/15">
+              <DollarSign className="w-5 h-5 text-white/70" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">{prizeName}</h3>
+              <h3 className="text-lg font-semibold">{prizeName}</h3>
               {amountBrl != null && (
                 <p className="text-sm text-white/50 tabular-nums">R$ {amountBrl.toFixed(2)}</p>
               )}
@@ -105,7 +105,7 @@ export function PixDialog({
 
           <div className="space-y-3">
             <label className="block">
-              <span className="text-[11px] uppercase tracking-wider text-white/40">
+              <span className="text-[11px] text-white/55">
                 Tipo da chave
               </span>
               <select
@@ -122,7 +122,7 @@ export function PixDialog({
             </label>
 
             <label className="block">
-              <span className="text-[11px] uppercase tracking-wider text-white/40">
+              <span className="text-[11px] text-white/55">
                 Chave PIX
               </span>
               <input
@@ -137,7 +137,7 @@ export function PixDialog({
             </label>
 
             <label className="block">
-              <span className="text-[11px] uppercase tracking-wider text-white/40">
+              <span className="text-[11px] text-white/55">
                 Nome do titular
               </span>
               <input
@@ -153,7 +153,7 @@ export function PixDialog({
           </div>
 
           {error && (
-            <div className="mt-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs px-3 py-2">
+            <div className="mt-3 rounded-md surface-card border-l-2 border-l-red-500 text-white/80 text-xs px-3 py-2">
               {error}
             </div>
           )}

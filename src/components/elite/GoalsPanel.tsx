@@ -40,7 +40,7 @@ export function GoalsPanel() {
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Target className="w-3.5 h-3.5 text-white/50" />
-          <h4 className="text-[12px] font-bold text-white/75 uppercase tracking-[0.15em]">Metas</h4>
+          <h4 className="text-[12px] font-bold text-white/75">Metas</h4>
           {active.length > 0 && (
             <span className="text-[10.5px] font-mono text-white/35">
               {active.filter((g) => evaluateGoal(g, trades).hit).length}/{active.length} batidas
@@ -100,7 +100,7 @@ function GoalRow({ goal, trades, onDelete }: { goal: Goal; trades: TradeEntry[];
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <p className="text-[12.5px] font-bold text-white truncate">{prog.label}</p>
             <span
-              className="shrink-0 text-[9px] font-bold uppercase tracking-[0.2em] px-1.5 py-0.5 rounded"
+              className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded"
               style={{ color: accent, backgroundColor: accent + "15" }}
             >
               {goal.period === "weekly" ? "Semana" : "Mês"}
@@ -179,7 +179,7 @@ function GoalForm({ onCancel, onSave }: { onCancel: () => void; onSave: (g: Goal
   return (
     <div className="p-4 rounded-lg bg-white/[0.03] border border-white/[0.08] space-y-3">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 mb-1.5">Métrica</p>
+        <p className="text-[10px] font-bold text-white/45 mb-1.5">Métrica</p>
         <div className="grid grid-cols-2 gap-1.5">
           {METRIC_OPTIONS.map((m) => {
             const active = metric === m.id;
@@ -204,7 +204,7 @@ function GoalForm({ onCancel, onSave }: { onCancel: () => void; onSave: (g: Goal
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 mb-1.5">
+          <p className="text-[10px] font-bold text-white/45 mb-1.5">
             Alvo {meta.direction === "min" ? "(≥)" : "(≤)"}
           </p>
           <div className="flex items-center gap-1 rounded-md bg-white/[0.02] border border-white/[0.06] px-3 py-1.5">
@@ -219,7 +219,7 @@ function GoalForm({ onCancel, onSave }: { onCancel: () => void; onSave: (g: Goal
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 mb-1.5">Período</p>
+          <p className="text-[10px] font-bold text-white/45 mb-1.5">Período</p>
           <div className="grid grid-cols-2 gap-1">
             <button
               onClick={() => setPeriod("weekly")}
@@ -238,7 +238,7 @@ function GoalForm({ onCancel, onSave }: { onCancel: () => void; onSave: (g: Goal
       </div>
 
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 mb-1.5">Rótulo (opcional)</p>
+        <p className="text-[10px] font-bold text-white/45 mb-1.5">Rótulo (opcional)</p>
         <input
           type="text"
           value={customLabel}

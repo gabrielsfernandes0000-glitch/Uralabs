@@ -143,7 +143,7 @@ export function OpenOverlay({
   if (phase === "error") {
     return (
       <Overlay onClose={onClose}>
-        <div className="rounded-2xl border border-red-400/30 bg-[#0e0e10] p-8 max-w-md w-full text-center">
+        <div className="rounded-xl border border-red-400/30 bg-[#0e0e10] p-8 max-w-md w-full text-center">
           <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" strokeWidth={1.5} />
           <h3 className="text-xl font-bold mb-2">Não foi possível abrir a caixa</h3>
           <p className="text-sm text-white/60 mb-6">{error}</p>
@@ -162,7 +162,7 @@ export function OpenOverlay({
     <Overlay onClose={phase === "revealed" ? onClose : undefined}>
       <div className="w-full max-w-3xl flex flex-col items-center gap-6">
         <div className="text-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-white/40 mb-1">
+          <p className="text-[10px] text-white/40 mb-1">
             {phase === "revealed" ? "Parabéns" : "Abrindo"}
           </p>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -171,7 +171,7 @@ export function OpenOverlay({
         </div>
 
         {/* Strip container */}
-        <div className="relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.02] to-black/40 py-6">
+        <div className="relative w-full overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.02] to-black/40 py-6">
           {/* Center marker */}
           <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-brand-500 z-10 shadow-[0_0_16px_rgba(255,85,0,0.6)] pointer-events-none" />
           {/* Gradient masks on edges */}
@@ -330,7 +330,7 @@ function StripCard({ item, highlighted }: { item: PrizeLike; highlighted: boolea
 
         {/* Rarity label top-right */}
         <div
-          className="absolute top-2 right-2 text-[8.5px] font-bold uppercase tracking-[0.18em]"
+          className="absolute top-2 right-2 text-[8.5px] font-bold"
           style={{ color: barColor }}
         >
           {s.label}
@@ -359,7 +359,7 @@ function RevealCard({ result, onClose }: { result: OpenResult; onClose: () => vo
   const coinAmount = isCoinBonus ? Number(result.prize.metadata?.coin_amount ?? 0) : 0;
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.08] backdrop-blur-sm p-7 max-w-md w-full animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.08] backdrop-blur-sm p-7 max-w-md w-full animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
       {/* Rarity — label sutil com dot, monocromático salvo ponto de cor mínimo */}
       <div className="flex items-center gap-2 mb-4">
         <span className={`w-1.5 h-1.5 rounded-full ${RARITY_DOT[result.prize.rarity]}`} />

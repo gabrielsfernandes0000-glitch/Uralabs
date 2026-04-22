@@ -65,7 +65,7 @@ function ProfileAchievement({ achievement }: { achievement: Achievement }) {
       <div className="flex-1 min-w-0">
         <p className="text-[11.5px] font-bold text-white/90 leading-tight truncate">{achievement.label}</p>
         <p className="text-[10px] text-white/35 truncate mt-0.5">{achievement.detail}</p>
-        <span className={`inline-block mt-1 text-[8.5px] font-bold tracking-[0.15em] uppercase ${rarity.className} opacity-70`}>
+        <span className={`inline-block mt-1 text-[11px] text-white/55 ${rarity.className} opacity-70`}>
           {rarity.label}
         </span>
       </div>
@@ -184,7 +184,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
         {(loading || !profile || !bannerReady) && (
           <div className="flex flex-col items-center justify-center gap-3 py-28">
             <Loader2 className="w-7 h-7 animate-spin text-white/25" strokeWidth={1.5} />
-            <p className="text-[10.5px] uppercase tracking-[0.22em] text-white/35">Carregando perfil</p>
+            <p className="text-[10.5px] text-white/35">Carregando perfil</p>
           </div>
         )}
 
@@ -243,7 +243,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
 
         {/* Strip tier + joined — fora do banner pra não competir com a arte */}
         <div className="px-5 py-2.5 border-b border-white/[0.05] bg-[#0e0e10] flex items-center gap-3 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider"
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold"
             style={{
               backgroundColor: tierAccent + "18",
               color: tierAccent,
@@ -266,7 +266,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
                 ? <span className="inline-block w-8 h-3 rounded bg-white/[0.06]" />
                 : <p className="text-[18px] font-bold text-white font-mono leading-none">{achievements.length}</p>}
             </div>
-            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Conquistas</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5">Conquistas</p>
           </div>
           <div className="p-4 text-center">
             <div className="h-[18px] flex items-center justify-center gap-1">
@@ -281,7 +281,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
                 </>
               )}
             </div>
-            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Streak</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5">Streak</p>
           </div>
           <div className="p-4 text-center">
             <div className="h-[18px] flex items-center justify-center">
@@ -289,7 +289,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
                 ? <span className="inline-block w-12 h-3 rounded bg-white/[0.06]" />
                 : <p className="text-[18px] font-bold text-white font-mono leading-none">{postsCount.toLocaleString("pt-BR")}</p>}
             </div>
-            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Mensagens</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5">Mensagens</p>
           </div>
           <div className="p-4 text-center">
             <div className="h-[18px] flex items-center justify-center gap-1">
@@ -304,7 +304,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
                 </>
               )}
             </div>
-            <p className="text-[9.5px] text-white/40 mt-1.5 uppercase tracking-wider">Coins</p>
+            <p className="text-[9.5px] text-white/40 mt-1.5">Coins</p>
           </div>
         </div>
 
@@ -330,14 +330,14 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
           <div className="px-5 py-5 border-b border-white/[0.05]">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-1 h-4 rounded-full bg-brand-500/60" />
-              <h3 className="text-[11px] font-bold text-white/85 uppercase tracking-wider">{CATEGORY_META.og.label}</h3>
+              <h3 className="text-[11px] font-bold text-white/85">{CATEGORY_META.og.label}</h3>
               <span className="ml-auto text-[10px] text-white/30 font-mono">{ogBadges.length}</span>
             </div>
             <div className="flex items-center justify-center gap-5 py-2 flex-wrap">
               {ogBadges.map((a) => (
                 <div key={a.id} className="flex flex-col items-center gap-1.5" title={`${a.label} · ${a.detail}`}>
                   <AchievementBadge achievement={a} size={64} />
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">{a.label}</span>
+                  <span className="text-[9px] font-bold text-white/60">{a.label}</span>
                 </div>
               ))}
             </div>
@@ -348,7 +348,7 @@ export function MemberProfileModal({ member, onClose }: { member: DiscordMember 
         <div className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-3.5 h-3.5 text-yellow-500/70" />
-            <h3 className="text-[11px] font-bold text-white/85 uppercase tracking-wider">Conquistas</h3>
+            <h3 className="text-[11px] font-bold text-white/85">Conquistas</h3>
             <span className="ml-auto text-[10px] text-white/30 font-mono">{restBadges.length}</span>
           </div>
           <div className="min-h-[280px]">

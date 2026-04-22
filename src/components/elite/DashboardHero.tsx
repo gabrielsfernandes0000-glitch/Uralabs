@@ -83,13 +83,7 @@ export function DashboardHero({ bannerSlug, tierAccent, children }: DashboardHer
           />
         </>
       ) : (
-        <>
-          <div
-            className="absolute top-0 right-0 w-[500px] h-[300px] blur-[120px] pointer-events-none"
-            style={{ backgroundColor: tierAccent + "08" }}
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_60%_at_70%_20%,#000_40%,transparent_100%)]" />
-        </>
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ backgroundColor: tierAccent + "30" }} />
       )}
 
       {/* Toggle — só aparece se tem banner equipado (nada pra mostrar/ocultar sem ele).

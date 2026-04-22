@@ -187,10 +187,16 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
     setLoading(true);
     setError("");
 
+    // Abort controller pra timeout — backend leva ~5s validando key na corretora.
+    // Se passar de 20s, provavelmente API da exchange está down/lenta.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20_000);
+
     try {
       const res = await fetch("/api/exchange/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           exchange: selected.id,
           apiKey: apiKey.trim(),
@@ -199,14 +205,40 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
           label: label.trim() || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || "Erro ao conectar"); return; }
+
+      // Parse JSON de forma segura — 502/504 podem vir em HTML.
+      let data: { error?: string; hint?: string } = {};
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        data = await res.json().catch(() => ({}));
+      }
+
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setError(data.error || "API Key inválida — verifique se copiou certo e se tem permissão de leitura");
+        } else if (res.status === 429) {
+          setError("Muitas tentativas — espere 1 min antes de tentar de novo");
+        } else if (res.status >= 500) {
+          setError(data.error || `${selected.name} fora do ar no momento. Tente em alguns minutos.`);
+        } else {
+          setError(data.error || `Erro ao conectar (${res.status})`);
+        }
+        return;
+      }
       resetForm();
       setSelected(null);
       onConnected();
-    } catch {
-      setError("Erro de rede — tente novamente");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError(`${selected.name} demorou demais pra responder. Tente novamente.`);
+      } else if (err instanceof TypeError) {
+        // fetch lança TypeError em falha de rede/offline/CORS
+        setError("Sem conexão com o servidor. Checa sua internet.");
+      } else {
+        setError("Erro inesperado. Tente novamente.");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -219,38 +251,43 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
           <ChevronLeft className="w-3.5 h-3.5" /> Voltar
         </button>
 
-        <div className="relative overflow-hidden rounded-2xl border p-7" style={{ borderColor: selected.color + "20", background: `linear-gradient(to bottom, ${selected.bg}, #0e0e10)` }}>
-          {/* Accent glow */}
-          <div className="absolute top-0 left-0 right-0 h-24 opacity-30 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 0%, ${selected.color}20, transparent 70%)` }} />
+        {/* Card surface neutro — partner brand vira apenas accent no logo + CTA,
+            não invade o background inteiro. Evita o "azul gritando" do screenshot. */}
+        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#0e0e10] p-7">
+          {/* Faixa superior com accent brand-parceiro — cue sutil de qual corretora é */}
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ backgroundColor: selected.color }} />
 
           <div className="relative z-10 flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
+              style={{ backgroundColor: selected.color + "15", border: `1px solid ${selected.color}33` }}
+            >
               {selected.logo ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={selected.logo} alt={selected.name} className="w-8 h-8 object-contain" />
+                <img src={selected.logo} alt={selected.name} className="w-7 h-7 object-contain" />
               ) : (
-                <span className="text-[18px] font-black italic" style={{ color: selected.textColor }}>{selected.shortLabel}</span>
+                <span className="text-[16px] font-black italic" style={{ color: selected.color }}>{selected.shortLabel}</span>
               )}
             </div>
             <div>
-              <h2 className="text-[16px] font-bold" style={{ color: selected.textColor }}>Conectar {selected.name}</h2>
-              <p className="text-[11px] text-white/30">API Key somente leitura</p>
+              <h2 className="text-[16px] font-bold text-white">Conectar {selected.name}</h2>
+              <p className="text-[11px] text-white/40">API Key somente leitura</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-[12px] font-medium text-white/80 mb-1.5">API Key</label>
+              <label className="block text-[11.5px] font-semibold text-white/70 mb-1.5">API Key</label>
               <input type="text" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Cole sua API Key aqui"
-                className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/15 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-white/30 transition-colors font-mono" />
+                className="w-full px-3.5 py-2.5 rounded-md bg-white/[0.02] border border-white/[0.08] text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/25 focus:bg-white/[0.04] transition-colors font-mono" />
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-white/80 mb-1.5">Secret Key</label>
+              <label className="block text-[11.5px] font-semibold text-white/70 mb-1.5">Secret Key</label>
               <div className="relative">
                 <input type={showSecret ? "text" : "password"} value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="Cole sua Secret Key aqui"
-                  className="w-full px-4 py-3 pr-12 rounded-xl bg-black/20 border border-white/15 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-white/30 transition-colors font-mono" />
-                <button type="button" onClick={() => setShowSecret(!showSecret)} className="interactive-tap absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors">
+                  className="w-full px-3.5 py-2.5 pr-11 rounded-md bg-white/[0.02] border border-white/[0.08] text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/25 focus:bg-white/[0.04] transition-colors font-mono" />
+                <button type="button" onClick={() => setShowSecret(!showSecret)} className="interactive-tap absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/75 transition-colors">
                   {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -258,39 +295,39 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
 
             {selected.needsPassphrase && (
               <div>
-                <label className="block text-[12px] font-medium text-white/80 mb-1.5">Passphrase</label>
-                <input type={showSecret ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder="Passphrase definida na criacao da API"
-                  className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/15 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-white/30 transition-colors font-mono" />
+                <label className="block text-[11.5px] font-semibold text-white/70 mb-1.5">Passphrase</label>
+                <input type={showSecret ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder="Passphrase definida na criação da API"
+                  className="w-full px-3.5 py-2.5 rounded-md bg-white/[0.02] border border-white/[0.08] text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/25 focus:bg-white/[0.04] transition-colors font-mono" />
               </div>
             )}
 
             <div>
-              <label className="block text-[12px] font-medium text-white/80 mb-1.5">Apelido <span className="text-white/50">(opcional)</span></label>
+              <label className="block text-[11.5px] font-semibold text-white/70 mb-1.5">Apelido <span className="text-white/35 font-normal">(opcional)</span></label>
               <input type="text" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ex: Conta principal"
-                className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/15 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-white/30 transition-colors" />
+                className="w-full px-3.5 py-2.5 rounded-md bg-white/[0.02] border border-white/[0.08] text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/25 focus:bg-white/[0.04] transition-colors" />
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-red-400/25">
-                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" strokeWidth={2} />
-                <p className="text-[12px] text-red-400">{error}</p>
+              <div className="flex items-start gap-2 px-3.5 py-2.5 rounded-md border-l-2 border-red-400 bg-red-500/[0.06]">
+                <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
+                <p className="text-[12px] text-red-300 leading-relaxed">{error}</p>
               </div>
             )}
 
             <button onClick={handleConnect} disabled={loading}
-              className="interactive w-full py-3.5 rounded-xl text-[14px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: selected.color, color: selected.id === "binance" || selected.id === "bybit" ? "#000" : "#fff", boxShadow: `0 8px 24px ${selected.color}25` }}>
+              className="interactive w-full py-3 rounded-md text-[13px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: selected.color, color: selected.id === "binance" || selected.id === "bybit" ? "#000" : "#fff" }}>
               {loading ? (
-                <span className="flex items-center justify-center gap-2"><RefreshCw className="w-4 h-4 animate-spin" /> Validando...</span>
+                <span className="flex items-center justify-center gap-2"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Validando...</span>
               ) : (
-                <span className="flex items-center justify-center gap-2"><Link2 className="w-4 h-4" /> Conectar {selected.name}</span>
+                <span className="flex items-center justify-center gap-2"><Link2 className="w-3.5 h-3.5" /> Conectar {selected.name}</span>
               )}
             </button>
           </div>
         </div>
 
         {/* Tutorial */}
-        <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-6">
+        <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-6">
           <h3 className="text-[14px] font-semibold text-white/80 mb-4">Como gerar sua API Key na {selected.name}</h3>
           <ol className="space-y-3">
             {selected.tutorial.map((text, i) => (
@@ -348,15 +385,15 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
               key={ex.id}
               onClick={() => !isConnected && setSelected(ex)}
               disabled={isConnected}
-              className={`interactive w-full relative overflow-hidden rounded-2xl transition-all duration-300 p-[1px] text-left group ${
+              className={`interactive w-full relative overflow-hidden rounded-xl transition-all duration-300 p-[1px] text-left group ${
                 isConnected ? "opacity-50 cursor-default" : "hover:scale-[1.01] active:scale-[0.99]"
               }`}
             >
               {/* Gradient border */}
-              <div className="absolute inset-0 rounded-2xl opacity-30 group-hover:opacity-50 transition-opacity" style={{ background: `linear-gradient(135deg, ${ex.color}40, transparent 60%)` }} />
+              <div className="absolute inset-0 rounded-xl opacity-30 group-hover:opacity-50 transition-opacity" style={{ background: `linear-gradient(135deg, ${ex.color}40, transparent 60%)` }} />
 
               {/* Button body */}
-              <div className="relative rounded-2xl px-4 py-4 transition-colors" style={{ backgroundColor: isConnected ? "#111" : ex.bg }}>
+              <div className="relative rounded-xl px-4 py-4 transition-colors" style={{ backgroundColor: isConnected ? "#111" : ex.bg }}>
                 {/* Subtle glow */}
                 <div className="absolute top-0 left-0 w-1/2 h-full opacity-20 pointer-events-none" style={{ background: `radial-gradient(ellipse at 20% 50%, ${ex.color}30, transparent 70%)` }} />
 
@@ -376,7 +413,7 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
                     </div>
                   </div>
                   {isConnected ? (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-400 uppercase tracking-[0.22em] shrink-0">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-400 shrink-0">
                       <Check className="w-2.5 h-2.5" strokeWidth={2.6} /> conectado
                     </span>
                   ) : (
@@ -387,6 +424,82 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
             </button>
           );
         })}
+      </div>
+
+      {/* Porque conectar + Segurança + Passo-a-passo — preenche o espaço abaixo dos cards com conteúdo útil */}
+      <div className="animate-in-up delay-2 grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-3.5 h-3.5 text-white/55" strokeWidth={1.8} />
+            <h3 className="text-[12px] font-bold text-white/85">Por que conectar</h3>
+          </div>
+          <ul className="space-y-2.5">
+            {[
+              { title: "PnL automático no diário", desc: "Trades importados direto, sem preencher à mão." },
+              { title: "Performance real em tempo real", desc: "Equity, drawdown e streak calculados do que rola na conta." },
+              { title: "Posições abertas aqui na plataforma", desc: "Evita trocar de aba pra olhar a corretora." },
+              { title: "Base pra ranking e conquistas", desc: "Trades reais validam badges Trading e ranking entre membros." },
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-brand-500 shrink-0" />
+                <div>
+                  <p className="text-[12px] font-semibold text-white/85 leading-tight">{item.title}</p>
+                  <p className="text-[11px] text-white/45 leading-relaxed mt-0.5">{item.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="w-3.5 h-3.5 text-white/55" strokeWidth={1.8} />
+            <h3 className="text-[12px] font-bold text-white/85">Segurança das chaves</h3>
+          </div>
+          <ul className="space-y-2.5">
+            {[
+              { title: "Somente leitura — sempre", desc: "A permissão de trade deve ficar DESLIGADA na corretora. A gente nunca executa ordem." },
+              { title: "Criptografia AES-256", desc: "Chaves guardadas encriptadas. Nem URA consegue ler em texto puro." },
+              { title: "IP whitelist (quando suportado)", desc: "OKX, Bitget e Binance permitem restringir IPs — use." },
+              { title: "Revogue a qualquer momento", desc: "Desconectar aqui remove as chaves. Revogar na corretora também funciona." },
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-brand-500 shrink-0" />
+                <div>
+                  <p className="text-[12px] font-semibold text-white/85 leading-tight">{item.title}</p>
+                  <p className="text-[11px] text-white/45 leading-relaxed mt-0.5">{item.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-3.5 h-3.5 text-white/55" strokeWidth={1.8} />
+            <h3 className="text-[12px] font-bold text-white/85">Como conectar em 3 passos</h3>
+          </div>
+          <ol className="space-y-2.5">
+            {[
+              { title: "Crie uma API key na corretora", desc: "Permissões: leitura apenas. Nunca ligue trade/saque." },
+              { title: "Cole aqui chave e secret", desc: "A gente encripta AES-256 antes de salvar." },
+              { title: "Pronto — trades aparecem sozinhos", desc: "Atualiza a cada 5min no dashboard e no diário." },
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full bg-brand-500/15 text-brand-400 text-[10px] font-bold font-mono flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="text-[12px] font-semibold text-white/85 leading-tight">{item.title}</p>
+                  <p className="text-[11px] text-white/45 leading-relaxed mt-0.5">{item.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="text-[10.5px] text-white/30 mt-3 pt-3 border-t border-white/[0.04]">
+            Tutorial detalhado abre quando você escolhe a corretora acima.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -459,7 +572,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-[20px] font-bold text-white tracking-tight">{exchange.name}</h1>
-              <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-green-400 uppercase tracking-[0.22em]">
+              <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-green-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Conectada
               </span>
             </div>
@@ -514,7 +627,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {/* Metrics */}
       {metrics && metrics.totalTrades > 0 && (
-        <div className="animate-in-up delay-2 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
+        <div className="animate-in-up delay-2 relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
           <div className="relative z-10 p-7">
             <div className="flex items-center gap-3 mb-5">
               <Trophy className="w-4 h-4 text-yellow-500/50" />
@@ -545,7 +658,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         )}
 
       {/* Open positions */}
-      <div className="animate-in-up delay-3 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
+      <div className="animate-in-up delay-3 relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
@@ -567,7 +680,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
                 return (
                   <div key={i} className={`flex items-center justify-between px-4 py-3 rounded-xl ${pnlBg(pos.unrealizedPnL)} border transition-all`}>
                     <div className="flex items-center gap-3">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${pos.side === "LONG" ? "text-green-400" : "text-red-400"}`}>
+                      <span className={`text-[11px] font-semibold ${pos.side === "LONG" ? "text-green-400" : "text-red-400"}`}>
                         {pos.side}
                       </span>
                       <div>
@@ -591,7 +704,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       </div>
 
       {/* Recent trades */}
-      <div className="animate-in-up delay-4 relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
+      <div className="animate-in-up delay-4 relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
         <div className="relative z-10 p-7">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">

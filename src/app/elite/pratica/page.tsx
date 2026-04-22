@@ -95,7 +95,7 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
     setLoaded(true);
   }, [streakVersion]);
 
-  if (!loaded) return <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] h-[220px]" />;
+  if (!loaded) return <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] h-[220px]" />;
 
   const milestone =
     streak >= 30 ? { next: null, msg: "Você é máquina. Consistência rara." } :
@@ -108,7 +108,7 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
   const done14 = days.filter((d) => d.done).length;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] p-5">
+    <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-5">
       <div className="relative z-10 space-y-3.5">
         <div className="flex items-center gap-3">
           <Flame className={`w-8 h-8 shrink-0 ${streak > 0 ? "text-brand-500" : "text-white/25"}`} strokeWidth={1.5} />
@@ -123,7 +123,7 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-white/30">Últimos 14 dias</p>
+            <p className="text-[9.5px] font-bold text-white/30">Últimos 14 dias</p>
             <p className="text-[10px] font-mono text-white/40">{done14}/14</p>
           </div>
           <div className="grid gap-[4px]" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
@@ -160,7 +160,7 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
         {/* Temas cobertos — linha horizontal compacta */}
         <div className="pt-2.5 border-t border-white/[0.05]">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-white/30">Temas cobertos</p>
+            <p className="text-[9.5px] font-bold text-white/30">Temas cobertos</p>
             <p className="text-[10px] font-mono text-white/40">{themesCovered.size}/{TREINO_CATEGORIES.length}</p>
           </div>
           <div className="grid gap-[4px]" style={{ gridTemplateColumns: `repeat(${TREINO_CATEGORIES.length}, minmax(0, 1fr))` }}>
@@ -219,7 +219,7 @@ function UncoveredThemesPanel({ streakVersion }: { streakVersion: number }) {
   const remaining = uncovered.length - visibleCount;
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] p-5">
+    <div className="rounded-xl bg-white/[0.02] p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-[13px] font-bold text-white/85">Temas que faltam</h3>
@@ -318,13 +318,13 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
   };
 
   if (!loaded) {
-    return <div className="rounded-2xl border border-white/[0.06] bg-[#0e0e10] h-[460px]" />;
+    return <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] h-[460px]" />;
   }
 
   // Estado: já concluiu hoje
   if (doneToday) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] p-5 flex items-center gap-5">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e0e10] p-5 flex items-center gap-5">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-green-500/35 to-transparent" />
 
         <div className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-white/[0.02] border border-white/[0.08] flex items-center justify-center">
@@ -332,7 +332,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
         </div>
 
         <div className="relative z-10 flex-1 min-w-0">
-          <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase text-green-400/80">Concluído</span>
+          <span className="text-[11px] font-medium text-[#22C55E]">Concluído</span>
           <h3 className="text-[17px] font-bold text-white tracking-tight leading-tight mt-0.5">Missão do dia completa</h3>
           <p className="text-[11.5px] text-white/45 mt-1 leading-relaxed">
             Hoje você treinou <span className="text-white/70 font-semibold">{theme}</span> — 3 cenários respondidos. Volte amanhã pra um novo tema.
@@ -352,7 +352,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
                           "Dia de aprender. Revisita o conteúdo e tenta amanhã.";
 
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] p-6 flex flex-col items-center justify-center text-center">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e0e10] p-6 flex flex-col items-center justify-center text-center">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
         <div className="absolute inset-0 pointer-events-none" style={{
           background: `radial-gradient(ellipse 60% 50% at 50% 30%, ${catAccent}14, transparent 70%)`
@@ -360,7 +360,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
         <div className="relative z-10 space-y-5 max-w-sm">
           <Trophy className="mx-auto w-12 h-12" style={{ color: catAccent }} strokeWidth={1.5} />
           <div>
-            <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2" style={{ color: catAccent }}>{theme}</p>
+            <p className="text-[11px] font-medium mb-2" style={{ color: catAccent }}>{theme}</p>
             <h3 className="text-[22px] font-bold text-white tracking-tight leading-tight">Missão finalizada</h3>
             <p className="text-[12.5px] text-white/50 mt-3 leading-relaxed">{performanceCopy}</p>
           </div>
@@ -389,9 +389,8 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
   if (!currentScenario) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e0e10] flex flex-col">
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
-      <div className="absolute top-[-30%] right-[-10%] w-[260px] h-[160px] bg-brand-500/[0.04] blur-[110px] pointer-events-none" />
+    <div className="relative overflow-hidden rounded-xl surface-card flex flex-col">
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-500/40" />
 
       {/* Header — missão + tema + progress */}
       <div className="relative z-10 px-5 pt-4 pb-3 border-b border-white/[0.05]">
@@ -485,7 +484,7 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
                   ) : (
                     <X className="w-4 h-4 text-red-400" strokeWidth={2.5} />
                   )}
-                  <p className={`text-[11px] font-bold uppercase tracking-[0.22em] ${currentPick === currentScenario.correct ? "text-green-400" : "text-red-400"}`}>
+                  <p className={`text-[11px] font-bold ${currentPick === currentScenario.correct ? "text-green-400" : "text-red-400"}`}>
                     {currentPick === currentScenario.correct ? "Isso mesmo" : "Ainda não"}
                   </p>
                 </div>
@@ -517,16 +516,7 @@ export default function PraticaPage() {
   return (
     <div className="space-y-6">
       {/* ───── HERO ───── */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]">
-        <div className="absolute inset-0 flex items-center justify-end overflow-hidden pointer-events-none">
-          <span
-            className="font-black tracking-tighter whitespace-nowrap select-none opacity-[0.025] text-white pr-10"
-            style={{ fontSize: "160px", letterSpacing: "-0.06em", lineHeight: 1 }}
-          >
-            PRÁTICA
-          </span>
-        </div>
-
+      <div className="animate-in-up relative overflow-hidden rounded-xl bg-white/[0.02]">
         <div className="relative z-10 p-5 lg:p-6">
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-5">
             <div>
@@ -538,17 +528,17 @@ export default function PraticaPage() {
             <div className="flex items-end gap-5">
               <div className="text-right">
                 <p className="text-[26px] lg:text-[30px] font-bold text-white leading-none font-mono">{totalScenarios}</p>
-                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">cenários</p>
+                <p className="text-[9.5px] text-white/30 mt-1">cenários</p>
               </div>
               <div className="h-8 w-px bg-white/[0.08]" />
               <div className="text-right">
                 <p className="text-[26px] lg:text-[30px] font-bold text-white leading-none font-mono">{totalThemes}</p>
-                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">temas</p>
+                <p className="text-[9.5px] text-white/30 mt-1">temas</p>
               </div>
               <div className="h-8 w-px bg-white/[0.08]" />
               <div className="text-right">
                 <p className="text-[26px] lg:text-[30px] font-bold text-white leading-none font-mono">{totalGuided}</p>
-                <p className="text-[9.5px] text-white/30 uppercase tracking-[0.15em] mt-1">skills</p>
+                <p className="text-[9.5px] text-white/30 mt-1">skills</p>
               </div>
             </div>
           </div>
@@ -562,8 +552,8 @@ export default function PraticaPage() {
           {/* Seção HOJE — foco do dia */}
           <section className="space-y-3">
             <div className="flex items-baseline gap-2 px-1">
-              <h2 className="text-[11px] font-bold tracking-[0.25em] uppercase text-white/50">Hoje</h2>
-              <span className="text-[10px] text-white/25">· o que fazer agora</span>
+              <h2 className="text-[13px] font-semibold text-white/90">Hoje</h2>
+              <span className="text-[11px] text-white/40">· o que fazer agora</span>
             </div>
             <div className="animate-in-up delay-0">
               <EventBonusTreinoCard />
@@ -577,8 +567,8 @@ export default function PraticaPage() {
           {/* Seção EXPLORAR — modos livres */}
           <section className="space-y-3">
             <div className="flex items-baseline gap-2 px-1">
-              <h2 className="text-[11px] font-bold tracking-[0.25em] uppercase text-white/50">Explorar</h2>
-              <span className="text-[10px] text-white/25">· treine além da missão</span>
+              <h2 className="text-[13px] font-semibold text-white/90">Explorar</h2>
+              <span className="text-[11px] text-white/40">· treine além da missão</span>
             </div>
             {/* Modos de treino — accent lateral por modo + ícone colorido */}
             <div className="animate-in-up delay-2 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -605,7 +595,7 @@ export default function PraticaPage() {
                 <div className="relative z-10 p-4 pl-[18px] flex flex-col gap-2.5 h-full">
                   <div className="flex items-center justify-between">
                     <mode.icon className="w-5 h-5" strokeWidth={1.8} style={{ color: mode.accent }} />
-                    <span className="text-[9px] font-bold tracking-[0.25em] uppercase" style={{ color: mode.accent, opacity: 0.75 }}>{mode.tag}</span>
+                    <span className="text-[11px] font-medium" style={{ color: mode.accent }}>{mode.tag}</span>
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-[13.5px] font-bold text-white tracking-tight leading-tight">{mode.title}</h3>

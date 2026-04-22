@@ -76,13 +76,13 @@ export function WeeklyReviewCard() {
     return (
       <button
         onClick={() => { setSelectedWeek(weekKey); setExpanded(true); }}
-        className="w-full flex items-center gap-3 p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/25 hover:bg-emerald-500/[0.08] transition-colors text-left"
+        className="w-full flex items-center gap-3 p-4 rounded-xl surface-card border-l-2 border-l-[#22C55E] hover:bg-white/[0.02] transition-colors text-left"
       >
-        <div className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
-          <Check className="w-4 h-4 text-emerald-400" strokeWidth={2} />
+        <div className="w-9 h-9 rounded-md border border-white/10 flex items-center justify-center shrink-0">
+          <Check className="w-4 h-4 text-[#22C55E]" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold text-white">Review da semana {weekKey} feito</p>
+          <p className="text-[13px] font-semibold text-white">Review da semana {weekKey} feito</p>
           <p className="text-[11px] text-white/50 line-clamp-1">{r.commitNext || "Ver detalhes"}</p>
         </div>
         {pastReviews.length > 0 && (
@@ -94,7 +94,7 @@ export function WeeklyReviewCard() {
   }
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.015] border border-white/[0.06] p-5 space-y-4">
+    <div className="rounded-xl bg-gradient-to-br from-white/[0.04] to-white/[0.015] border border-white/[0.06] p-5 space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <BookMarked className="w-4 h-4 text-brand-500" />
@@ -148,7 +148,7 @@ export function WeeklyReviewCard() {
 
           {pastReviews.length > 0 && (
             <div className="pt-4 border-t border-white/[0.06]">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40 mb-2">Reviews anteriores</p>
+              <p className="text-[10px] font-bold text-white/40 mb-2">Reviews anteriores</p>
               <div className="space-y-1">
                 {pastReviews.slice(0, 6).map((r) => (
                   <button
@@ -295,7 +295,7 @@ function ReviewForm({
       />
 
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/60 mb-2">5. Auto-avaliação</p>
+        <p className="text-[11px] font-bold text-white/60 mb-2">5. Auto-avaliação</p>
         <div className="flex gap-1.5 flex-wrap">
           {RATING_LABELS.map((r) => {
             const active = rating === r.v;
@@ -350,7 +350,7 @@ function ReflectionField({
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
           <Icon className="w-3 h-3" style={{ color: accent }} />
-          <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/60">{label}</span>
+          <span className="text-[11px] font-bold text-white/60">{label}</span>
         </div>
         {onUseSuggestion && (
           <button
@@ -409,7 +409,7 @@ function ViewerField({ label, accent, value }: { label: string; accent: string; 
   if (!value) return null;
   return (
     <div className="pl-3 border-l-2" style={{ borderColor: accent + "55" }}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: accent }}>{label}</p>
+      <p className="text-[10px] font-bold" style={{ color: accent }}>{label}</p>
       <p className="text-[12.5px] text-white/80 leading-relaxed mt-1 whitespace-pre-wrap">{value}</p>
     </div>
   );

@@ -53,7 +53,7 @@ export function TodayEventsBanner({
     <div className="relative">
       <div className="px-1 pb-3 flex items-center gap-2">
         <span
-          className="text-[9.5px] font-bold tracking-[0.22em] uppercase"
+          className="text-[11px] text-white/55"
           style={{ color: accent + "CC" }}
         >
           {title}
@@ -92,7 +92,7 @@ export function TodayEventsBanner({
             <span className="text-[13.5px] font-bold font-mono tabular-nums text-white leading-none shrink-0">
               {ev.time || "—"}
             </span>
-            <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-white/30 leading-none shrink-0">
+            <span className="text-[9px] font-mono text-white/30 leading-none shrink-0">
               {countryCode(ev.country)}
             </span>
             <span className="text-[11.5px] font-semibold text-white/80 leading-tight shrink-0 group-hover:text-white">

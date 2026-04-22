@@ -119,19 +119,24 @@ export function JourneyStatusBar() {
           <ChevronDown className={`w-3.5 h-3.5 text-red-400/60 transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
 
-        {expanded && (
-          <div className="border-t border-red-500/20 px-4 py-3 space-y-1.5">
-            {tilt.signals.map((s, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <span className="w-1 h-1 rounded-full bg-red-400 mt-1.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] text-white/85">{s.label}</p>
-                  <p className="text-[11px] text-white/50 mt-0.5">{s.detail}</p>
+        <div
+          className="grid transition-[grid-template-rows] duration-200 ease-out"
+          style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
+        >
+          <div className="overflow-hidden">
+            <div className="border-t border-red-500/20 px-4 py-3 space-y-1.5">
+              {tilt.signals.map((s, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="w-1 h-1 rounded-full bg-red-400 mt-1.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] text-white/85">{s.label}</p>
+                    <p className="text-[11px] text-white/50 mt-0.5">{s.detail}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     );
   }
@@ -173,60 +178,65 @@ export function JourneyStatusBar() {
         <ChevronDown className={`w-3 h-3 text-white/30 transition-transform shrink-0 ${expanded ? "rotate-180" : ""}`} />
       </button>
 
-      {expanded && (
-        <div className="mt-2 rounded-lg bg-white/[0.015] border border-white/[0.04] divide-y divide-white/[0.03]">
-          {/* Prep status */}
-          <div className="px-4 py-3">
-            <p className="text-[11.5px] font-semibold text-white/70 mb-2">Prep sheet</p>
-            <div className="flex items-center gap-2">
-              {hasPrep ? (
-                <Check className="w-3 h-3 text-emerald-400" strokeWidth={2.5} />
-              ) : (
-                <Circle className="w-3 h-3 text-white/25" strokeWidth={2.5} />
-              )}
-              <span className="text-[12px] text-white/75">
-                {hasPrep ? "Plano do dia salvo" : "Plano do dia ainda não foi registrado"}
-              </span>
-            </div>
-          </div>
-
-          {/* Readiness checks */}
-          <div className="px-4 py-3">
-            <p className="text-[11.5px] font-semibold text-white/70 mb-2">Readiness</p>
-            <div className="space-y-1.5">
-              {readinessChecks.map((c) => (
-                <div key={c.id} className="flex items-center gap-3">
-                  {c.ok ? (
-                    <Check className="w-3 h-3 shrink-0 text-emerald-400" strokeWidth={2.5} />
-                  ) : (
-                    <Circle className="w-3 h-3 shrink-0 text-white/25" strokeWidth={2.5} />
-                  )}
-                  <span className={`text-[12px] flex-1 ${c.ok ? "text-white/70" : "text-white/55"}`}>{c.label}</span>
-                  <span className="text-[11px] text-white/35">{c.hint}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tilt signals (se houver) */}
-          {tilt.signals.length > 0 && (
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-out"
+        style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-2 rounded-lg bg-white/[0.015] border border-white/[0.04] divide-y divide-white/[0.03]">
+            {/* Prep status */}
             <div className="px-4 py-3">
-              <p className="text-[11.5px] font-semibold text-amber-400/85 mb-2">Sinais de tilt</p>
+              <p className="text-[11.5px] font-semibold text-white/70 mb-2">Prep sheet</p>
+              <div className="flex items-center gap-2">
+                {hasPrep ? (
+                  <Check className="w-3 h-3 text-emerald-400" strokeWidth={2.5} />
+                ) : (
+                  <Circle className="w-3 h-3 text-white/25" strokeWidth={2.5} />
+                )}
+                <span className="text-[12px] text-white/75">
+                  {hasPrep ? "Plano do dia salvo" : "Plano do dia ainda não foi registrado"}
+                </span>
+              </div>
+            </div>
+
+            {/* Readiness checks */}
+            <div className="px-4 py-3">
+              <p className="text-[11.5px] font-semibold text-white/70 mb-2">Readiness</p>
               <div className="space-y-1.5">
-                {tilt.signals.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-amber-400 mt-1.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] text-white/80">{s.label}</p>
-                      <p className="text-[11px] text-white/45 mt-0.5">{s.detail}</p>
-                    </div>
+                {readinessChecks.map((c) => (
+                  <div key={c.id} className="flex items-center gap-3">
+                    {c.ok ? (
+                      <Check className="w-3 h-3 shrink-0 text-emerald-400" strokeWidth={2.5} />
+                    ) : (
+                      <Circle className="w-3 h-3 shrink-0 text-white/25" strokeWidth={2.5} />
+                    )}
+                    <span className={`text-[12px] flex-1 ${c.ok ? "text-white/70" : "text-white/55"}`}>{c.label}</span>
+                    <span className="text-[11px] text-white/35">{c.hint}</span>
                   </div>
                 ))}
               </div>
             </div>
-          )}
+
+            {/* Tilt signals (se houver) */}
+            {tilt.signals.length > 0 && (
+              <div className="px-4 py-3">
+                <p className="text-[11.5px] font-semibold text-amber-400/85 mb-2">Sinais de tilt</p>
+                <div className="space-y-1.5">
+                  {tilt.signals.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] text-white/80">{s.label}</p>
+                        <p className="text-[11px] text-white/45 mt-0.5">{s.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

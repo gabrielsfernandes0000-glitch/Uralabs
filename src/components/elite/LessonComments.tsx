@@ -135,7 +135,7 @@ export function LessonComments({ lessonId, currentUserId, accent }: Props) {
   const totalCount = (comments ?? []).filter((c) => !c.deleted).length;
 
   return (
-    <section className="rounded-2xl border border-white/[0.06] bg-[#0e0e10]">
+    <section className="rounded-xl border border-white/[0.06] bg-[#0e0e10]">
       <header className="flex items-center gap-2 px-5 py-4 border-b border-white/[0.05]">
         <MessageCircle className="w-4 h-4" style={{ color: accent }} />
         <h3 className="text-[13px] font-bold text-white/85">Comentários</h3>
@@ -297,7 +297,7 @@ function CommentItem({
           <time className="text-[10.5px] text-white/30">{formatRelative(c.created_at)}</time>
           {isMine && !c.deleted && (
             <span
-              className="text-[9px] font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded"
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded"
               style={{ backgroundColor: accent + "18", color: accent }}
             >
               Você

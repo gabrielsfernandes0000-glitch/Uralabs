@@ -99,7 +99,7 @@ export function PreTradeChecklist({
   const allPassed = items.length > 0 && checked.size === items.length;
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5">
+    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5">
       <div className="flex items-center justify-between mb-3 gap-3">
         <div className="flex items-center gap-2">
           <CheckSquare className="w-4 h-4 text-brand-500" strokeWidth={1.8} />
@@ -140,10 +140,10 @@ export function PreTradeChecklist({
             <div key={item} className="group flex items-center gap-2.5">
               <button
                 onClick={() => toggle(item)}
-                className={`flex-1 flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors ${
+                className={`flex-1 flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors border ${
                   isChecked
-                    ? "bg-emerald-500/[0.08] hover:bg-emerald-500/[0.12]"
-                    : "bg-white/[0.02] hover:bg-white/[0.04]"
+                    ? "border-[#22C55E]/30 bg-white/[0.02]"
+                    : "border-transparent bg-white/[0.02] hover:bg-white/[0.04]"
                 }`}
               >
                 {isChecked ? (
@@ -190,7 +190,7 @@ export function PreTradeChecklist({
       )}
 
       {allPassed && !editing && (
-        <div className="mt-3 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/25 px-3 py-2 flex items-center gap-2">
+        <div className="mt-3 rounded-lg surface-card border-l-2 border-l-emerald-500 px-3 py-2 flex items-center gap-2">
           <CheckSquare className="w-3.5 h-3.5 text-emerald-400" strokeWidth={2} />
           <p className="text-[11px] text-emerald-200/90 font-medium">
             Setup validado. Execute com disciplina.

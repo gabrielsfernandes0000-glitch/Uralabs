@@ -814,7 +814,7 @@ function PriceField({
     <div className={`rounded-md border px-3 py-2 transition-colors ${
       autoFilled ? "border-emerald-500/25 bg-emerald-500/[0.03]" : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14]"
     }`}>
-      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: (accent ?? "#94A3B8") + "AA" }}>{label}</span>
+      <span className="text-[10px] font-semibold" style={{ color: (accent ?? "#94A3B8") + "AA" }}>{label}</span>
       <input
         type="text"
         inputMode="decimal"

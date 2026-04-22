@@ -51,7 +51,7 @@ export default async function PerfilPage() {
       {/* ── Profile header ── banner 6:1 nativo (2400×400), preenche toda a
            largura do container. Safe zone de 70% central garantida nos prompts
            v3, então cover crop nas laterais (quando tiver) nunca perde subject. */}
-      <div className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 w-full">
+      <div className="animate-in-up relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 w-full">
         {/* Header com banner + avatar/nome sobrepostos */}
         <div
           className="relative overflow-hidden border-b border-white/[0.05]"
@@ -78,10 +78,7 @@ export default async function PerfilPage() {
               }} />
             </>
           ) : (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-500/15 via-purple-500/5 to-blue-500/10" />
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:30px_30px] opacity-60" />
-            </>
+            <div className="absolute inset-0 bg-[#131316]" />
           )}
 
           {/* Avatar + nome sobrepostos na base */}
@@ -91,7 +88,7 @@ export default async function PerfilPage() {
               <img
                 src={avatar}
                 alt={displayName}
-                className="w-24 h-24 rounded-2xl object-cover"
+                className="w-24 h-24 rounded-xl object-cover"
                 style={{
                   border: "2px solid #141417",
                   boxShadow: "0 0 0 2px rgba(0,0,0,0.55), 0 8px 32px 8px rgba(0,0,0,0.7)",
@@ -108,12 +105,12 @@ export default async function PerfilPage() {
         {/* Strip tier + info */}
         <div className="px-7 py-2.5 border-b border-white/[0.05] bg-[#0e0e10] flex items-center gap-3 flex-wrap">
           {session.isElite ? (
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-brand-500 uppercase tracking-[0.22em]">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-brand-500">
               <span className="w-1 h-1 rounded-full bg-brand-500" /> Elite 4.0
             </span>
           ) : session.isVip ? (
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-[0.22em]">
-              <span className="w-1 h-1 rounded-full bg-blue-400" /> VIP
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white/55">
+              <span className="w-1 h-1 rounded-full bg-white/55" /> VIP
             </span>
           ) : null}
         </div>

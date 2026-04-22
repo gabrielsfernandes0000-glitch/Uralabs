@@ -89,7 +89,7 @@ function NavMenu({
     <nav className="flex-1 py-3 px-4 overflow-y-auto">
       {NAV_SECTIONS.map((section, idx) => (
         <div key={section.label} className={idx > 0 ? "mt-3 pt-2 border-t border-white/[0.04]" : ""}>
-          <p className="px-4 mb-1 text-[9px] font-bold uppercase tracking-[0.22em] text-white/25">
+          <p className="px-4 mb-1 text-[9px] font-bold text-white/25">
             {section.label}
           </p>
           <div className="space-y-0.5">
@@ -387,7 +387,7 @@ export function EliteSidebar({
               <span className="text-[12px] font-semibold tabular-nums text-amber-300">
                 {coinBalance.toLocaleString("pt-BR")}
               </span>
-              <span className="text-[10px] uppercase tracking-[0.16em] text-white/30 ml-auto">
+              <span className="text-[10px] text-white/30 ml-auto">
                 URA Coin
               </span>
             </Link>
@@ -416,7 +416,7 @@ export function EliteSidebar({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-white/80 truncate">{displayName}</p>
-                  <p className={`text-[9px] font-bold tracking-[0.15em] uppercase ${session.isElite ? "text-brand-500/60" : "text-blue-500/60"}`}>
+                  <p className={`text-[11px] font-medium ${session.isElite ? "text-brand-500/70" : "text-white/45"}`}>
                     {session.isElite ? "Elite 4.0" : "VIP"}
                   </p>
                 </div>

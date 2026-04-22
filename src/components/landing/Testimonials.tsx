@@ -18,7 +18,7 @@ const TESTIMONIALS_ROW_1: Testimonial[] = [
     text: "Ja tentei 3 mentorias diferentes. URA Labs foi a unica que me ensinou a LER o grafico de verdade. Parei de ficar dependendo de sinal e hoje opero sozinho com consistencia.",
     rating: 5,
     avatar: "L",
-    avatarBg: "bg-blue-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "+85% na banca em 45 dias",
   },
   {
@@ -27,7 +27,7 @@ const TESTIMONIALS_ROW_1: Testimonial[] = [
     text: "A sala ao vivo mudou meu jogo. Ver o URA operando em tempo real e explicando cada decisao me deu a confianca que eu precisava pra parar de ter medo de entrar.",
     rating: 5,
     avatar: "A",
-    avatarBg: "bg-purple-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Pedro K.",
@@ -35,7 +35,7 @@ const TESTIMONIALS_ROW_1: Testimonial[] = [
     text: "O CRT e absurdo. Nunca vi ninguem ensinar isso no Brasil. Depois que entendi a logica por tras do candle, minha leitura de mercado ficou outra. Aprovei na FTMO na segunda tentativa.",
     rating: 5,
     avatar: "P",
-    avatarBg: "bg-green-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "Aprovado FTMO",
   },
   {
@@ -44,7 +44,7 @@ const TESTIMONIALS_ROW_1: Testimonial[] = [
     text: "O que mais me surpreendeu foi a transparencia. Eles mostram os loss tambem, nao so os gains. Isso me passou uma confianca absurda. Comunidade seria de verdade.",
     rating: 5,
     avatar: "M",
-    avatarBg: "bg-red-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Julia S.",
@@ -52,7 +52,7 @@ const TESTIMONIALS_ROW_1: Testimonial[] = [
     text: "Entrei sem saber nada de trade. Hoje entendo Order Blocks, FVG e opero NASDAQ com gestao de risco. A evolucao em 5 meses foi surreal. Melhor investimento que ja fiz.",
     rating: 5,
     avatar: "J",
-    avatarBg: "bg-pink-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "Do zero ao NASDAQ",
   },
   {
@@ -61,7 +61,7 @@ const TESTIMONIALS_ROW_1: Testimonial[] = [
     text: "Ja estava quase desistindo do trade. Os calls do URA me mantiveram vivo enquanto eu aprendia. Hoje to no verde 3 meses seguidos. Gratidao eterna.",
     rating: 5,
     avatar: "R",
-    avatarBg: "bg-teal-600",
+    avatarBg: "bg-white/[0.08]",
   },
 ];
 
@@ -72,7 +72,7 @@ const TESTIMONIALS_ROW_2: Testimonial[] = [
     text: "A metodologia SMC + CRT e de outro nivel. O URA simplifica o que parece impossivel. Estudo todo dia e ja consigo identificar setups sozinha. Comunidade top demais.",
     rating: 5,
     avatar: "C",
-    avatarBg: "bg-indigo-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Diego F.",
@@ -80,7 +80,7 @@ const TESTIMONIALS_ROW_2: Testimonial[] = [
     text: "A galera do Discord e muito fera. Ambiente sem ego, todo mundo se ajuda. Diferente de qualquer grupo de trade que ja participei. Aqui o foco e evolucao real.",
     rating: 5,
     avatar: "D",
-    avatarBg: "bg-amber-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Thiago B.",
@@ -88,7 +88,7 @@ const TESTIMONIALS_ROW_2: Testimonial[] = [
     text: "Fiz as contas: o retorno que tive nos primeiros 2 meses ja pagou a mentoria 3x. E o conhecimento fica pra vida. Nao tem preco melhor no mercado BR.",
     rating: 5,
     avatar: "T",
-    avatarBg: "bg-cyan-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "ROI 3x em 2 meses",
   },
   {
@@ -97,7 +97,7 @@ const TESTIMONIALS_ROW_2: Testimonial[] = [
     text: "Comecei pelos calls VIP e em 2 semanas ja estava no verde. A qualidade das analises e absurda. Agora to estudando SMC pra nao depender de ninguem.",
     rating: 5,
     avatar: "F",
-    avatarBg: "bg-rose-600",
+    avatarBg: "bg-white/[0.08]",
   },
   {
     name: "Gabriel O.",
@@ -105,7 +105,7 @@ const TESTIMONIALS_ROW_2: Testimonial[] = [
     text: "To na URA Labs desde a turma 2.0. A evolucao do conteudo e da comunidade e impressionante. Cada turma nova fica melhor. O URA leva isso a serio demais.",
     rating: 5,
     avatar: "G",
-    avatarBg: "bg-emerald-600",
+    avatarBg: "bg-white/[0.08]",
     highlight: "Membro desde Turma 2.0",
   },
   {
@@ -114,7 +114,7 @@ const TESTIMONIALS_ROW_2: Testimonial[] = [
     text: "Mulher no trade e raro, mas aqui me senti acolhida desde o dia 1. Zero machismo, zero ego. So foco em aprender e evoluir. Recomendo de olhos fechados.",
     rating: 4,
     avatar: "I",
-    avatarBg: "bg-violet-600",
+    avatarBg: "bg-white/[0.08]",
   },
 ];
 
@@ -177,9 +177,6 @@ export function Testimonials() {
 
   return (
     <section className="py-24 bg-dark-900 border-y border-white/5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-brand-500/5 rounded-full blur-[120px] -translate-x-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[120px] translate-x-1/2 pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-4">
           <Reveal width="100%">
@@ -207,9 +204,9 @@ export function Testimonials() {
             </div>
             <div className="hidden sm:block h-10 w-px bg-white/10" />
             <div className="flex -space-x-2">
-              {["bg-blue-600","bg-purple-600","bg-green-600","bg-red-600","bg-pink-600"].map((bg, i) => (
-                <div key={i} className={`w-8 h-8 rounded-full ${bg} border-2 border-dark-900 flex items-center justify-center text-white text-[10px] font-bold`}>
-                  {["L","A","P","M","J"][i]}
+              {["L","A","P","M","J"].map((letter, i) => (
+                <div key={i} className="w-8 h-8 rounded-full bg-white/[0.08] border-2 border-dark-900 flex items-center justify-center text-white/80 text-[10px] font-bold">
+                  {letter}
                 </div>
               ))}
               <div className="w-8 h-8 rounded-full bg-dark-800 border-2 border-dark-900 flex items-center justify-center text-[10px] text-gray-400 font-bold">

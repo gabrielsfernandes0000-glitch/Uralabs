@@ -53,11 +53,11 @@ export function NextHighImpactCard({ events }: { events: EconomicEvent[] }) {
     return (
       <Link
         href="/elite/noticias"
-        className="interactive group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors"
+        className="interactive group rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors"
       >
         <div className="flex items-center gap-2 mb-3">
           <CalendarClock className="w-3.5 h-3.5 text-white/35" />
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">Próximo evento</h3>
+          <h3 className="text-[12px] font-semibold text-white/85">Próximo evento</h3>
         </div>
         <div className="flex-1 flex flex-col items-start justify-center">
           <p className="text-[18px] font-semibold text-white/60 leading-tight">
@@ -78,16 +78,16 @@ export function NextHighImpactCard({ events }: { events: EconomicEvent[] }) {
   return (
     <Link
       href="/elite/noticias"
-      className="interactive group rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors relative overflow-hidden"
+      className="interactive group rounded-xl surface-card hover:border-white/[0.12] p-5 h-full flex flex-col transition-colors relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-red-500/[0.04] to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-500/40" />
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-red-400/80" strokeWidth={2} />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">Próximo evento</h3>
+            <Zap className="w-3.5 h-3.5 text-brand-500" strokeWidth={2} />
+            <h3 className="text-[12px] font-semibold text-white/85">Próximo evento</h3>
           </div>
-          <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-red-400/80">Alto impacto</span>
+          <span className="text-[11px] font-medium text-brand-500">Alto impacto</span>
         </div>
 
         <div className="flex-1 flex flex-col items-start justify-center">
@@ -103,7 +103,7 @@ export function NextHighImpactCard({ events }: { events: EconomicEvent[] }) {
             {next.event}
           </p>
           {instruments.length > 0 && (
-            <p className="text-[9px] text-white/35 font-mono uppercase tracking-[0.15em] mt-1">
+            <p className="text-[11px] text-white/40 font-mono mt-1">
               {instruments.map((s) => s.replace(/^\$/, "")).join(" · ")}
             </p>
           )}

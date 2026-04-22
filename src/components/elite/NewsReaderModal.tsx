@@ -142,11 +142,11 @@ export function NewsReaderModal({
         <div className="relative z-10 px-6 lg:px-8 pt-6 pb-3">
           <div className="flex items-center gap-2 flex-wrap mb-3">
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: imp.dotBg }} />
-            <span className="text-[9.5px] font-bold tracking-[0.25em] uppercase" style={{ color: cat.accent }}>
+            <span className="text-[11px] text-white/55" style={{ color: cat.accent }}>
               {cat.label}
             </span>
             <span className="text-white/15 text-[10px]">·</span>
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55">{item.source}</span>
+            <span className="text-[11px] text-white/55 text-white/55">{item.source}</span>
             <span className="text-white/15 text-[10px]">·</span>
             <span className="inline-flex items-center gap-1 text-[10px] text-white/35 font-mono tabular-nums">
               <Clock className="w-2.5 h-2.5" strokeWidth={2.2} />
@@ -170,7 +170,7 @@ export function NewsReaderModal({
             return (
               <div className="rounded-xl overflow-hidden border border-white/[0.06] bg-[#0a0a0c]">
                 <div className="px-3 h-9 flex items-center justify-between border-b border-white/[0.05]">
-                  <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+                  <span className="text-[10px] text-white/40">
                     Contexto · <span className="text-white/70 font-mono">{d.label}</span>
                   </span>
                   <Link
