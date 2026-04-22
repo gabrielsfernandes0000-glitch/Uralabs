@@ -1,26 +1,23 @@
 // AES-256-GCM encryption for exchange API keys
 // Keys are encrypted server-side before storing in Supabase
 
-import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import { randomBytes, createCipheriv, createDecipheriv, createHash } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-const KEY_LENGTH = 32; // 256 bits
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 
+/** Deriva key de 32 bytes via SHA-256 da env var (trimmed).
+ *  Vantagens vs. `Buffer.from(env.slice(0,32), "utf-8")`:
+ *   - Imune a whitespace/newlines ou encoding surpresa da env no Vercel
+ *   - Qualquer mudança sutil na env var muda a key derivada consistentemente
+ *     (encrypt e decrypt batem enquanto env permanecer a mesma) */
 function getEncryptionKey(): Buffer {
-  const key = process.env.EXCHANGE_ENCRYPTION_KEY;
-  if (!key || key.length < 32) {
+  const raw = process.env.EXCHANGE_ENCRYPTION_KEY;
+  if (!raw || raw.trim().length < 32) {
     throw new Error("EXCHANGE_ENCRYPTION_KEY must be set (min 32 chars)");
   }
-  // Temp debug — loga fingerprint da key pra validar que encrypt e decrypt
-  // estão usando o mesmo valor em runtime. Remove depois de diagnosticar.
-  if (typeof console !== "undefined") {
-    const fp = key.slice(0, 6) + "…" + key.slice(-6) + ` (len=${key.length})`;
-    console.log("[exchange/crypto] key fingerprint:", fp);
-  }
-  // Use first 32 bytes as key
-  return Buffer.from(key.slice(0, KEY_LENGTH), "utf-8");
+  return createHash("sha256").update(raw.trim()).digest();
 }
 
 export function encrypt(plaintext: string): { encrypted: string; iv: string } {
