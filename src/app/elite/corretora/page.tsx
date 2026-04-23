@@ -17,6 +17,7 @@ import { TradeDetailModal, type TradeForModal } from "@/components/elite/correto
 import { UraCallSplit, EventExposureCard, TagBreakdown, RMultiplesCard, PropRulesBanner } from "@/components/elite/corretora/Insights";
 import { PropRulesModal } from "@/components/elite/corretora/PropRulesModal";
 import { OpenOrdersCard, type OpenOrder } from "@/components/elite/corretora/OpenOrdersCard";
+import { useExchangeRealtime, type RealtimeStatus } from "@/hooks/useExchangeRealtime";
 
 /* ────────────────────────────────────────────
    Types
@@ -188,6 +189,7 @@ interface PropStatus {
 interface ExchangeData {
   connected: boolean;
   exchange?: string;
+  userId?: string;
   cached?: boolean;
   error?: string;
   balance?: Balance;
@@ -591,13 +593,14 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
 
 type Period = "7d" | "30d" | "all";
 
-function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddMore }: {
+function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddMore, realtimeStatus }: {
   exchange: ExchangeMeta;
   data: ExchangeData;
   onRefresh: () => void;
   onDisconnect: () => void;
   refreshing: boolean;
   onAddMore: () => void;
+  realtimeStatus: RealtimeStatus;
 }) {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [hideBalance, setHideBalance] = useState(false);
@@ -714,10 +717,30 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
               <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold text-green-400 tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> conectada
               </span>
-              <span className="text-[9.5px] text-white/25 font-mono flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-green-400/70 animate-pulse" />
-                auto ·&nbsp;30s
-              </span>
+              {realtimeStatus === "live" && (
+                <span title="WebSocket ativo — dados em tempo real" className="text-[9.5px] text-green-400 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  live
+                </span>
+              )}
+              {realtimeStatus === "polling" && (
+                <span title="Atualização automática a cada 30s" className="text-[9.5px] text-white/35 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
+                  auto · 30s
+                </span>
+              )}
+              {realtimeStatus === "connecting" && (
+                <span className="text-[9.5px] text-white/25 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
+                  conectando…
+                </span>
+              )}
+              {realtimeStatus === "disabled" && (
+                <span title="Atualização automática a cada 30s" className="text-[9.5px] text-white/25 font-mono flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-white/30" />
+                  auto · 30s
+                </span>
+              )}
             </div>
             {data.label && <p className="text-[11px] text-white/30 truncate">{data.label}</p>}
           </div>
@@ -1115,19 +1138,35 @@ export default function CorretoraPage() {
     setRefreshing(false);
   };
 
-  // Polling inteligente: auto-refresh a cada 30s enquanto a aba esta visivel.
-  // Pausa quando o user troca de aba (Page Visibility API) pra economizar
-  // chamadas BingX e nao queimar o cache quando ninguem ta olhando.
+  // Realtime: subscribe no canal Supabase, worker Railway push eventos.
+  // Quando Realtime é "live" → polling pausa (push faz o trabalho).
+  // Quando Realtime falha ("polling") → setInterval 30s ativa (fallback).
+  const userId = data?.userId || null;
+  const realtimeStatus = useExchangeRealtime(
+    userId,
+    activeExchange || "bingx",
+    // No broadcast de qualquer evento (ACCOUNT_UPDATE / ORDER_TRADE_UPDATE),
+    // refetchamos o snapshot. Poderia fazer merge otimista, mas a computação
+    // de drawdown/equity curve/métricas é feita no server e complexa demais
+    // pra replicar no cliente — um refetch baratinho resolve.
+    () => {
+      if (activeExchange) fetchData(activeExchange, true);
+    }
+  );
+
+  // Polling inteligente: só ativa se Realtime NÃO está live.
+  // Pausa quando aba esconde (visibility API).
   useEffect(() => {
     if (!activeExchange || view !== "dashboard") return;
+    // Se Realtime está live, push resolve — polling dorme.
+    if (realtimeStatus === "live") return;
+
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const start = () => {
       if (interval) return;
       interval = setInterval(() => {
         if (document.visibilityState === "visible") {
-          // Nao usa refresh=1 aqui — deixa o cache servir se outra aba puxou recentemente.
-          // Cache TTL de 30s no server garante freshness.
           fetchData(activeExchange);
         }
       }, 30_000);
@@ -1146,7 +1185,7 @@ export default function CorretoraPage() {
       stop();
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [activeExchange, view, fetchData]);
+  }, [activeExchange, view, fetchData, realtimeStatus]);
 
   const handleDisconnect = async () => {
     if (!activeExchange) return;
@@ -1250,6 +1289,7 @@ export default function CorretoraPage() {
           onDisconnect={handleDisconnect}
           refreshing={refreshing}
           onAddMore={() => setView("add")}
+          realtimeStatus={realtimeStatus}
         />
       )}
     </div>

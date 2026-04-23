@@ -277,7 +277,7 @@ export async function GET(req: Request) {
 
   // Cache hit normal
   if (!forceRefresh && cached && ageMs < CACHE_TTL) {
-    return NextResponse.json({ connected: true, exchange, cached: true, ...cached.data });
+    return NextResponse.json({ connected: true, exchange, userId: session.userId, cached: true, ...cached.data });
   }
 
   // Rate limit hard: refresh=1 spammado? serve cache (mesmo expirado) se < 15s
@@ -285,6 +285,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       connected: true,
       exchange,
+      userId: session.userId,
       cached: true,
       rateLimited: true,
       ...cached.data,
@@ -641,7 +642,7 @@ export async function GET(req: Request) {
       })),
     };
 
-    return NextResponse.json({ connected: true, exchange, cached: false, ...enrichedSnapshot });
+    return NextResponse.json({ connected: true, exchange, userId: session.userId, cached: false, ...enrichedSnapshot });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erro desconhecido";
     await supabase
