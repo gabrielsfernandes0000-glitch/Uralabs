@@ -47,29 +47,35 @@ export function HourlyBreakdown({ rows }: { rows: HourRow[] }) {
   if (!nonZero.length) {
     return <p className="text-[11px] text-white/25">Sem trades nos últimos 7 dias</p>;
   }
+  const barsHeight = 70; // px — barras usam px absoluto pra não depender de % de pai flex
   return (
-    <div className="flex items-end gap-[3px] h-[90px]">
-      {rows.map((r) => {
-        const pct = maxAbs > 0 ? (Math.abs(r.pnl) / maxAbs) * 100 : 0;
-        const color = r.pnl > 0 ? "bg-green-400/60" : r.pnl < 0 ? "bg-red-400/60" : "bg-white/[0.04]";
-        const hasData = r.trades > 0;
-        return (
-          <div
-            key={r.hour}
-            className="flex-1 flex flex-col items-center justify-end group relative"
-            style={{ minHeight: 4 }}
-            title={`${String(r.hour).padStart(2, "0")}h · ${r.trades} trades · ${fmtUsd(r.pnl)}`}
-          >
+    <div>
+      <div className="flex items-end gap-[3px]" style={{ height: barsHeight }}>
+        {rows.map((r) => {
+          const pct = maxAbs > 0 ? (Math.abs(r.pnl) / maxAbs) : 0;
+          const color = r.pnl > 0 ? "bg-green-400/60" : r.pnl < 0 ? "bg-red-400/60" : "bg-white/[0.05]";
+          const hasData = r.trades > 0;
+          const h = hasData ? Math.max(pct * barsHeight, 3) : 2;
+          return (
             <div
-              className={`w-full rounded-sm transition-all ${color} ${hasData ? "" : "opacity-50"}`}
-              style={{ height: hasData ? `${Math.max(pct, 4)}%` : "4px" }}
-            />
+              key={r.hour}
+              className="flex-1 relative"
+              title={`${String(r.hour).padStart(2, "0")}h · ${r.trades} trades · ${fmtUsd(r.pnl)}`}
+            >
+              <div className={`absolute bottom-0 left-0 right-0 rounded-sm ${color}`} style={{ height: h }} />
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-[3px] mt-1">
+        {rows.map((r) => (
+          <div key={r.hour} className="flex-1 text-center">
             {r.hour % 6 === 0 && (
-              <span className="text-[8px] text-white/25 mt-1 font-mono tabular-nums">{String(r.hour).padStart(2, "0")}</span>
+              <span className="text-[8.5px] text-white/30 font-mono tabular-nums">{String(r.hour).padStart(2, "0")}</span>
             )}
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }

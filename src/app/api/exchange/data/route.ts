@@ -9,12 +9,16 @@ export const dynamic = "force-dynamic";
 type IncomeItem = Awaited<ReturnType<typeof getIncome>>[number];
 
 /** Agrega PnL diário a partir de income history.
- *  Income já filtra só realized PnL (ignora fees em alguns endpoints, inclui em outros).
- *  Retornamos array de {date, pnl} ordenado ASC, zerando dias sem trade dentro da janela. */
+ *  Filtra só REALIZED_PNL (ignora transfers/fees/funding) pra que o número bata
+ *  com o que aparece em trades/journal/stats strip. Caso contrário depósitos
+ *  inflam o "PnL do período" e confundem o user. */
 function aggregateDailyPnL(income: IncomeItem[], days: number): { date: string; pnl: number }[] {
+  const REALIZED_TYPES = new Set(["REALIZED_PNL", "REALIZEDPNL", "REALIZED"]);
   const byDay = new Map<string, number>();
   for (const i of income) {
     if (!i.time) continue;
+    // Alguns endpoints não retornam incomeType — nesse caso aceita tudo (fallback)
+    if (i.incomeType && !REALIZED_TYPES.has(i.incomeType.toUpperCase())) continue;
     const d = new Date(i.time);
     // BRT (UTC-3) pra alinhar com horário do trader
     d.setHours(d.getHours() - 3);
