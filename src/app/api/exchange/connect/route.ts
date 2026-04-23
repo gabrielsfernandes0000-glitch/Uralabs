@@ -3,12 +3,23 @@ import { getSession } from "@/lib/session";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { encrypt } from "@/lib/exchange/crypto";
 import { validateCredentials, EXCHANGES, type ExchangeId } from "@/lib/exchange";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const VALID_EXCHANGES = EXCHANGES.map((e) => e.id);
 
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit: 5 tentativas/5min/user — /connect faz round-trip na BingX, então
+  // scripts tentando brute-force de credenciais ficam bloqueados rápido.
+  const allowed = await checkRateLimit(`exchange-connect:${session.userId}`, 5, 300);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Muitas tentativas de conexão. Tente novamente em 5 minutos." },
+      { status: 429, headers: { "Retry-After": "300" } }
+    );
+  }
 
   const body = await req.json().catch(() => null);
   if (!body?.apiKey || !body?.apiSecret) {

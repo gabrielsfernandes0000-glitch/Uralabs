@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeCode, getDiscordUser, getGuildMember, hasEliteRole, hasVipRole } from "@/lib/discord";
 import { createSession } from "@/lib/session";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -8,6 +9,14 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
+  }
+
+  // Rate limit por IP: 20 callbacks/5min. OAuth bombing / credential stuffing
+  // múltiplos codes válidos roubados exigiria flood a esse endpoint.
+  const ip = getClientIp(request);
+  const allowed = await checkRateLimit(`auth-callback:${ip}`, 20, 300);
+  if (!allowed) {
+    return NextResponse.redirect(new URL("/login?error=rate_limited", request.url));
   }
 
   try {

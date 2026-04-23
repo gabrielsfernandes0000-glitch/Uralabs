@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getExchangeChannelName } from "@/lib/exchange/realtime-channel";
 import { EXCHANGES, type ExchangeId } from "@/lib/exchange";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const VALID_EXCHANGES = EXCHANGES.map((e) => e.id);
 
@@ -16,6 +17,13 @@ const VALID_EXCHANGES = EXCHANGES.map((e) => e.id);
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit defensivo: 60 calls/min/user. O cliente pede só 1x por sessão de
+  // corretora; bursts maiores são anomalia (script, bug, ou reconexão infinita).
+  const allowed = await checkRateLimit(`realtime-channel:${session.userId}`, 60, 60);
+  if (!allowed) {
+    return NextResponse.json({ error: "rate limited" }, { status: 429 });
+  }
 
   const url = new URL(req.url);
   const exchange = (url.searchParams.get("exchange") || "bingx") as ExchangeId;
