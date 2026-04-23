@@ -6,7 +6,8 @@ import { SignJWT, jwtVerify } from "jose";
 
 const SECRET = new TextEncoder().encode(process.env.SESSION_SECRET || "ura-labs-elite-session-secret-change-me");
 const COOKIE_NAME = "ura_session";
-const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+const MAX_AGE = 60 * 60 * 24 * 7; // 7 days — janela de exposição menor se o cookie vazar.
+                                   // Antes era 30d. Re-login via Discord OAuth é 1 clique.
 
 export interface SessionPayload {
   userId: string;
@@ -30,18 +31,22 @@ export async function createSession(payload: SessionPayload) {
   jar.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    // lax permite o cookie viajar em cross-site top-level nav (necessário pro
+    // callback do Discord OAuth). strict quebraria o fluxo de login. Com
+    // httpOnly + secure + SameSite=lax, já bloqueamos CSRF em POST cross-site.
     sameSite: "lax",
     maxAge: MAX_AGE,
     path: "/",
   });
 }
 
-/** Read and verify the session from cookies. Returns null if invalid/expired. */
+/** Read and verify the session from cookies. Returns null if invalid/expired.
+ *
+ *  Dev bypass: só ativa se DEV_SESSION_BYPASS=true na env local. Nunca ativa
+ *  em prod mesmo por engano — a variável é opt-in explícito, não inferido do
+ *  NODE_ENV. Ver [feedback_login_dashboard_vs_elite.md] pra arquitetura de auth. */
 export async function getSession(): Promise<SessionPayload | null> {
-  // TEMP: dev bypass — REMOVER ANTES DE COMMITAR
-  // userId = Discord ID do URA pra bater com as RPCs que exigem /^[0-9]{5,30}$/
-  // (cosmetics-manager, ura-coin-user-state) e puxar o preview dele em localhost.
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development" && process.env.DEV_SESSION_BYPASS === "true") {
     return {
       userId: "580162059078074420",
       username: "uranick",
