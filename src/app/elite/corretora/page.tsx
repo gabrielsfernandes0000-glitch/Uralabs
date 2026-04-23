@@ -899,59 +899,59 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         </div>
       )}
 
-      {/* Grid 2 col: Journal (esquerda) · Breakdowns (direita).
-          items-start evita que o card do journal estique ate a altura da sidebar
-          quando ela tem muitos cards empilhados. */}
-      <div className="animate-in-up delay-3 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 items-start">
-        {/* Journal */}
-        <div className="rounded-xl surface-card p-5">
-          <div className="flex items-center gap-2.5 mb-4">
-            <BarChart3 className="w-3.5 h-3.5 text-white/45" />
-            <h2 className="text-[12px] font-semibold text-white/80">Journal</h2>
-            <span className="text-[10px] text-white/25 ml-auto">últimos 7 dias</span>
-          </div>
-          <TradeJournal
-            trades={trades as JournalTrade[]}
-            hideBalance={hideBalance}
-            onTradeClick={(t) => setOpenTrade({
-              orderId: t.orderId,
-              symbol: t.symbol,
-              side: t.side,
-              price: t.price,
-              quantity: t.quantity,
-              profit: t.profit,
-              time: t.time,
-              tags: t.tags || [],
-              notes: t.notes || null,
-              stopLoss: t.stopLoss || null,
-              uraCall: !!t.uraCall,
-            })}
-          />
+      {/* Journal full-width — sem sidebar presa */}
+      <div className="animate-in-up delay-3 rounded-xl surface-card p-5">
+        <div className="flex items-center gap-2.5 mb-4">
+          <BarChart3 className="w-3.5 h-3.5 text-white/45" />
+          <h2 className="text-[12px] font-semibold text-white/80">Journal</h2>
+          <span className="text-[10px] text-white/25 ml-auto">últimos 7 dias</span>
         </div>
+        <TradeJournal
+          trades={trades as JournalTrade[]}
+          hideBalance={hideBalance}
+          onTradeClick={(t) => setOpenTrade({
+            orderId: t.orderId,
+            symbol: t.symbol,
+            side: t.side,
+            price: t.price,
+            quantity: t.quantity,
+            profit: t.profit,
+            time: t.time,
+            tags: t.tags || [],
+            notes: t.notes || null,
+            stopLoss: t.stopLoss || null,
+            uraCall: !!t.uraCall,
+          })}
+        />
+      </div>
 
-        {/* Breakdowns stack */}
-        <div className="space-y-4">
+      {/* Analytics row — Setup insights em 3 colunas */}
+      {(rMultiples || eventExposure || tagStats.length > 0) && (
+        <div className="animate-in-up delay-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
           {rMultiples && <RMultiplesCard r={rMultiples} />}
           {eventExposure && <EventExposureCard exposure={eventExposure} />}
           <TagBreakdown tags={tagStats} />
+        </div>
+      )}
 
-          <div className="rounded-xl surface-card p-5">
-            <div className="flex items-center gap-2.5 mb-3.5">
-              <TrendingUp className="w-3.5 h-3.5 text-white/45" />
-              <h2 className="text-[12px] font-semibold text-white/80">Por símbolo</h2>
-            </div>
-            <SymbolBreakdown rows={symbolBreakdown} />
+      {/* Breakdowns row — Símbolo · Hora · Dia da semana em 3 colunas */}
+      <div className="animate-in-up delay-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center gap-2.5 mb-3.5">
+            <TrendingUp className="w-3.5 h-3.5 text-white/45" />
+            <h2 className="text-[12px] font-semibold text-white/80">Por símbolo</h2>
           </div>
+          <SymbolBreakdown rows={symbolBreakdown} />
+        </div>
 
-          <div className="rounded-xl surface-card p-5">
-            <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por hora (BRT)</h2>
-            <HourlyBreakdown rows={hourlyBreakdown} />
-          </div>
+        <div className="rounded-xl surface-card p-5">
+          <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por hora (BRT)</h2>
+          <HourlyBreakdown rows={hourlyBreakdown} />
+        </div>
 
-          <div className="rounded-xl surface-card p-5">
-            <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por dia da semana</h2>
-            <DowBreakdown rows={dowBreakdown} />
-          </div>
+        <div className="rounded-xl surface-card p-5">
+          <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por dia da semana</h2>
+          <DowBreakdown rows={dowBreakdown} />
         </div>
       </div>
 
