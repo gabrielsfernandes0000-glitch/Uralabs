@@ -899,8 +899,10 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         </div>
       )}
 
-      {/* Grid 2 col: Journal (esquerda) · Breakdowns (direita) */}
-      <div className="animate-in-up delay-3 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+      {/* Grid 2 col: Journal (esquerda) · Breakdowns (direita).
+          items-start evita que o card do journal estique ate a altura da sidebar
+          quando ela tem muitos cards empilhados. */}
+      <div className="animate-in-up delay-3 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 items-start">
         {/* Journal */}
         <div className="rounded-xl surface-card p-5">
           <div className="flex items-center gap-2.5 mb-4">
