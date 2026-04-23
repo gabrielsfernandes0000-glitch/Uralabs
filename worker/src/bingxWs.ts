@@ -85,23 +85,42 @@ export class UserStream {
     });
 
     this.ws.on("message", (data: WebSocket.RawData) => {
+      let text: string | null = null;
       try {
-        // BingX comprime com gzip. Dados podem vir como Buffer binário.
         const buf = Buffer.isBuffer(data) ? data : Buffer.from(data as ArrayBuffer);
-        let text: string;
         try {
           text = pako.ungzip(buf, { to: "string" });
         } catch {
           text = buf.toString("utf-8");
         }
-        if (text === "Ping" || text.includes("Ping")) {
+
+        const trimmed = text.trim();
+
+        // Control frames BingX (texto puro, não JSON):
+        // - "Ping" do server → responde "Pong"
+        // - "Pong" em resposta ao nosso Ping → ignora
+        if (trimmed.startsWith("Ping")) {
           this.ws?.send("Pong");
           return;
         }
-        const payload = JSON.parse(text);
+        if (trimmed.startsWith("Pong")) {
+          return;
+        }
+
+        // Qualquer coisa que não pareça JSON é frame não-modelado — ignora em debug
+        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+          log.debug("WS non-JSON frame ignored", { userId: this.userId, preview: trimmed.slice(0, 80) });
+          return;
+        }
+
+        const payload = JSON.parse(trimmed);
         this.handleEvent(payload);
       } catch (err) {
-        log.warn("WS message parse error", { userId: this.userId, err: err instanceof Error ? err.message : String(err) });
+        log.warn("WS message parse error", {
+          userId: this.userId,
+          err: err instanceof Error ? err.message : String(err),
+          preview: text ? text.slice(0, 120) : null,
+        });
       }
     });
 
