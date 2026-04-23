@@ -10,30 +10,26 @@ interface BingXCredentials {
   apiSecret: string;
 }
 
-/** Sign a BingX request (HMAC SHA256) */
-function sign(params: Record<string, string>, secret: string): string {
-  const queryString = Object.keys(params)
-    .sort()
-    .map((k) => `${k}=${params[k]}`)
-    .join("&");
-  return createHmac("sha256", secret).update(queryString).digest("hex");
-}
-
-/** Make an authenticated GET request to BingX */
+/** Make an authenticated GET request to BingX.
+ *
+ * BingX verifica a signature reconstruindo a queryString **na ordem que chega**
+ * (não ordena alfabeticamente). A signature deve ser HMAC-SHA256 do EXACT
+ * queryString (sem encoding e sem sort) que vai na URL, e aí appenda
+ * `&signature=X` no final. */
 async function request(
   path: string,
   creds: BingXCredentials,
   extraParams: Record<string, string> = {}
 ) {
   const params: Record<string, string> = {
-    timestamp: Date.now().toString(),
     ...extraParams,
+    timestamp: Date.now().toString(),
   };
-  params.signature = sign(params, creds.apiSecret);
-
-  const qs = Object.entries(params)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+  const qsForSign = Object.entries(params)
+    .map(([k, v]) => `${k}=${v}`)
     .join("&");
+  const signature = createHmac("sha256", creds.apiSecret).update(qsForSign).digest("hex");
+  const qs = `${qsForSign}&signature=${signature}`;
 
   const res = await fetch(`${BASE_URL}${path}?${qs}`, {
     headers: {
