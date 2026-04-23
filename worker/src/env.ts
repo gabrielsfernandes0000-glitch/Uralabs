@@ -11,6 +11,7 @@ export const env = {
   SUPABASE_URL: required("SUPABASE_URL"),
   SUPABASE_SERVICE_ROLE_KEY: required("SUPABASE_SERVICE_ROLE_KEY"),
   EXCHANGE_ENCRYPTION_KEY: required("EXCHANGE_ENCRYPTION_KEY"),
+  REALTIME_CHANNEL_SECRET: required("REALTIME_CHANNEL_SECRET"),
   PORT: parseInt(process.env.PORT || "8080"),
   // Opcional: proxy BingX via CF Worker (mesma env do site)
   BINGX_PROXY_URL: process.env.BINGX_PROXY_URL?.replace(/\/$/, "") || "",
