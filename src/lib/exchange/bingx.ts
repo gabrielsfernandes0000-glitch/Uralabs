@@ -3,7 +3,23 @@
 
 import { createHmac } from "crypto";
 
-const BASE_URL = "https://open-api.bingx.com";
+const DIRECT_BASE = "https://open-api.bingx.com";
+
+/** Resolve base URL e headers por request.
+ *  Se BINGX_PROXY_URL + BINGX_PROXY_SECRET estiverem setadas, roteia via CF Worker
+ *  (elimina IP concentration da Vercel, aumenta capacidade 10x+).
+ *  Caso contrário, bate direto no BingX (comportamento antigo). */
+function resolveEndpoint(path: string): { url: string; extraHeaders: Record<string, string> } {
+  const proxy = process.env.BINGX_PROXY_URL;
+  const secret = process.env.BINGX_PROXY_SECRET;
+  if (proxy && secret) {
+    return {
+      url: `${proxy.replace(/\/$/, "")}/bingx${path}`,
+      extraHeaders: { "X-URA-PROXY-SECRET": secret },
+    };
+  }
+  return { url: `${DIRECT_BASE}${path}`, extraHeaders: {} };
+}
 
 interface BingXCredentials {
   apiKey: string;
@@ -30,11 +46,13 @@ async function request(
     .join("&");
   const signature = createHmac("sha256", creds.apiSecret).update(qsForSign).digest("hex");
   const qs = `${qsForSign}&signature=${signature}`;
+  const { url, extraHeaders } = resolveEndpoint(`${path}?${qs}`);
 
-  const res = await fetch(`${BASE_URL}${path}?${qs}`, {
+  const res = await fetch(url, {
     headers: {
       "X-BX-APIKEY": creds.apiKey,
       "Content-Type": "application/json",
+      ...extraHeaders,
     },
     signal: AbortSignal.timeout(10_000),
   });
@@ -171,7 +189,9 @@ export async function getKlines(symbol: string, interval: string, startTime: num
     endTime: String(endTime),
     limit: String(limit),
   });
-  const res = await fetch(`${BASE_URL}/openApi/swap/v2/quote/klines?${qs.toString()}`, {
+  const { url, extraHeaders } = resolveEndpoint(`/openApi/swap/v2/quote/klines?${qs.toString()}`);
+  const res = await fetch(url, {
+    headers: extraHeaders,
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`BingX klines: ${res.status}`);

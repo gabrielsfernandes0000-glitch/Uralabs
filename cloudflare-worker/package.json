@@ -1,0 +1,17 @@
+{
+  "name": "uralabs-bingx-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CF Worker proxy pra BingX REST API. Distribui egress em IPs CF (evita IP ban Vercel) + edge cache.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "types": "wrangler types"
+  },
+  "devDependencies": {
+    "wrangler": "^3.100.0",
+    "@cloudflare/workers-types": "^4.20240000.0",
+    "typescript": "^5.0.0"
+  }
+}

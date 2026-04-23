@@ -1,0 +1,13 @@
+name = "uralabs-bingx-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+# Free tier: 100k req/dia. Paid ($5/mes) libera 10M req/dia.
+# Se precisar subir pro paid, ativa account.workers_paid=true via dashboard.
+
+[vars]
+# Lista de origens permitidas (CORS). Atualize com seu dominio de prod.
+ALLOWED_ORIGINS = "https://uralabs.com.br,https://www.uralabs.com.br,http://localhost:3000"
+
+[observability]
+enabled = true
