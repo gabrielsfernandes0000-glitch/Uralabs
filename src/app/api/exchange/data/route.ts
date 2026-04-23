@@ -7,20 +7,39 @@ import { getBalance, getPositions, getTradeHistory, getIncome, computeMetrics, t
 export const dynamic = "force-dynamic";
 
 type IncomeItem = Awaited<ReturnType<typeof getIncome>>[number];
+type TradeItem = Awaited<ReturnType<typeof getTradeHistory>>[number];
 
-/** Agrega PnL diário a partir de income history.
- *  Filtra só REALIZED_PNL (ignora transfers/fees/funding) pra que o número bata
- *  com o que aparece em trades/journal/stats strip. Caso contrário depósitos
- *  inflam o "PnL do período" e confundem o user. */
+interface CallRow {
+  id: number;
+  data: string;
+  side: string | null;
+  asset: string | null;
+  target: string | null;
+  return_pct: string | null;
+}
+
+interface TradeMetaRow {
+  order_id: string;
+  tags: string[] | null;
+  notes: string | null;
+  stop_loss: string | null;
+  marked_as_ura_call: boolean | null;
+}
+
+interface EventRow {
+  event_time: string;
+  title: string;
+  impact: string;
+  currency: string | null;
+}
+
 function aggregateDailyPnL(income: IncomeItem[], days: number): { date: string; pnl: number }[] {
   const REALIZED_TYPES = new Set(["REALIZED_PNL", "REALIZEDPNL", "REALIZED"]);
   const byDay = new Map<string, number>();
   for (const i of income) {
     if (!i.time) continue;
-    // Alguns endpoints não retornam incomeType — nesse caso aceita tudo (fallback)
     if (i.incomeType && !REALIZED_TYPES.has(i.incomeType.toUpperCase())) continue;
     const d = new Date(i.time);
-    // BRT (UTC-3) pra alinhar com horário do trader
     d.setHours(d.getHours() - 3);
     const key = d.toISOString().slice(0, 10);
     byDay.set(key, (byDay.get(key) || 0) + i.income);
@@ -37,18 +56,188 @@ function aggregateDailyPnL(income: IncomeItem[], days: number): { date: string; 
   return out;
 }
 
-/** Reconstrói equity curve "para trás" a partir do equity atual e do daily PnL.
- *  equity_no_dia = equity_atual - soma(pnl_dos_dias_depois).
- *  Imperfeito (ignora transferências, funding, unrealized swings), mas direcional. */
 function reconstructEquityCurve(currentEquity: number, dailyPnL: { date: string; pnl: number }[]): { date: string; equity: number }[] {
   const out: { date: string; equity: number }[] = [];
   let equity = currentEquity;
-  // Do mais recente pro mais antigo: equity_hoje está aqui, subtrai pnl_hoje → equity_ontem
   for (let i = dailyPnL.length - 1; i >= 0; i--) {
     out.unshift({ date: dailyPnL[i].date, equity });
     equity -= dailyPnL[i].pnl;
   }
   return out;
+}
+
+/** Drawdown curve: para cada ponto, quanto abaixo do pico o equity está. */
+function computeDrawdown(curve: { date: string; equity: number }[]): { date: string; dd: number; ddPct: number }[] {
+  let peak = curve.length ? curve[0].equity : 0;
+  return curve.map((p) => {
+    if (p.equity > peak) peak = p.equity;
+    const dd = p.equity - peak; // <= 0
+    const ddPct = peak > 0 ? (dd / peak) * 100 : 0;
+    return { date: p.date, dd, ddPct };
+  });
+}
+
+/** Cruza calls_history com trades: match por data (dia) + asset (normalizado) + side opcional.
+ *  Para cada trade, retorna se estava "seguindo URA" (dia da call + asset bate).
+ *  Janela é dia inteiro porque calls_history só tem date, não timestamp exato. */
+function matchUraCalls(trades: TradeItem[], calls: CallRow[], manualOverrides: Map<string, boolean>) {
+  // Index calls por dia+asset
+  const callsByKey = new Map<string, CallRow[]>();
+  for (const c of calls) {
+    if (!c.asset) continue;
+    const assetNorm = c.asset.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const key = `${c.data}_${assetNorm}`;
+    const arr = callsByKey.get(key) || [];
+    arr.push(c);
+    callsByKey.set(key, arr);
+  }
+
+  const enriched = trades.map((t) => {
+    const override = manualOverrides.get(t.orderId);
+    if (override !== undefined) return { ...t, uraCall: override, uraCallData: null as CallRow | null };
+    if (!t.time) return { ...t, uraCall: false, uraCallData: null as CallRow | null };
+    const d = new Date(t.time);
+    d.setHours(d.getHours() - 3);
+    const day = d.toISOString().slice(0, 10);
+    const symbolNorm = t.symbol.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/USDT$/, "");
+    // Tenta com e sem USDT
+    const candidates = [
+      callsByKey.get(`${day}_${symbolNorm}`),
+      callsByKey.get(`${day}_${symbolNorm}USDT`),
+    ].flat().filter(Boolean) as CallRow[];
+    // Tb aceita call do dia anterior (trader pode entrar no dia seguinte)
+    const yesterday = new Date(d);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yKey = yesterday.toISOString().slice(0, 10);
+    const candY = callsByKey.get(`${yKey}_${symbolNorm}`) || [];
+    const all = [...candidates, ...candY];
+    // Opcional: filtrar por side se ambos tiverem
+    const matched = all.find((c) => {
+      if (!c.side || !t.side) return true;
+      const cSide = c.side.toUpperCase();
+      const tSide = t.side.toUpperCase();
+      // LONG/BUY ↔ SHORT/SELL
+      if (cSide.includes("LONG") || cSide.includes("COMPRA")) return tSide === "BUY";
+      if (cSide.includes("SHORT") || cSide.includes("VENDA")) return tSide === "SELL";
+      return true;
+    });
+    return { ...t, uraCall: !!matched, uraCallData: matched || null };
+  });
+
+  return enriched;
+}
+
+/** Compute metrics split: geral vs seguindo URA. */
+function splitMetrics(trades: (TradeItem & { uraCall: boolean })[]) {
+  const all = computeMetrics(trades);
+  const following = computeMetrics(trades.filter((t) => t.uraCall));
+  const solo = computeMetrics(trades.filter((t) => !t.uraCall));
+  return { all, followingUra: following, solo };
+}
+
+/** Trade × evento econômico: trade dentro de janela ±30min de evento high-impact */
+function crossEventExposure(trades: TradeItem[], events: EventRow[]) {
+  const highImpact = events.filter((e) => e.impact?.toLowerCase() === "high");
+  const windowMs = 30 * 60 * 1000;
+  const exposed = trades.filter((t) => {
+    if (!t.time) return false;
+    return highImpact.some((e) => {
+      const evtTime = new Date(e.event_time).getTime();
+      return Math.abs(t.time - evtTime) <= windowMs;
+    });
+  });
+  const exposedClosed = exposed.filter((t) => t.profit !== 0);
+  const exposedWins = exposedClosed.filter((t) => t.profit > 0);
+  const exposedPnL = exposedClosed.reduce((s, t) => s + t.profit, 0);
+  const totalClosed = trades.filter((t) => t.profit !== 0);
+  return {
+    totalTrades: trades.length,
+    exposedTrades: exposed.length,
+    exposedClosed: exposedClosed.length,
+    exposedWinRate: exposedClosed.length ? (exposedWins.length / exposedClosed.length) * 100 : 0,
+    exposedPnL,
+    exposedPctOfAll: totalClosed.length ? (exposedClosed.length / totalClosed.length) * 100 : 0,
+  };
+}
+
+/** Breakdown por tag: agrupa trades com metadata.tags preenchidos */
+function tagBreakdown(trades: (TradeItem & { meta?: TradeMetaRow })[]) {
+  const byTag = new Map<string, { tag: string; count: number; wins: number; pnl: number }>();
+  for (const t of trades) {
+    if (t.profit === 0) continue;
+    const tags = t.meta?.tags || [];
+    for (const tag of tags) {
+      const cur = byTag.get(tag) || { tag, count: 0, wins: 0, pnl: 0 };
+      cur.count += 1;
+      cur.pnl += t.profit;
+      if (t.profit > 0) cur.wins += 1;
+      byTag.set(tag, cur);
+    }
+  }
+  return [...byTag.values()]
+    .map((t) => ({ ...t, winRate: t.count ? (t.wins / t.count) * 100 : 0 }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/** R-multiples: quando user informou stop, cada trade vira R = profit / risk */
+function computeRMultiples(trades: (TradeItem & { meta?: TradeMetaRow })[]) {
+  const withR = trades.filter((t) => t.meta?.stop_loss && t.price > 0 && t.profit !== 0);
+  if (!withR.length) return { count: 0, totalR: 0, avgR: 0, bestR: 0, worstR: 0 };
+  const rs: number[] = [];
+  for (const t of withR) {
+    const stop = parseFloat(t.meta!.stop_loss!);
+    const riskPerUnit = Math.abs(t.price - stop);
+    if (riskPerUnit === 0) continue;
+    const risk$ = riskPerUnit * Math.abs(t.quantity);
+    if (risk$ === 0) continue;
+    rs.push(t.profit / risk$);
+  }
+  if (!rs.length) return { count: 0, totalR: 0, avgR: 0, bestR: 0, worstR: 0 };
+  return {
+    count: rs.length,
+    totalR: rs.reduce((s, r) => s + r, 0),
+    avgR: rs.reduce((s, r) => s + r, 0) / rs.length,
+    bestR: Math.max(...rs),
+    worstR: Math.min(...rs),
+  };
+}
+
+/** Prop rules enforcement status */
+function computePropStatus(
+  rules: { firm_name: string | null; daily_loss_limit_usd: number | null; max_loss_limit_usd: number | null; profit_target_usd: number | null; account_size_usd: number | null } | null,
+  todayPnL: number,
+  currentEquity: number,
+  equityCurve: { date: string; equity: number }[]
+) {
+  if (!rules) return null;
+  const startEquity = rules.account_size_usd || equityCurve[0]?.equity || currentEquity;
+  const totalPnLSinceStart = currentEquity - startEquity;
+  const dailyUsed = todayPnL < 0 ? Math.abs(todayPnL) : 0;
+  const totalLossUsed = totalPnLSinceStart < 0 ? Math.abs(totalPnLSinceStart) : 0;
+  const profitProgress = totalPnLSinceStart > 0 ? totalPnLSinceStart : 0;
+
+  return {
+    firmName: rules.firm_name,
+    accountSize: startEquity,
+    dailyLoss: {
+      used: dailyUsed,
+      limit: rules.daily_loss_limit_usd,
+      pct: rules.daily_loss_limit_usd ? (dailyUsed / rules.daily_loss_limit_usd) * 100 : 0,
+      remaining: rules.daily_loss_limit_usd ? rules.daily_loss_limit_usd - dailyUsed : null,
+    },
+    maxLoss: {
+      used: totalLossUsed,
+      limit: rules.max_loss_limit_usd,
+      pct: rules.max_loss_limit_usd ? (totalLossUsed / rules.max_loss_limit_usd) * 100 : 0,
+      remaining: rules.max_loss_limit_usd ? rules.max_loss_limit_usd - totalLossUsed : null,
+    },
+    profitTarget: {
+      progress: profitProgress,
+      target: rules.profit_target_usd,
+      pct: rules.profit_target_usd ? (profitProgress / rules.profit_target_usd) * 100 : 0,
+      remaining: rules.profit_target_usd ? rules.profit_target_usd - profitProgress : null,
+    },
+  };
 }
 
 export async function GET(req: Request) {
@@ -122,11 +311,49 @@ export async function GET(req: Request) {
       getIncome(exchange, creds, { lastDays: 30, limit: 200 }),
     ]);
 
+    // Paralelo: dados auxiliares do DB
+    const sinceMs = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const sinceDate = new Date(sinceMs).toISOString().slice(0, 10);
+    const sinceIso = new Date(sinceMs).toISOString();
+    const [
+      { data: callsRaw },
+      { data: tradeMetaRaw },
+      { data: eventsRaw },
+      { data: propRulesRaw },
+    ] = await Promise.all([
+      supabase.from("calls_history").select("id, data, side, asset, target, return_pct").gte("data", sinceDate).order("data", { ascending: false }),
+      supabase.from("exchange_trade_metadata").select("order_id, tags, notes, stop_loss, marked_as_ura_call").eq("discord_user_id", session.userId).eq("exchange", exchange),
+      supabase.from("economic_events").select("event_time, title, impact, currency").gte("event_time", sinceIso).in("impact", ["high", "High", "HIGH"]),
+      supabase.from("exchange_prop_rules").select("firm_name, account_size_usd, daily_loss_limit_usd, max_loss_limit_usd, profit_target_usd, trailing_dd").eq("discord_user_id", session.userId).eq("exchange", exchange).eq("active", true).maybeSingle(),
+    ]);
+
+    const calls = (callsRaw || []) as CallRow[];
+    const tradeMeta = (tradeMetaRaw || []) as TradeMetaRow[];
+    const events = (eventsRaw || []) as EventRow[];
+    const propRules = propRulesRaw as unknown as Parameters<typeof computePropStatus>[0];
+
+    // Index metadata por order_id e manual overrides de ura_call
+    const metaByOrder = new Map<string, TradeMetaRow>();
+    const manualUraOverrides = new Map<string, boolean>();
+    for (const m of tradeMeta) {
+      metaByOrder.set(m.order_id, m);
+      if (m.marked_as_ura_call !== null && m.marked_as_ura_call !== undefined) {
+        manualUraOverrides.set(m.order_id, m.marked_as_ura_call);
+      }
+    }
+
+    // Enriquece trades com meta + ura match
+    const matched = matchUraCalls(trades, calls, manualUraOverrides);
+    const enrichedTrades = matched.map((t) => ({ ...t, meta: metaByOrder.get(t.orderId) }));
+
     const metrics = computeMetrics(trades);
+    const metricsSplit = splitMetrics(matched);
     const dailyPnL = aggregateDailyPnL(income, 30);
     const equityCurve = reconstructEquityCurve(balance.totalEquity, dailyPnL);
+    const drawdownCurve = computeDrawdown(equityCurve);
+    const maxDrawdown = drawdownCurve.reduce((min, p) => (p.dd < min.dd ? p : min), drawdownCurve[0] || { date: "", dd: 0, ddPct: 0 });
 
-    // Breakdown por símbolo (top por |PnL|)
+    // Breakdowns já existentes
     const bySymbol = new Map<string, { symbol: string; pnl: number; trades: number; wins: number }>();
     for (const t of trades) {
       if (t.profit === 0) continue;
@@ -139,18 +366,16 @@ export async function GET(req: Request) {
     }
     const symbolBreakdown = [...bySymbol.values()].sort((a, b) => Math.abs(b.pnl) - Math.abs(a.pnl)).slice(0, 8);
 
-    // Breakdown por hora do dia (BRT)
     const hourly = new Array(24).fill(null).map((_, h) => ({ hour: h, pnl: 0, trades: 0 }));
     for (const t of trades) {
       if (t.profit === 0 || !t.time) continue;
       const d = new Date(t.time);
-      d.setHours(d.getHours() - 3); // BRT
+      d.setHours(d.getHours() - 3);
       const h = d.getHours();
       hourly[h].pnl += t.profit;
       hourly[h].trades += 1;
     }
 
-    // Breakdown por dia da semana
     const dows = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
     const dowBreakdown = dows.map((name, i) => ({ dow: i, name, pnl: 0, trades: 0 }));
     for (const t of trades) {
@@ -162,21 +387,58 @@ export async function GET(req: Request) {
       dowBreakdown[dow].trades += 1;
     }
 
+    // Novas analytics
+    const tagStats = tagBreakdown(enrichedTrades);
+    const rMultiples = computeRMultiples(enrichedTrades);
+    const eventExposure = crossEventExposure(trades, events);
+
+    const todayKey = (() => {
+      const n = new Date();
+      n.setHours(n.getHours() - 3);
+      return n.toISOString().slice(0, 10);
+    })();
+    const todayPnL = dailyPnL.find((d) => d.date === todayKey)?.pnl || 0;
+    const propStatus = computePropStatus(propRules, todayPnL, balance.totalEquity, equityCurve);
+
+    // Trades enriquecidos na resposta (com meta + uraCall flag)
+    const tradesForClient = enrichedTrades.slice(0, 100).map((t) => ({
+      orderId: t.orderId,
+      symbol: t.symbol,
+      side: t.side,
+      type: t.type,
+      price: t.price,
+      quantity: t.quantity,
+      profit: t.profit,
+      commission: t.commission,
+      status: t.status,
+      time: t.time,
+      uraCall: t.uraCall,
+      tags: t.meta?.tags || [],
+      notes: t.meta?.notes || null,
+      stopLoss: t.meta?.stop_loss ? parseFloat(t.meta.stop_loss) : null,
+    }));
+
     const snapshot = {
       balance,
       positions,
-      trades: trades.slice(0, 100),
+      trades: tradesForClient,
       income: income.slice(0, 100),
       metrics,
+      metricsSplit,
       equityCurve,
+      drawdownCurve,
+      maxDrawdown,
       dailyPnL,
       symbolBreakdown,
       hourlyBreakdown: hourly,
       dowBreakdown,
+      tagStats,
+      rMultiples,
+      eventExposure,
+      propStatus,
       label: conn.label,
     };
 
-    // Cache snapshot completo (5 min TTL via fetched_at)
     await supabase.from("exchange_snapshots").upsert(
       {
         discord_user_id: session.userId,
@@ -188,15 +450,14 @@ export async function GET(req: Request) {
       { onConflict: "discord_user_id,exchange,snapshot_type" }
     );
 
-    // Snapshot diário de equity — 1 row por dia acumulando histórico pra curva real no futuro
     const today = new Date();
     today.setHours(today.getHours() - 3);
-    const todayKey = today.toISOString().slice(0, 10);
+    const todayDateKey = today.toISOString().slice(0, 10);
     await supabase.from("exchange_equity_daily").upsert(
       {
         discord_user_id: session.userId,
         exchange,
-        date: todayKey,
+        date: todayDateKey,
         total_equity: balance.totalEquity,
         available_margin: balance.availableMargin,
         unrealized_pnl: balance.unrealizedPnL,
@@ -211,7 +472,6 @@ export async function GET(req: Request) {
       .update({ last_sync_at: new Date().toISOString(), status: "active", error_message: null })
       .eq("id", conn.id);
 
-    // Tenta enriquecer equity curve com snapshots reais (preferido sobre reconstrução)
     const { data: realEquity } = await supabase
       .from("exchange_equity_daily")
       .select("date, total_equity")
@@ -238,4 +498,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ connected: true, exchange, error: msg }, { status: 502 });
   }
 }
-

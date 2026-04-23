@@ -9,9 +9,13 @@ import {
   Plus, Check,
 } from "lucide-react";
 import { EquityCurve } from "@/components/elite/corretora/EquityCurve";
+import { DrawdownCurve } from "@/components/elite/corretora/DrawdownCurve";
 import { PnLHeatmap } from "@/components/elite/corretora/PnLHeatmap";
 import { SymbolBreakdown, HourlyBreakdown, DowBreakdown } from "@/components/elite/corretora/Breakdowns";
-import { TradeJournal } from "@/components/elite/corretora/TradeJournal";
+import { TradeJournal, type JournalTrade } from "@/components/elite/corretora/TradeJournal";
+import { TradeDetailModal, type TradeForModal } from "@/components/elite/corretora/TradeDetailModal";
+import { UraCallSplit, EventExposureCard, TagBreakdown, RMultiplesCard, PropRulesBanner } from "@/components/elite/corretora/Insights";
+import { PropRulesModal } from "@/components/elite/corretora/PropRulesModal";
 
 /* ────────────────────────────────────────────
    Types
@@ -130,6 +134,10 @@ interface Trade {
   profit: number;
   status: string;
   time: number;
+  uraCall?: boolean;
+  tags?: string[];
+  notes?: string | null;
+  stopLoss?: number | null;
 }
 
 interface Metrics {
@@ -157,6 +165,19 @@ interface SymbolRow { symbol: string; pnl: number; trades: number; wins: number 
 interface HourRow { hour: number; pnl: number; trades: number }
 interface DowRow { dow: number; name: string; pnl: number; trades: number }
 
+interface MetricsSplit { all: Metrics; followingUra: Metrics; solo: Metrics }
+interface DrawdownPoint { date: string; dd: number; ddPct: number }
+interface EventExposure { totalTrades: number; exposedClosed: number; exposedWinRate: number; exposedPnL: number; exposedPctOfAll: number }
+interface TagStat { tag: string; count: number; wins: number; pnl: number; winRate: number }
+interface RMultiples { count: number; totalR: number; avgR: number; bestR: number; worstR: number }
+interface PropStatus {
+  firmName: string | null;
+  accountSize: number;
+  dailyLoss: { used: number; limit: number | null; pct: number; remaining: number | null };
+  maxLoss: { used: number; limit: number | null; pct: number; remaining: number | null };
+  profitTarget: { progress: number; target: number | null; pct: number; remaining: number | null };
+}
+
 interface ExchangeData {
   connected: boolean;
   exchange?: string;
@@ -166,12 +187,19 @@ interface ExchangeData {
   positions?: Position[];
   trades?: Trade[];
   metrics?: Metrics;
+  metricsSplit?: MetricsSplit;
   equityCurve?: EquityPoint[];
   realEquityCurve?: EquityPoint[];
+  drawdownCurve?: DrawdownPoint[];
+  maxDrawdown?: DrawdownPoint;
   dailyPnL?: DailyPnL[];
   symbolBreakdown?: SymbolRow[];
   hourlyBreakdown?: HourRow[];
   dowBreakdown?: DowRow[];
+  tagStats?: TagStat[];
+  rMultiples?: RMultiples;
+  eventExposure?: EventExposure;
+  propStatus?: PropStatus | null;
   label?: string;
 }
 
@@ -546,17 +574,54 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [hideBalance, setHideBalance] = useState(false);
   const [period, setPeriod] = useState<Period>("7d");
+  const [openTrade, setOpenTrade] = useState<TradeForModal | null>(null);
+  const [allowedTags, setAllowedTags] = useState<string[]>([]);
+  const [showPropRules, setShowPropRules] = useState(false);
+  const [propRulesExisting, setPropRulesExisting] = useState<{
+    firm_name: string | null;
+    account_size_usd: number | null;
+    daily_loss_limit_usd: number | null;
+    max_loss_limit_usd: number | null;
+    profit_target_usd: number | null;
+  } | null>(null);
 
   const balance = data.balance;
   const positions = data.positions || [];
   const trades = data.trades || [];
   const metrics = data.metrics;
+  const metricsSplit = data.metricsSplit;
   const equityCurve = data.equityCurve || [];
   const realEquityCurve = data.realEquityCurve || [];
+  const drawdownCurve = data.drawdownCurve || [];
   const dailyPnL = data.dailyPnL || [];
   const symbolBreakdown = data.symbolBreakdown || [];
   const hourlyBreakdown = data.hourlyBreakdown || [];
   const dowBreakdown = data.dowBreakdown || [];
+  const tagStats = data.tagStats || [];
+  const rMultiples = data.rMultiples;
+  const eventExposure = data.eventExposure;
+  const propStatus = data.propStatus || null;
+
+  // Busca tags permitidas sob demanda (cache simples)
+  useEffect(() => {
+    if (allowedTags.length === 0) {
+      fetch(`/api/exchange/trade-meta?exchange=${exchange.id}`)
+        .then((r) => r.json())
+        .then((d) => setAllowedTags(d.allowedTags || []))
+        .catch(() => {});
+    }
+  }, [exchange.id, allowedTags.length]);
+
+  const openPropRulesModal = async () => {
+    try {
+      const res = await fetch(`/api/exchange/prop-rules?exchange=${exchange.id}`);
+      const d = await res.json();
+      setPropRulesExisting(d.rules || null);
+    } catch {
+      setPropRulesExisting(null);
+    }
+    setShowPropRules(true);
+  };
 
   const fmtUsd = (n: number) => {
     if (hideBalance) return "$••••";
@@ -654,6 +719,9 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         </div>
       )}
 
+      {/* Prop rules banner (opcional) */}
+      <PropRulesBanner status={propStatus} onConfigure={openPropRulesModal} />
+
       {/* HERO — Equity curve (60%) + KPI stack (40%) */}
       <div className="animate-in-up delay-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
         {/* Equity curve */}
@@ -680,7 +748,12 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
               ))}
             </div>
           </div>
-          <EquityCurve data={curve} height={190} />
+          <EquityCurve data={curve} height={170} />
+          {drawdownCurve.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-white/[0.04]">
+              <DrawdownCurve data={drawdownCurve.slice(-(period === "7d" ? 7 : period === "30d" ? 30 : drawdownCurve.length))} height={60} />
+            </div>
+          )}
         </div>
 
         {/* KPI stack: Patrimônio · PnL período · Posições */}
@@ -733,6 +806,9 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           </div>
         </div>
       </div>
+
+      {/* URA call split — suas stats seguindo vs solo */}
+      {metricsSplit && <UraCallSplit split={metricsSplit} />}
 
       {/* Stats strip — 7 métricas em linha */}
       {metrics && metrics.totalTrades > 0 && (
@@ -832,11 +908,31 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
             <h2 className="text-[12px] font-semibold text-white/80">Journal</h2>
             <span className="text-[10px] text-white/25 ml-auto">últimos 7 dias</span>
           </div>
-          <TradeJournal trades={trades} hideBalance={hideBalance} />
+          <TradeJournal
+            trades={trades as JournalTrade[]}
+            hideBalance={hideBalance}
+            onTradeClick={(t) => setOpenTrade({
+              orderId: t.orderId,
+              symbol: t.symbol,
+              side: t.side,
+              price: t.price,
+              quantity: t.quantity,
+              profit: t.profit,
+              time: t.time,
+              tags: t.tags || [],
+              notes: t.notes || null,
+              stopLoss: t.stopLoss || null,
+              uraCall: !!t.uraCall,
+            })}
+          />
         </div>
 
         {/* Breakdowns stack */}
         <div className="space-y-4">
+          {rMultiples && <RMultiplesCard r={rMultiples} />}
+          {eventExposure && <EventExposureCard exposure={eventExposure} />}
+          <TagBreakdown tags={tagStats} />
+
           <div className="rounded-xl surface-card p-5">
             <div className="flex items-center gap-2.5 mb-3.5">
               <TrendingUp className="w-3.5 h-3.5 text-white/45" />
@@ -879,6 +975,25 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       <p className="text-[10px] text-white/15 text-center pt-2">
         Dados de 7 dias (limite da API BingX em trade history). Equity curve expande com o tempo conforme acumular snapshots diários.
       </p>
+
+      {openTrade && (
+        <TradeDetailModal
+          trade={openTrade}
+          exchange={exchange.id}
+          allowedTags={allowedTags}
+          onClose={() => setOpenTrade(null)}
+          onSaved={() => { onRefresh(); setOpenTrade(null); }}
+        />
+      )}
+
+      {showPropRules && (
+        <PropRulesModal
+          exchange={exchange.id}
+          existing={propRulesExisting}
+          onClose={() => setShowPropRules(false)}
+          onSaved={() => { onRefresh(); setShowPropRules(false); }}
+        />
+      )}
     </div>
   );
 }

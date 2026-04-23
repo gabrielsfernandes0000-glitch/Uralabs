@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, StickyNote } from "lucide-react";
 
-interface Trade {
+export interface JournalTrade {
   orderId: string;
   symbol: string;
   side: string;
@@ -11,9 +11,13 @@ interface Trade {
   quantity: number;
   profit: number;
   time: number;
+  tags?: string[];
+  notes?: string | null;
+  stopLoss?: number | null;
+  uraCall?: boolean;
 }
 
-type Filter = "all" | "wins" | "losses";
+type Filter = "all" | "wins" | "losses" | "ura";
 
 function fmtUsd(n: number, hideBalance = false) {
   if (hideBalance) return "$••••";
@@ -21,7 +25,15 @@ function fmtUsd(n: number, hideBalance = false) {
   return `${prefix}${Math.abs(n).toFixed(2)}`;
 }
 
-export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[]; hideBalance?: boolean }) {
+export function TradeJournal({
+  trades,
+  hideBalance = false,
+  onTradeClick,
+}: {
+  trades: JournalTrade[];
+  hideBalance?: boolean;
+  onTradeClick?: (t: JournalTrade) => void;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const [showOpens, setShowOpens] = useState(false);
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
@@ -33,12 +45,12 @@ export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[];
     let pool = closed;
     if (filter === "wins") pool = closed.filter((t) => t.profit > 0);
     else if (filter === "losses") pool = closed.filter((t) => t.profit < 0);
+    else if (filter === "ura") pool = closed.filter((t) => t.uraCall);
 
     if (showOpens) pool = [...pool, ...opens];
     pool = [...pool].sort((a, b) => b.time - a.time);
 
-    // Group by day
-    const byDay = new Map<string, Trade[]>();
+    const byDay = new Map<string, JournalTrade[]>();
     for (const t of pool) {
       const d = new Date(t.time);
       d.setHours(d.getHours() - 3);
@@ -57,6 +69,7 @@ export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[];
         all: closed.length,
         wins: closed.filter((t) => t.profit > 0).length,
         losses: closed.filter((t) => t.profit < 0).length,
+        ura: closed.filter((t) => t.uraCall).length,
         opens: opens.length,
       },
     };
@@ -66,40 +79,36 @@ export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[];
 
   return (
     <div className="space-y-3">
-      {/* Filter tabs */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex gap-4 text-[11.5px] font-medium">
           {([
             ["all", "Todos", counts.all],
             ["wins", "Wins", counts.wins],
             ["losses", "Losses", counts.losses],
+            ["ura", "URA", counts.ura],
           ] as const).map(([k, label, count]) => {
             const active = filter === k;
+            const brandAccent = k === "ura";
             return (
               <button
                 key={k}
+                type="button"
                 onClick={() => setFilter(k)}
-                className={`interactive-tap relative pb-1.5 transition-colors ${active ? "text-white" : "text-white/35 hover:text-white/65"}`}
+                className={`interactive-tap relative pb-1.5 transition-colors ${active ? (brandAccent ? "text-brand-500" : "text-white") : "text-white/35 hover:text-white/65"}`}
               >
                 {label}
                 <span className="ml-1 text-[10px] text-white/30 tabular-nums">{count}</span>
-                {active && <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-brand-500 rounded-full" />}
+                {active && <span className={`absolute bottom-0 left-0 right-0 h-[1.5px] rounded-full ${brandAccent ? "bg-brand-500" : "bg-white/85"}`} />}
               </button>
             );
           })}
         </div>
         <label className="flex items-center gap-1.5 text-[10.5px] text-white/40 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={showOpens}
-            onChange={(e) => setShowOpens(e.target.checked)}
-            className="w-3 h-3 accent-brand-500"
-          />
+          <input type="checkbox" checked={showOpens} onChange={(e) => setShowOpens(e.target.checked)} className="w-3 h-3 accent-brand-500" />
           Mostrar aberturas ({counts.opens})
         </label>
       </div>
 
-      {/* Groups */}
       {grouped.length === 0 && (
         <div className="flex flex-col items-center py-8">
           <p className="text-[12px] text-white/30">Nenhum trade no filtro</p>
@@ -116,6 +125,7 @@ export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[];
           return (
             <div key={g.date}>
               <button
+                type="button"
                 onClick={() => toggleDay(g.date)}
                 className="interactive-tap w-full flex items-center justify-between gap-3 py-2 px-2.5 rounded-lg hover:bg-white/[0.02] transition-colors"
               >
@@ -136,9 +146,16 @@ export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[];
                     const sideColor = t.side === "BUY" || t.side === "Buy" ? "bg-green-400" : "bg-red-400";
                     const dt = new Date(t.time);
                     dt.setHours(dt.getHours() - 3);
+                    const hasNotes = !!t.notes && t.notes.trim().length > 0;
+                    const tags = t.tags || [];
                     return (
-                      <div key={i} className="flex items-center justify-between gap-3 px-2.5 py-1.5 rounded-md hover:bg-white/[0.02] transition-colors">
-                        <div className="flex items-center gap-2.5 min-w-0">
+                      <button
+                        key={t.orderId + i}
+                        type="button"
+                        onClick={() => onTradeClick?.(t)}
+                        className="interactive-tap w-full flex items-center justify-between gap-3 px-2.5 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${sideColor}`} />
                           <span className="text-[11.5px] font-medium text-white/80 font-mono">
                             {t.symbol.replace(/-?USDT/, "")}
@@ -146,18 +163,23 @@ export function TradeJournal({ trades, hideBalance = false }: { trades: Trade[];
                           <span className="text-[10px] text-white/30 font-mono tabular-nums">
                             {dt.toTimeString().slice(0, 5)}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          {t.price > 0 && (
-                            <span className="text-[10px] text-white/30 font-mono tabular-nums hidden sm:inline">
-                              {t.price < 1 ? t.price.toFixed(6) : t.price.toFixed(2)}
-                            </span>
+                          {t.uraCall && (
+                            <span className="text-[8.5px] font-bold text-brand-500 tracking-wider">URA</span>
                           )}
-                          <span className={`text-[11.5px] font-mono tabular-nums font-semibold ${color} min-w-[60px] text-right`}>
-                            {t.profit === 0 ? "—" : fmtUsd(t.profit, hideBalance)}
-                          </span>
+                          {tags.slice(0, 2).map((tag) => (
+                            <span key={tag} className="text-[9.5px] font-medium text-white/45 border border-white/[0.08] rounded px-1 py-[0.5px] truncate">
+                              {tag}
+                            </span>
+                          ))}
+                          {tags.length > 2 && (
+                            <span className="text-[9px] text-white/30">+{tags.length - 2}</span>
+                          )}
+                          {hasNotes && <StickyNote className="w-3 h-3 text-white/35 shrink-0" />}
                         </div>
-                      </div>
+                        <span className={`text-[11.5px] font-mono tabular-nums font-semibold ${color} min-w-[60px] text-right shrink-0`}>
+                          {t.profit === 0 ? "—" : fmtUsd(t.profit, hideBalance)}
+                        </span>
+                      </button>
                     );
                   })}
                 </div>
