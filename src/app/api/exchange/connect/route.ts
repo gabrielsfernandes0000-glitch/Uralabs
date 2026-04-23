@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { encrypt, keyFingerprint } from "@/lib/exchange/crypto";
+import { encrypt } from "@/lib/exchange/crypto";
 import { validateCredentials, EXCHANGES, type ExchangeId } from "@/lib/exchange";
 
 const VALID_EXCHANGES = EXCHANGES.map((e) => e.id);
@@ -50,7 +50,11 @@ export async function POST(req: Request) {
     const a = encrypt(apiKey.trim());
     apiKeyEnc = a.encrypted; iv = a.iv;
     const secretToStore = passphrase ? `${apiSecret.trim()}|||${passphrase.trim()}` : apiSecret.trim();
-    secretEnc = encrypt(secretToStore).encrypted;
+    // CRÍTICO: reusa o MESMO iv — só 1 iv é salvo no DB, os 2 encrypts precisam
+    // usar o mesmo. Antes estava gerando IV novo no 2º encrypt (default), o
+    // que fazia decrypt do api_secret falhar com "Unsupported state" (authTag
+    // mismatch). Bug silencioso porque decrypt do api_key vinha antes e passava.
+    secretEnc = encrypt(secretToStore, iv).encrypted;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "erro de encryption";
     console.error("[exchange/connect] encrypt failed:", msg);
@@ -102,5 +106,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true, message: `${meta.name} conectada com sucesso`, _kfp: keyFingerprint() });
+  return NextResponse.json({ ok: true, message: `${meta.name} conectada com sucesso` });
 }

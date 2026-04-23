@@ -20,18 +20,18 @@ function getEncryptionKey(): Buffer {
   return createHash("sha256").update(raw.trim()).digest();
 }
 
-/** Temp debug — expose key hash pra comparar encrypt vs decrypt lambdas. */
-export function keyFingerprint(): string {
-  try {
-    return getEncryptionKey().toString("hex").slice(0, 16);
-  } catch {
-    return "no-key";
-  }
-}
-
-export function encrypt(plaintext: string): { encrypted: string; iv: string } {
+/** Encrypt com IV opcional. Quando múltiplos encrypts são feitos pra mesma
+ *  conexão (api_key + api_secret) e só 1 IV é salvo no DB, TODOS os encrypts
+ *  precisam usar o MESMO IV — senão decrypt do segundo valor falha com
+ *  "Unsupported state or unable to authenticate data" (authTag mismatch).
+ *
+ *  Passar `ivBase64` reusa um IV já gerado. Omitir gera um IV novo. */
+export function encrypt(
+  plaintext: string,
+  ivBase64?: string,
+): { encrypted: string; iv: string } {
   const key = getEncryptionKey();
-  const iv = randomBytes(IV_LENGTH);
+  const iv = ivBase64 ? Buffer.from(ivBase64, "base64") : randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
 
   let encrypted = cipher.update(plaintext, "utf8", "base64");
