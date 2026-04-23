@@ -261,20 +261,34 @@ export async function GET(req: Request) {
     return NextResponse.json({ connected: false, exchange });
   }
 
-  const CACHE_TTL = 30 * 1000; // 30s — client faz auto-refresh visivel, pedagogia de "quase tempo real"
+  const CACHE_TTL = 30 * 1000; // 30s — client faz auto-refresh visivel
+  const HARD_RATE_LIMIT = 15 * 1000; // 15s — mesmo com refresh=1, nao hita BingX se fetched_at é mais novo
 
-  if (!forceRefresh) {
-    const { data: cached } = await supabase
-      .from("exchange_snapshots")
-      .select("data, fetched_at")
-      .eq("discord_user_id", session.userId)
-      .eq("exchange", exchange)
-      .eq("snapshot_type", "full")
-      .single();
+  // Lê cache uma vez — serve pra 3 decisões: hit normal, guard 15s, fallback em rate limit da BingX
+  const { data: cached } = await supabase
+    .from("exchange_snapshots")
+    .select("data, fetched_at")
+    .eq("discord_user_id", session.userId)
+    .eq("exchange", exchange)
+    .eq("snapshot_type", "full")
+    .single();
 
-    if (cached && Date.now() - new Date(cached.fetched_at).getTime() < CACHE_TTL) {
-      return NextResponse.json({ connected: true, exchange, cached: true, ...cached.data });
-    }
+  const ageMs = cached ? Date.now() - new Date(cached.fetched_at).getTime() : Infinity;
+
+  // Cache hit normal
+  if (!forceRefresh && cached && ageMs < CACHE_TTL) {
+    return NextResponse.json({ connected: true, exchange, cached: true, ...cached.data });
+  }
+
+  // Rate limit hard: refresh=1 spammado? serve cache (mesmo expirado) se < 15s
+  if (forceRefresh && cached && ageMs < HARD_RATE_LIMIT) {
+    return NextResponse.json({
+      connected: true,
+      exchange,
+      cached: true,
+      rateLimited: true,
+      ...cached.data,
+    });
   }
 
   let apiKey: string;
@@ -412,55 +426,110 @@ export async function GET(req: Request) {
       liqKeys.add(`${f.symbol}_${Math.floor(f.time / 60000)}`); // minuto-level
     }
 
-    // MFE/MAE via klines: so computa pros TOP 20 trades closed mais recentes
-    //   (limite pra nao blastar o rate da API BingX numa request).
-    // Se trade.price > 0 e profit != 0, temos entry. Exit price vem do avgPrice se presente.
-    const closedTradesSorted = [...enrichedTrades].filter((t) => t.profit !== 0 && t.time > 0).sort((a, b) => b.time - a.time).slice(0, 20);
-    const mfeMae = new Map<string, { mfe: number; mae: number; mfeR: number | null; maeR: number | null; entryPrice: number; exitPrice: number | null }>();
-    if (isBingx) {
+    // MFE/MAE via klines — PASSADO É IMUTÁVEL, cache eterno por orderId em DB.
+    // 1. Le todos os mfe/mae já computados pros trades deste snapshot.
+    // 2. Pros que não tem, calcula via klines (so trades com profit != 0).
+    // 3. Persiste os novos.
+    // Resultado: primeiro load de trader ativo = ~10 chamadas klines.
+    //            loads subsequentes = 0 chamadas klines pro mesmo trade.
+    const closedTradesSorted = [...enrichedTrades].filter((t) => t.profit !== 0 && t.time > 0).sort((a, b) => b.time - a.time).slice(0, 30);
+    const orderIds = closedTradesSorted.map((t) => t.orderId);
+    const mfeMae = new Map<string, { mfe: number; mae: number; mfeR: number | null; maeR: number | null }>();
+
+    if (isBingx && orderIds.length > 0) {
+      const { data: cachedMfe } = await supabase
+        .from("exchange_trade_mfemae")
+        .select("order_id, mfe_usd, mae_usd")
+        .in("order_id", orderIds);
+
+      const cachedMap = new Map<string, { mfe: number; mae: number }>();
+      for (const row of cachedMfe || []) {
+        cachedMap.set(row.order_id, {
+          mfe: parseFloat(row.mfe_usd || "0"),
+          mae: parseFloat(row.mae_usd || "0"),
+        });
+      }
+
+      // Pros cached, computa R multiple (risk muda com stop atualizado)
+      const toFetch: typeof closedTradesSorted = [];
+      for (const t of closedTradesSorted) {
+        const entry = t.price;
+        if (!entry) continue;
+        const qty = Math.abs(t.quantity || 0);
+        const stop = t.meta?.stop_loss ? parseFloat(t.meta.stop_loss) : null;
+        const risk = stop && qty > 0 ? Math.abs(entry - stop) * qty : null;
+
+        const cachedVal = cachedMap.get(t.orderId);
+        if (cachedVal) {
+          mfeMae.set(t.orderId, {
+            mfe: cachedVal.mfe,
+            mae: cachedVal.mae,
+            mfeR: risk && risk > 0 ? cachedVal.mfe / risk : null,
+            maeR: risk && risk > 0 ? cachedVal.mae / risk : null,
+          });
+        } else {
+          toFetch.push(t);
+        }
+      }
+
+      // Fetch paralelo apenas pros não-cacheados (limitado a 10 concorrentes)
+      const toFetchLimited = toFetch.slice(0, 10);
+      const newRows: Array<{ order_id: string; symbol: string; side: string; entry_price: number; trade_time: number; mfe_usd: number; mae_usd: number; mfe_price: number; mae_price: number }> = [];
+
       await Promise.all(
-        closedTradesSorted.map(async (t) => {
+        toFetchLimited.map(async (t) => {
           try {
-            // Janela de +- 30min ao redor do trade, interval 1m
             const windowMs = 30 * 60 * 1000;
             const start = Math.max(0, t.time - windowMs);
             const end = t.time + windowMs;
             const klines = await getKlines(t.symbol, "1m", start, end, 100);
             if (!klines.length) return;
             const entry = t.price;
-            if (!entry) return;
+            const qty = Math.abs(t.quantity || 0);
             const isLong = (t.side || "").toUpperCase() === "BUY";
-            let mfe = 0;
-            let mae = 0;
+            let mfePrice = entry;
+            let maePrice = entry;
             for (const k of klines) {
               if (isLong) {
-                mfe = Math.max(mfe, k.high - entry);
-                mae = Math.min(mae, k.low - entry);
+                if (k.high > mfePrice) mfePrice = k.high;
+                if (k.low < maePrice) maePrice = k.low;
               } else {
-                mfe = Math.max(mfe, entry - k.low);
-                mae = Math.min(mae, entry - k.high);
+                if (k.low < mfePrice) mfePrice = k.low; // pro short, MFE é preço caindo
+                if (k.high > maePrice) maePrice = k.high;
               }
             }
-            // Converte para $ multiplicando pelo size
-            const qty = Math.abs(t.quantity || 0);
-            const mfeUsd = mfe * qty;
-            const maeUsd = mae * qty;
-            // R-multiple se tem stop no metadata
+            const mfe = isLong ? (mfePrice - entry) * qty : (entry - mfePrice) * qty;
+            const mae = isLong ? (maePrice - entry) * qty : (entry - maePrice) * qty;
             const stop = t.meta?.stop_loss ? parseFloat(t.meta.stop_loss) : null;
-            const risk = stop ? Math.abs(entry - stop) * qty : null;
+            const risk = stop && qty > 0 ? Math.abs(entry - stop) * qty : null;
+
             mfeMae.set(t.orderId, {
-              mfe: mfeUsd,
-              mae: maeUsd,
-              mfeR: risk && risk > 0 ? mfeUsd / risk : null,
-              maeR: risk && risk > 0 ? maeUsd / risk : null,
-              entryPrice: entry,
-              exitPrice: null, // BingX retorna avgPrice só se foi um trade fechado; nao tem campo exit claro
+              mfe, mae,
+              mfeR: risk && risk > 0 ? mfe / risk : null,
+              maeR: risk && risk > 0 ? mae / risk : null,
+            });
+
+            newRows.push({
+              order_id: t.orderId,
+              symbol: t.symbol,
+              side: t.side,
+              entry_price: entry,
+              trade_time: t.time,
+              mfe_usd: mfe,
+              mae_usd: mae,
+              mfe_price: mfePrice,
+              mae_price: maePrice,
             });
           } catch {
-            // Silently ignore — klines pode falhar sem comprometer a response inteira
+            // Silently ignore — klines pode falhar sem comprometer a response
           }
         })
       );
+
+      // Persiste pros proximos fetches (passado imutável, nunca precisa refazer)
+      if (newRows.length > 0) {
+        await supabase.from("exchange_trade_mfemae").upsert(newRows, { onConflict: "order_id" });
+      }
     }
 
     const todayKey = (() => {

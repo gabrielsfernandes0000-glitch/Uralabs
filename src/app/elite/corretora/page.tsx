@@ -402,11 +402,28 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
           </ol>
         </div>
 
-        <div className="flex items-start gap-3 px-5 py-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <Shield className="w-4 h-4 text-white/25 mt-0.5 flex-shrink-0" />
-          <p className="text-[11px] text-white/30 leading-relaxed">
-            Suas keys sao encriptadas com AES-256-GCM antes de serem salvas. Nunca temos acesso a trades ou saques na sua conta.
-          </p>
+        <div className="space-y-2.5">
+          <div className="flex items-start gap-3 px-5 py-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <Shield className="w-4 h-4 text-white/25 mt-0.5 flex-shrink-0" />
+            <p className="text-[11px] text-white/30 leading-relaxed">
+              Suas keys são encriptadas com AES-256-GCM antes de serem salvas. Nunca temos acesso a trades ou saques.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-amber-400/25 bg-amber-500/[0.02]">
+            <AlertCircle className="w-4 h-4 text-amber-400/70 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1.5">
+              <p className="text-[11.5px] text-amber-200/80 leading-relaxed font-semibold">
+                Importante — risco de ban por copy trade
+              </p>
+              <p className="text-[10.5px] text-white/45 leading-relaxed">
+                URA Labs <span className="text-white/70">só lê</span> sua conta — nunca roteia ordens. Mas mesa prop (FTMO, MFF, Apex) detecta same-IP e bane contas em batch quando vários traders executam a mesma call em segundos.
+              </p>
+              <p className="text-[10.5px] text-white/45 leading-relaxed">
+                <span className="text-white/65">Use API key read-only sempre.</span> Nunca cole aqui chave com permissão de trade. Se opera mesa prop, execute as calls pelo terminal da mesa no seu próprio PC, <span className="text-white/65">nunca por script automatizado</span>.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
