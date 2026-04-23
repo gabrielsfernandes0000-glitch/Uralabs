@@ -1,38 +1,32 @@
-// Mesma logica do site/src/lib/exchange/crypto.ts — AES-256-GCM com iv compartilhado
-// entre api_key e api_secret (reuso intencional por row, ver memory feedback_aes_gcm_iv_reuse).
+// AES-256-GCM — EXATAMENTE mesmo formato do site (site/src/lib/exchange/crypto.ts).
+// IV 16 bytes, authTag separado do encrypted por ".", derivação SHA-256 da env (trimmed).
 
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
+import { createDecipheriv, createHash } from "crypto";
 import { env } from "./env.js";
 
-const ALGO = "aes-256-gcm";
+const ALGORITHM = "aes-256-gcm";
+const AUTH_TAG_LENGTH = 16;
 
-function getKey(): Buffer {
-  // SHA-256 da env imune a whitespace — mesma derivacao do site
-  return createHash("sha256").update(env.EXCHANGE_ENCRYPTION_KEY.trim()).digest();
+function getEncryptionKey(): Buffer {
+  const raw = env.EXCHANGE_ENCRYPTION_KEY;
+  if (!raw || raw.trim().length < 32) {
+    throw new Error("EXCHANGE_ENCRYPTION_KEY must be set (min 32 chars)");
+  }
+  return createHash("sha256").update(raw.trim()).digest();
 }
 
-export function decrypt(ciphertextB64: string, ivB64: string): string {
-  const key = getKey();
-  const iv = Buffer.from(ivB64, "base64");
-  const buf = Buffer.from(ciphertextB64, "base64");
-  // Últimos 16 bytes = authTag
-  const authTag = buf.subarray(buf.length - 16);
-  const ct = buf.subarray(0, buf.length - 16);
-  const decipher = createDecipheriv(ALGO, key, iv);
+export function decrypt(encryptedData: string, ivBase64: string): string {
+  const key = getEncryptionKey();
+  const iv = Buffer.from(ivBase64, "base64");
+
+  const [encrypted, authTagB64] = encryptedData.split(".");
+  if (!encrypted || !authTagB64) throw new Error("Invalid encrypted data format (expected encrypted.authTag)");
+
+  const authTag = Buffer.from(authTagB64, "base64");
+  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   decipher.setAuthTag(authTag);
-  const pt = Buffer.concat([decipher.update(ct), decipher.final()]);
-  return pt.toString("utf-8");
-}
 
-// Export pra testes/futuro; nao usado no worker (worker so decrypta)
-export function encrypt(plaintext: string, ivB64?: string): { encrypted: string; iv: string } {
-  const key = getKey();
-  const iv = ivB64 ? Buffer.from(ivB64, "base64") : randomBytes(12);
-  const cipher = createCipheriv(ALGO, key, iv);
-  const ct = Buffer.concat([cipher.update(plaintext, "utf-8"), cipher.final()]);
-  const authTag = cipher.getAuthTag();
-  return {
-    encrypted: Buffer.concat([ct, authTag]).toString("base64"),
-    iv: iv.toString("base64"),
-  };
+  let decrypted = decipher.update(encrypted, "base64", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
 }
