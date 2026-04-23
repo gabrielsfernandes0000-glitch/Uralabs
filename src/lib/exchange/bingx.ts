@@ -101,8 +101,9 @@ export async function getTradeHistory(
   params.limit = String(opts.limit || 50);
 
   if (opts.lastDays) {
-    const startTime = Date.now() - opts.lastDays * 24 * 60 * 60 * 1000;
-    params.startTime = startTime.toString();
+    // BingX /trade/allOrders tem cap de 7 dias no range (erro 109400 acima disso)
+    const days = Math.min(opts.lastDays, 7);
+    params.startTime = (Date.now() - days * 24 * 60 * 60 * 1000).toString();
   }
 
   const result = await request("/openApi/swap/v2/trade/allOrders", creds, params);
