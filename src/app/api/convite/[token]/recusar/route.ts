@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAnon } from "@/lib/supabase";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,13 @@ function json(status: number, body: unknown) {
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
+  // Rate limit por IP: 20/10min (mesma defesa do /aceitar).
+  const ip = getClientIp(req);
+  const allowed = await checkRateLimit(`convite-recusar:${ip}`, 20, 600);
+  if (!allowed) {
+    return json(429, { ok: false, error: "Muitas tentativas. Aguarde alguns minutos." });
+  }
+
   const { token } = await ctx.params;
   if (!token || token.length < 8 || token.length > 64) {
     return json(400, { ok: false, error: "Token inválido" });
