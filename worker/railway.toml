@@ -1,0 +1,21 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node dist/index.js"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+
+[deploy.envs]
+# Referenciar envs aqui não é obrigatório — Railway dashboard é o source of truth.
+# Lista abaixo é só doc visível no PR:
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_ROLE_KEY
+# - EXCHANGE_ENCRYPTION_KEY
+# - BINGX_PROXY_URL (opcional)
+# - BINGX_PROXY_SECRET (opcional)
+# - LOG_LEVEL (info|debug|warn|error, default info)
+# - RECONCILE_INTERVAL_MS (default 30000)
