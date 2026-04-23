@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getSupabaseAnon } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  // Anti-spam: 10 comentários/5min/user. Conversa normal fica bem abaixo,
+  // flood automatizado (DoS de UX) trava rápido.
+  const allowed = await checkRateLimit(`lesson-comment:${session.userId}`, 10, 300);
+  if (!allowed) {
+    return NextResponse.json({ error: "Muitos comentários em pouco tempo. Espera um pouco." }, { status: 429 });
+  }
 
   const { id: lessonId } = await params;
   if (!lessonId) return NextResponse.json({ error: "lesson_id obrigatório" }, { status: 400 });

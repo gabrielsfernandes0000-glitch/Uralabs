@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getUserState } from "@/lib/ura-coin";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,14 @@ export async function GET(
 ) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  // Anti-enumeração: 60 perfis/min/user. Navegação orgânica (abrir modal de
+  // membro 2-3x/min) fica bem abaixo; script tentando enumerar todos Elites
+  // trava em ~60 hits.
+  const allowed = await checkRateLimit(`member-profile:${session.userId}`, 60, 60);
+  if (!allowed) {
+    return NextResponse.json({ error: "rate limited" }, { status: 429 });
+  }
 
   const { user_id } = await ctx.params;
   if (!/^[0-9]{5,25}$/.test(user_id)) {
