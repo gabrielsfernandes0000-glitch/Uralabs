@@ -42,19 +42,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Falha ao validar: ${msg}` }, { status: 400 });
   }
 
-  // 2. Encrypt keys — lança se EXCHANGE_ENCRYPTION_KEY faltar.
-  // Protege pra nunca propagar uncaught (que viraria HTML 500 sem JSON e
-  // cairia no fallback genérico "exchange fora do ar" no client).
-  let apiKeyEnc: string, iv: string, secretEnc: string;
+  // 2. Encrypt keys — IV separado por valor (AES-GCM exige nonce único por
+  //    (key, plaintext)). `iv` guarda o IV do api_key, `api_secret_iv` o do
+  //    secret. Lança se EXCHANGE_ENCRYPTION_KEY faltar; protege com try/catch
+  //    pra retornar JSON (não HTML 500).
+  let apiKeyEnc: string, iv: string, secretEnc: string, secretIv: string;
   try {
     const a = encrypt(apiKey.trim());
     apiKeyEnc = a.encrypted; iv = a.iv;
     const secretToStore = passphrase ? `${apiSecret.trim()}|||${passphrase.trim()}` : apiSecret.trim();
-    // CRÍTICO: reusa o MESMO iv — só 1 iv é salvo no DB, os 2 encrypts precisam
-    // usar o mesmo. Antes estava gerando IV novo no 2º encrypt (default), o
-    // que fazia decrypt do api_secret falhar com "Unsupported state" (authTag
-    // mismatch). Bug silencioso porque decrypt do api_key vinha antes e passava.
-    secretEnc = encrypt(secretToStore, iv).encrypted;
+    const b = encrypt(secretToStore);
+    secretEnc = b.encrypted; secretIv = b.iv;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "erro de encryption";
     console.error("[exchange/connect] encrypt failed:", msg);
@@ -90,6 +88,7 @@ export async function POST(req: Request) {
         api_key_encrypted: apiKeyEnc,
         api_secret_encrypted: secretEnc,
         iv,
+        api_secret_iv: secretIv,
         label: label || null,
         status: "active",
         error_message: null,

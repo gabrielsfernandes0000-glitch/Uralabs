@@ -298,7 +298,10 @@ export async function GET(req: Request) {
 
   try {
     apiKey = decrypt(conn.api_key_encrypted, conn.iv);
-    const rawSecret = decrypt(conn.api_secret_encrypted, conn.iv);
+    // Rows legadas (pré 2026-04-23) têm api_secret_iv=NULL e reutilizam `iv`.
+    // Rows novas sempre populam api_secret_iv com nonce dedicado.
+    const secretIv = conn.api_secret_iv ?? conn.iv;
+    const rawSecret = decrypt(conn.api_secret_encrypted, secretIv);
     if (rawSecret.includes("|||")) {
       const parts = rawSecret.split("|||");
       apiSecret = parts[0];

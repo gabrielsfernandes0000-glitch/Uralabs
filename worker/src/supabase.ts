@@ -13,6 +13,7 @@ export interface ExchangeConnection {
   api_key_encrypted: string;
   api_secret_encrypted: string;
   iv: string;
+  api_secret_iv: string | null;
   label: string | null;
   status: string;
   last_sync_at: string | null;
@@ -21,7 +22,7 @@ export interface ExchangeConnection {
 export async function loadActiveConnections(): Promise<ExchangeConnection[]> {
   const { data, error } = await supabase
     .from("exchange_connections")
-    .select("id, discord_user_id, exchange, api_key_encrypted, api_secret_encrypted, iv, label, status, last_sync_at")
+    .select("id, discord_user_id, exchange, api_key_encrypted, api_secret_encrypted, iv, api_secret_iv, label, status, last_sync_at")
     .eq("status", "active")
     .eq("exchange", "bingx"); // so BingX por enquanto
   if (error) throw error;

@@ -20,18 +20,13 @@ function getEncryptionKey(): Buffer {
   return createHash("sha256").update(raw.trim()).digest();
 }
 
-/** Encrypt com IV opcional. Quando múltiplos encrypts são feitos pra mesma
- *  conexão (api_key + api_secret) e só 1 IV é salvo no DB, TODOS os encrypts
- *  precisam usar o MESMO IV — senão decrypt do segundo valor falha com
- *  "Unsupported state or unable to authenticate data" (authTag mismatch).
- *
- *  Passar `ivBase64` reusa um IV já gerado. Omitir gera um IV novo. */
-export function encrypt(
-  plaintext: string,
-  ivBase64?: string,
-): { encrypted: string; iv: string } {
+/** Encrypt gera SEMPRE um IV novo. AES-GCM exige IV único por (key, plaintext)
+ *  — reuso de nonce com a mesma key abre vetor de ataque (key recovery em
+ *  cenários específicos). Callers que precisam guardar múltiplos ciphertexts
+ *  numa mesma row DEVEM ter uma coluna de IV por ciphertext. */
+export function encrypt(plaintext: string): { encrypted: string; iv: string } {
   const key = getEncryptionKey();
-  const iv = ivBase64 ? Buffer.from(ivBase64, "base64") : randomBytes(IV_LENGTH);
+  const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
 
   let encrypted = cipher.update(plaintext, "utf8", "base64");
