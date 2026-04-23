@@ -3,19 +3,17 @@ import { Zap, CalendarClock } from "lucide-react";
 import { instrumentsForEvent } from "@/lib/economic-events";
 import type { EconomicEvent } from "@/lib/market-news";
 
-function parseMins(time: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
-  if (!match) return null;
-  return Number(match[1]) * 60 + Number(match[2]);
+/** Timestamp absoluto (ms UTC) de um evento date+time interpretado como BRT. */
+function brtTimestamp(dateStr: string, time: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || !/^\d{1,2}:\d{2}$/.test(time)) return null;
+  // BRT = UTC-3 fixo (Brasil não tem DST há anos).
+  const d = new Date(`${dateStr}T${time.padStart(5, "0")}:00-03:00`);
+  const t = d.getTime();
+  return Number.isFinite(t) ? t : null;
 }
 
-function brtNowMins(): number {
-  const s = new Date().toLocaleString("en-US", {
-    timeZone: "America/Sao_Paulo",
-    hour: "2-digit", minute: "2-digit", hour12: false,
-  });
-  const [h, m] = s.split(":").map(Number);
-  return h * 60 + m;
+function brtTodayStr(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
 }
 
 function formatEta(mins: number): string {
@@ -36,20 +34,29 @@ function countryCode(country: string): string {
 }
 
 export function NextHighImpactCard({ events }: { events: EconomicEvent[] }) {
-  const nowMins = brtNowMins();
+  const nowMs = Date.now();
+  const windowEndMs = nowMs + 36 * 3600_000; // olha até 36h à frente
+  const todayBRT = brtTodayStr();
 
-  // Próximo evento de ALTO impacto ainda não liberado
-  const next = events
-    .filter((e) => {
-      if (e.impact !== "high") return false;
-      const m = parseMins(e.time);
-      return m !== null && m >= nowMins;
-    })
-    .sort((a, z) => (parseMins(a.time) ?? 99999) - (parseMins(z.time) ?? 99999))[0];
+  // Próximo evento de ALTO impacto ainda não liberado, via timestamp absoluto
+  // BRT — cobre eventos depois de meia-noite UTC (ex: Japan às 20:30 BRT
+  // salvos com event_date = amanhã).
+  const upcoming = events
+    .filter((e) => e.impact === "high" && !e.actual)
+    .map((e) => ({ ev: e, ts: brtTimestamp(e.date ?? todayBRT, e.time) }))
+    .filter((x): x is { ev: EconomicEvent; ts: number } =>
+      x.ts !== null && x.ts >= nowMs && x.ts <= windowEndMs,
+    )
+    .sort((a, b) => a.ts - b.ts);
+
+  const nextEntry = upcoming[0];
+  const next = nextEntry?.ev;
 
   if (!next) {
-    const highToday = events.filter((e) => e.impact === "high");
-    const allReleased = highToday.length > 0 && highToday.every((e) => !!e.actual);
+    const highInWindow = events.filter(
+      (e) => e.impact === "high" && (!e.date || e.date === todayBRT),
+    );
+    const allReleased = highInWindow.length > 0 && highInWindow.every((e) => !!e.actual);
     return (
       <Link
         href="/elite/noticias"
@@ -71,8 +78,7 @@ export function NextHighImpactCard({ events }: { events: EconomicEvent[] }) {
     );
   }
 
-  const eventMins = parseMins(next.time) ?? nowMins;
-  const diff = eventMins - nowMins;
+  const diff = Math.max(0, Math.round((nextEntry.ts - nowMs) / 60_000));
   const instruments = instrumentsForEvent(next.event, next.country).slice(0, 3);
 
   return (

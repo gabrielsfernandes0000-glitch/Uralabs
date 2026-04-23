@@ -10,7 +10,7 @@ export type NewsCategory = "general" | "forex" | "crypto" | "stocks";
 
 export interface EconomicEvent {
   id: string;
-  /** Horário ET (New York) — ex: "10:30", "14:00" */
+  /** Horário BRT — ex: "10:30", "20:30" */
   time: string;
   /** Código do país/região: "US", "EU", "BR", "UK", "CN" */
   country: string;
@@ -23,6 +23,10 @@ export interface EconomicEvent {
   forecast?: string;
   /** Valor realizado (só depois do release) */
   actual?: string;
+  /** Data do evento (YYYY-MM-DD como salvo pelo ingestor — pode divergir do
+   *  dia BRT em eventos após ~21:00 BRT se o ingestor usar UTC). Necessário
+   *  pra cálculo de timestamp absoluto quando a janela cruza dias. */
+  date?: string;
 }
 
 export interface MarketNews {

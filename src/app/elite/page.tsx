@@ -48,6 +48,14 @@ function nyNowMinutes(): number {
   return h * 60 + m;
 }
 
+/** `loadTodayEvents` traz janela de 2 dias BRT pra cobrir drift do ingestor.
+ *  A DashboardAgenda conceitualmente mostra "hoje BRT" — filtra pelo dia BRT
+ *  atual (ou eventos legados sem `date`). */
+function filterTodayBRT(events: EconomicEvent[]): EconomicEvent[] {
+  const todayBRT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+  return events.filter((e) => !e.date || e.date === todayBRT);
+}
+
 /**
  * Estado do dia em BRT: flag se a call está ao vivo agora + hora atual.
  * Seg-Qui 10:30–12:30 BRT = call ao vivo.
@@ -431,7 +439,7 @@ export default async function EliteDashboard() {
       {/* ── Agenda do dia (Elite, compact) ── */}
       {isElite && (
         <div className="animate-in-up delay-5">
-          <DashboardAgenda events={todayEvents} />
+          <DashboardAgenda events={filterTodayBRT(todayEvents)} />
         </div>
       )}
     </div>

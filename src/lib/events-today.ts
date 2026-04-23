@@ -1,20 +1,35 @@
 import { getSupabaseAnon } from "@/lib/supabase";
 import type { EconomicEvent } from "@/lib/market-news";
 
+/** Data "YYYY-MM-DD" no fuso America/Sao_Paulo (en-CA já entrega ISO). */
+function brtDateStr(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86400_000);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(d);
+}
+
 /**
  * Busca eventos econômicos de HOJE (alto/médio impacto).
  * Reusado por dashboard, diário (prep autopopulate), calls, etc.
+ *
+ * Janela de 2 dias BRT (ontem → amanhã) porque o ingestor pode salvar
+ * `event_date` em outro fuso (UTC/local do país) e ter drift de ±1 dia
+ * em relação a BRT. O consumidor (NextHighImpactCard, etc) filtra pelo
+ * timestamp absoluto usando `date` + `time`.
+ *
  * Fallback silencioso: array vazio em caso de erro (nunca quebra a página).
  */
-export async function loadTodayEvents(limit = 25): Promise<EconomicEvent[]> {
+export async function loadTodayEvents(limit = 50): Promise<EconomicEvent[]> {
   try {
     const sb = getSupabaseAnon();
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const yesterday = brtDateStr(-1);
+    const today = brtDateStr(0);
+    const tomorrow = brtDateStr(1);
     const { data } = await sb
       .from("economic_events")
-      .select("id, event_time, country, event, impact, previous, forecast, actual")
-      .eq("event_date", todayStr)
+      .select("id, event_time, country, event, impact, previous, forecast, actual, event_date")
+      .in("event_date", [yesterday, today, tomorrow])
       .in("impact", ["high", "medium"])
+      .order("event_date", { ascending: true })
       .order("event_time", { ascending: true })
       .limit(limit);
     return (data ?? []).map((r: any) => ({
@@ -26,6 +41,7 @@ export async function loadTodayEvents(limit = 25): Promise<EconomicEvent[]> {
       previous: r.previous ?? undefined,
       forecast: r.forecast ?? undefined,
       actual: r.actual ?? undefined,
+      date: r.event_date ?? undefined,
     }));
   } catch {
     return [];
