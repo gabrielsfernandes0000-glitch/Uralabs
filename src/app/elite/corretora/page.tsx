@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Link2, Unlink, RefreshCw, TrendingUp, TrendingDown,
-  Wallet, Target, BarChart3, ArrowUp, ArrowDown,
+  Link2, Unlink, RefreshCw, TrendingUp,
+  Target, BarChart3, ArrowUp, ArrowDown,
   Shield, Eye, EyeOff, AlertCircle,
-  ChevronRight, ChevronLeft, Clock, Zap, Trophy, Minus,
+  ChevronRight, ChevronLeft, Zap, Minus,
   Plus, Check,
 } from "lucide-react";
+import { EquityCurve } from "@/components/elite/corretora/EquityCurve";
+import { PnLHeatmap } from "@/components/elite/corretora/PnLHeatmap";
+import { SymbolBreakdown, HourlyBreakdown, DowBreakdown } from "@/components/elite/corretora/Breakdowns";
+import { TradeJournal } from "@/components/elite/corretora/TradeJournal";
 
 /* ────────────────────────────────────────────
    Types
@@ -137,7 +141,21 @@ interface Metrics {
   avgPnL: number;
   bestTrade: number;
   worstTrade: number;
+  avgWin: number;
+  avgLoss: number;
+  profitFactor: number;
+  expectancy: number;
+  currentStreak: number;
+  currentStreakType: "win" | "loss" | "none";
+  maxWinStreak: number;
+  maxLossStreak: number;
 }
+
+interface EquityPoint { date: string; equity: number }
+interface DailyPnL { date: string; pnl: number }
+interface SymbolRow { symbol: string; pnl: number; trades: number; wins: number }
+interface HourRow { hour: number; pnl: number; trades: number }
+interface DowRow { dow: number; name: string; pnl: number; trades: number }
 
 interface ExchangeData {
   connected: boolean;
@@ -148,6 +166,12 @@ interface ExchangeData {
   positions?: Position[];
   trades?: Trade[];
   metrics?: Metrics;
+  equityCurve?: EquityPoint[];
+  realEquityCurve?: EquityPoint[];
+  dailyPnL?: DailyPnL[];
+  symbolBreakdown?: SymbolRow[];
+  hourlyBreakdown?: HourRow[];
+  dowBreakdown?: DowRow[];
   label?: string;
 }
 
@@ -509,6 +533,8 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
    Dashboard (connected state)
    ──────────────────────────────────────────── */
 
+type Period = "7d" | "30d" | "all";
+
 function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddMore }: {
   exchange: ExchangeMeta;
   data: ExchangeData;
@@ -519,33 +545,48 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 }) {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [hideBalance, setHideBalance] = useState(false);
+  const [period, setPeriod] = useState<Period>("7d");
 
   const balance = data.balance;
   const positions = data.positions || [];
   const trades = data.trades || [];
   const metrics = data.metrics;
+  const equityCurve = data.equityCurve || [];
+  const realEquityCurve = data.realEquityCurve || [];
+  const dailyPnL = data.dailyPnL || [];
+  const symbolBreakdown = data.symbolBreakdown || [];
+  const hourlyBreakdown = data.hourlyBreakdown || [];
+  const dowBreakdown = data.dowBreakdown || [];
 
   const fmtUsd = (n: number) => {
     if (hideBalance) return "$••••";
     const prefix = n >= 0 ? "$" : "-$";
     return `${prefix}${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
-
-  const fmt = (n: number, decimals = 2) => {
-    if (hideBalance) return "••••";
-    return n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  };
-
   const pnlColor = (n: number) => n > 0 ? "text-green-400" : n < 0 ? "text-red-400" : "text-white/40";
-  const pnlBg = (n: number) => n > 0 ? "border-green-400/25" : n < 0 ? "border-red-400/25" : "border-white/[0.06]";
-  const PnlIcon = (n: number) => n > 0 ? ArrowUp : n < 0 ? ArrowDown : Minus;
+
+  const curve = useMemo(() => {
+    // Preferir curva real (snapshots diários) se tiver ≥3 pontos; senão usa reconstruída
+    const src = realEquityCurve.length >= 3 ? realEquityCurve : equityCurve;
+    if (!src.length) return [];
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : src.length;
+    return src.slice(-days);
+  }, [realEquityCurve, equityCurve, period]);
+
+  const periodPnL = useMemo(() => {
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : dailyPnL.length;
+    return dailyPnL.slice(-days).reduce((s, d) => s + d.pnl, 0);
+  }, [dailyPnL, period]);
+
+  const equityAtStart = curve.length ? curve[0].equity : 0;
+  const periodPct = equityAtStart !== 0 ? (periodPnL / equityAtStart) * 100 : 0;
 
   if (data.error) {
     return (
       <div className="max-w-lg mx-auto pt-12">
         <div className="flex flex-col items-center text-center">
           <AlertCircle className="w-10 h-10 text-red-400 mb-4" strokeWidth={1.5} />
-          <h2 className="text-[20px] font-bold text-white mb-2">Erro na conexao com {exchange.name}</h2>
+          <h2 className="text-[20px] font-bold text-white mb-2">Erro na conexão com {exchange.name}</h2>
           <p className="text-[13px] text-white/40 mb-6 max-w-sm">{data.error}</p>
           <div className="flex gap-3">
             <button onClick={onRefresh} className="interactive-tap px-5 py-2.5 rounded-xl border border-white/[0.08] text-[13px] text-white/60 hover:text-white hover:border-white/[0.18] transition-colors">Tentar novamente</button>
@@ -556,199 +597,288 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
     );
   }
 
+  const openPositionsTotal = positions.reduce((s, p) => s + p.unrealizedPnL, 0);
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="animate-in-up flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+    <div className="space-y-5">
+      {/* Header — logo + status à esquerda, ações agrupadas à direita */}
+      <div className="animate-in-up flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
             {exchange.logo ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={exchange.logo} alt={exchange.name} className="w-8 h-8 object-contain" />
+              <img src={exchange.logo} alt={exchange.name} className="w-7 h-7 object-contain" />
             ) : (
-              <span className="text-[18px] font-black italic" style={{ color: exchange.textColor }}>{exchange.shortLabel}</span>
+              <span className="text-[16px] font-black italic" style={{ color: exchange.textColor }}>{exchange.shortLabel}</span>
             )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[20px] font-bold text-white tracking-tight">{exchange.name}</h1>
-              <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-green-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Conectada
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-[18px] font-bold text-white tracking-tight">{exchange.name}</h1>
+              <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold text-green-400 tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> conectada
               </span>
+              {data.cached && (
+                <span className="text-[9.5px] text-white/25 font-mono">cache · clique atualizar</span>
+              )}
             </div>
-            {data.label && <p className="text-[11px] text-white/30">{data.label}</p>}
+            {data.label && <p className="text-[11px] text-white/30 truncate">{data.label}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={onAddMore} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-brand-500 transition-all" title="Adicionar corretora">
-            <Plus className="w-4 h-4" />
+
+        {/* Grupo ações: Conta (benignas) · destrutivas */}
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => setHideBalance(!hideBalance)} className="interactive-tap p-2 rounded-lg text-white/35 hover:text-white/75 hover:bg-white/[0.03] transition-all" title={hideBalance ? "Mostrar valores" : "Ocultar valores"}>
+            {hideBalance ? <EyeOff className="w-[15px] h-[15px]" /> : <Eye className="w-[15px] h-[15px]" />}
           </button>
-          <button onClick={() => setHideBalance(!hideBalance)} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-white/60 transition-all" title={hideBalance ? "Mostrar valores" : "Ocultar valores"}>
-            {hideBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <button onClick={onRefresh} disabled={refreshing} className="interactive-tap p-2 rounded-lg text-white/35 hover:text-white/75 hover:bg-white/[0.03] transition-all disabled:opacity-40" title="Atualizar">
+            <RefreshCw className={`w-[15px] h-[15px] ${refreshing ? "animate-spin" : ""}`} />
           </button>
-          <button onClick={onRefresh} disabled={refreshing} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-white/60 transition-all disabled:opacity-50" title="Atualizar">
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          <button onClick={onAddMore} className="interactive-tap flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/[0.08] text-[11.5px] text-white/55 hover:text-white hover:border-white/[0.18] transition-all" title="Conectar outra corretora">
+            <Plus className="w-3.5 h-3.5" /> Nova
           </button>
-          <button onClick={() => setShowDisconnect(!showDisconnect)} className="interactive-tap p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/30 hover:text-red-400 transition-all" title="Desconectar">
-            <Unlink className="w-4 h-4" />
+          <div className="w-px h-5 bg-white/[0.08] mx-1" />
+          <button onClick={() => setShowDisconnect(!showDisconnect)} className="interactive-tap p-2 rounded-lg text-white/35 hover:text-red-400 hover:bg-red-500/[0.04] transition-all" title="Desconectar">
+            <Unlink className="w-[15px] h-[15px]" />
           </button>
         </div>
       </div>
 
       {showDisconnect && (
-        <div className="flex items-center justify-between px-5 py-4 rounded-xl border border-red-400/20">
-          <p className="text-[13px] text-white/50">Desconectar {exchange.name}? Seus dados serao removidos.</p>
+        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg border border-red-400/20 bg-red-500/[0.03]">
+          <p className="text-[12.5px] text-white/60">Desconectar {exchange.name}? As keys serão removidas — trades ficam no histórico.</p>
           <div className="flex gap-2">
-            <button onClick={() => setShowDisconnect(false)} className="interactive-tap px-4 py-2 rounded-lg text-[12px] text-white/40 hover:text-white transition-colors">Cancelar</button>
-            <button onClick={onDisconnect} className="interactive-tap px-4 py-2 rounded-lg border border-red-400/30 text-[12px] text-red-400 font-medium hover:border-red-400/60 transition-colors">Desconectar</button>
+            <button onClick={() => setShowDisconnect(false)} className="interactive-tap px-3 py-1.5 rounded-md text-[11.5px] text-white/45 hover:text-white/80 transition-colors">Cancelar</button>
+            <button onClick={onDisconnect} className="interactive-tap px-3 py-1.5 rounded-md border border-red-400/30 text-[11.5px] text-red-400 font-medium hover:border-red-400/60 transition-colors">Confirmar</button>
           </div>
         </div>
       )}
 
-
-      {/* Balance cards */}
-      {balance && (
-        <div className="animate-in-up delay-1 grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { icon: Wallet, label: "Patrimonio", value: fmtUsd(balance.totalEquity), color: "#ffffff" },
-            { icon: Target, label: "Margem Disponivel", value: fmtUsd(balance.availableMargin), color: "#ffffff" },
-            { icon: TrendingUp, label: "PnL Nao Realizado", value: fmtUsd(balance.unrealizedPnL), color: balance.unrealizedPnL >= 0 ? "#4ade80" : "#f87171" },
-            { icon: BarChart3, label: "PnL Realizado", value: fmtUsd(balance.realisedPnL), color: balance.realisedPnL >= 0 ? "#4ade80" : "#f87171" },
-          ].map((card, i) => (
-            <div key={i} className="relative overflow-hidden rounded-xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.05] p-4 hover:border-white/[0.10] transition-all duration-200">
-              <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${card.color}20, transparent)` }} />
-              <card.icon className="w-4 h-4 mb-2.5" style={{ color: card.color + "60" }} />
-              <p className="text-[18px] font-bold text-white leading-none">{card.value}</p>
-              <p className="text-[11px] text-white/30 mt-1">{card.label}</p>
+      {/* HERO — Equity curve (60%) + KPI stack (40%) */}
+      <div className="animate-in-up delay-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
+        {/* Equity curve */}
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider">Evolução do patrimônio</p>
+              <p className="text-[11px] text-white/30 mt-0.5">
+                {curve.length >= 3 && realEquityCurve.length >= 3 ? "Snapshots reais" : "Reconstruído via histórico"}
+                {period === "7d" ? " · últimos 7 dias" : period === "30d" ? " · últimos 30 dias" : " · todo histórico"}
+              </p>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Metrics */}
-      {metrics && metrics.totalTrades > 0 && (
-        <div className="animate-in-up delay-2 relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
-          <div className="relative z-10 p-7">
-            <div className="flex items-center gap-3 mb-5">
-              <Trophy className="w-4 h-4 text-yellow-500/50" />
-              <h2 className="text-[14px] font-semibold text-white/80">Performance (30 dias)</h2>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <p className="text-[11px] text-white/30 mb-1">Win Rate</p>
-                <p className={`text-[22px] font-bold ${metrics.winRate >= 50 ? "text-green-400" : "text-red-400"}`}>{hideBalance ? "••" : metrics.winRate.toFixed(1)}%</p>
-                <p className="text-[11px] text-white/20 mt-0.5">{hideBalance ? "••" : `${metrics.wins}W / ${metrics.losses}L`}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-white/30 mb-1">PnL Total</p>
-                <p className={`text-[22px] font-bold ${pnlColor(metrics.totalPnL)}`}>{fmtUsd(metrics.totalPnL)}</p>
-                <p className="text-[11px] text-white/20 mt-0.5">{hideBalance ? "••" : metrics.totalTrades} trades</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-white/30 mb-1">Melhor Trade</p>
-                <p className="text-[22px] font-bold text-green-400">{fmtUsd(metrics.bestTrade)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-white/30 mb-1">Pior Trade</p>
-                <p className="text-[22px] font-bold text-red-400">{fmtUsd(metrics.worstTrade)}</p>
-              </div>
+            <div className="flex gap-0.5 p-0.5 rounded-md bg-white/[0.03] border border-white/[0.04]">
+              {(["7d", "30d", "all"] as Period[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`interactive-tap px-2.5 py-1 rounded text-[10.5px] font-mono font-medium tabular-nums transition-all ${
+                    period === p ? "bg-white/[0.06] text-white" : "text-white/35 hover:text-white/65"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
           </div>
+          <EquityCurve data={curve} height={190} />
         </div>
-        )}
 
-      {/* Open positions */}
-      <div className="animate-in-up delay-3 relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
-        <div className="relative z-10 p-7">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <Target className="w-4 h-4 text-brand-500/50" />
-              <h2 className="text-[14px] font-semibold text-white/80">Posicoes Abertas</h2>
-            </div>
-            <span className="text-[11px] text-white/20">{positions.length} ativas</span>
-          </div>
-
-          {positions.length === 0 ? (
-            <div className="flex flex-col items-center py-10">
-              <Target className="w-8 h-8 text-white/20 mb-3" strokeWidth={1.5} />
-              <p className="text-[12px] text-white/30">Nenhuma posicao aberta</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {positions.map((pos, i) => {
-                const Icon = PnlIcon(pos.unrealizedPnL);
-                return (
-                  <div key={i} className={`flex items-center justify-between px-4 py-3 rounded-xl ${pnlBg(pos.unrealizedPnL)} border transition-all`}>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-[11px] font-semibold ${pos.side === "LONG" ? "text-green-400" : "text-red-400"}`}>
-                        {pos.side}
+        {/* KPI stack: Patrimônio · PnL período · Posições */}
+        <div className="space-y-3">
+          {balance && (
+            <div className="rounded-xl surface-card p-5">
+              <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider mb-2">Patrimônio</p>
+              <p className="text-[32px] font-bold text-white leading-none font-mono tabular-nums">
+                {fmtUsd(balance.totalEquity)}
+              </p>
+              <div className="flex items-center gap-3 mt-3 text-[11px] text-white/45">
+                <span className="flex items-center gap-1">
+                  <span className="text-white/30">Disponível</span>
+                  <span className="text-white/70 font-mono tabular-nums">{fmtUsd(balance.availableMargin)}</span>
+                </span>
+                {balance.unrealizedPnL !== 0 && (
+                  <>
+                    <span className="text-white/15">·</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-white/30">Não real.</span>
+                      <span className={`font-mono tabular-nums ${pnlColor(balance.unrealizedPnL)}`}>
+                        {fmtUsd(balance.unrealizedPnL)}
                       </span>
-                      <div>
-                        <p className="text-[13px] font-semibold text-white">{pos.symbol.replace(/-?USDT/, "")}</p>
-                        <p className="text-[10px] text-white/25">{pos.leverage}x {pos.marginType}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 justify-end">
-                        <Icon className={`w-3 h-3 ${pnlColor(pos.unrealizedPnL)}`} />
-                        <p className={`text-[14px] font-bold ${pnlColor(pos.unrealizedPnL)}`}>{fmtUsd(pos.unrealizedPnL)}</p>
-                      </div>
-                      <p className="text-[10px] text-white/25">Entry: {fmt(pos.entryPrice, 4)}</p>
-                    </div>
-                  </div>
-                );
-              })}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           )}
+
+          <div className="rounded-xl surface-card p-5">
+            <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider mb-2">
+              PnL {period === "7d" ? "7 dias" : period === "30d" ? "30 dias" : "total"}
+            </p>
+            <div className="flex items-baseline gap-2">
+              <p className={`text-[28px] font-bold leading-none font-mono tabular-nums ${pnlColor(periodPnL)}`}>
+                {hideBalance ? "$••••" : fmtUsd(periodPnL)}
+              </p>
+              {equityAtStart > 0 && !hideBalance && (
+                <span className={`text-[13px] font-mono tabular-nums ${pnlColor(periodPnL)}`}>
+                  {periodPnL >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
+                </span>
+              )}
+            </div>
+            {metrics && metrics.totalTrades > 0 && (
+              <p className="text-[11px] text-white/35 mt-2.5 font-mono tabular-nums">
+                {metrics.totalTrades} trades · <span className={pnlColor(metrics.avgPnL)}>{fmtUsd(metrics.avgPnL)}</span> médio
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Recent trades */}
-      <div className="animate-in-up delay-4 relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300">
-        <div className="relative z-10 p-7">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <Clock className="w-4 h-4 text-blue-500/50" />
-              <h2 className="text-[14px] font-semibold text-white/80">Trades Recentes</h2>
+      {/* Stats strip — 7 métricas em linha */}
+      {metrics && metrics.totalTrades > 0 && (
+        <div className="animate-in-up delay-2 rounded-xl surface-card px-5 py-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 lg:gap-0">
+            {[
+              { label: "Win rate", value: `${metrics.winRate.toFixed(1)}%`, sub: `${metrics.wins}W · ${metrics.losses}L`, color: metrics.winRate >= 50 ? "text-green-400" : "text-red-400" },
+              { label: "Profit factor", value: metrics.profitFactor >= 999 ? "∞" : metrics.profitFactor.toFixed(2), sub: metrics.profitFactor >= 1 ? "lucrativo" : "perdedor", color: metrics.profitFactor >= 1 ? "text-green-400" : "text-red-400" },
+              { label: "Expectancy", value: fmtUsd(metrics.expectancy), sub: "por trade", color: pnlColor(metrics.expectancy) },
+              { label: "Média ganho", value: fmtUsd(metrics.avgWin), sub: hideBalance ? "•" : `${metrics.wins} wins`, color: "text-green-400" },
+              { label: "Média perda", value: fmtUsd(metrics.avgLoss), sub: hideBalance ? "•" : `${metrics.losses} losses`, color: "text-red-400" },
+              { label: "Melhor/pior", value: `${fmtUsd(metrics.bestTrade)}`, sub: fmtUsd(metrics.worstTrade), color: "text-white/75" },
+              {
+                label: "Streak",
+                value: metrics.currentStreakType === "none" ? "—" : `${metrics.currentStreak}${metrics.currentStreakType === "win" ? "W" : "L"}`,
+                sub: `máx ${metrics.maxWinStreak}W · ${metrics.maxLossStreak}L`,
+                color: metrics.currentStreakType === "win" ? "text-green-400" : metrics.currentStreakType === "loss" ? "text-red-400" : "text-white/40",
+              },
+            ].map((s, i, arr) => (
+              <div key={i} className={`${i < arr.length - 1 ? "lg:border-r lg:border-white/[0.04]" : ""} lg:px-4 first:lg:pl-0`}>
+                <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-1">{s.label}</p>
+                <p className={`text-[16px] font-bold font-mono tabular-nums leading-tight ${s.color}`}>{s.value}</p>
+                <p className="text-[10px] text-white/25 mt-0.5 font-mono tabular-nums truncate">{s.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Positions — adaptativo: strip fino se 0, bloco se 1+ */}
+      {positions.length === 0 ? (
+        <div className="flex items-center justify-between px-5 py-3 rounded-xl surface-card">
+          <div className="flex items-center gap-3">
+            <Target className="w-3.5 h-3.5 text-white/30" />
+            <p className="text-[12px] text-white/45">Nenhuma posição aberta agora</p>
+          </div>
+          <p className="text-[10.5px] text-white/25">Veja trades fechados abaixo ↓</p>
+        </div>
+      ) : (
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <Target className="w-3.5 h-3.5 text-brand-500/60" />
+              <h2 className="text-[12px] font-semibold text-white/80">Posições abertas</h2>
             </div>
-            <span className="text-[11px] text-white/20">Ultimos 30 dias</span>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="text-white/30 tabular-nums">{positions.length} ativa{positions.length > 1 ? "s" : ""}</span>
+              <span className={`font-mono tabular-nums font-semibold ${pnlColor(openPositionsTotal)}`}>
+                {fmtUsd(openPositionsTotal)}
+              </span>
+            </div>
           </div>
 
-          {trades.length === 0 ? (
-            <div className="flex flex-col items-center py-10">
-              <BarChart3 className="w-8 h-8 text-white/20 mb-3" strokeWidth={1.5} />
-              <p className="text-[12px] text-white/30">Nenhum trade nos ultimos 30 dias</p>
+          {/* Tabela compacta */}
+          <div className="space-y-0.5">
+            {/* Header */}
+            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-3 py-1.5 text-[9.5px] font-semibold text-white/30 uppercase tracking-wider">
+              <div className="w-10">Lado</div>
+              <div>Símbolo</div>
+              <div className="text-right">Tam.</div>
+              <div className="text-right">Entry</div>
+              <div className="text-right">Mark</div>
+              <div className="text-right w-24">PnL</div>
             </div>
-          ) : (
-            <div className="space-y-1.5">
-              {trades.slice(0, 20).map((trade, i) => {
-                const Icon = PnlIcon(trade.profit);
-                return (
-                  <div key={i} className="flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-white/[0.02] transition-all">
-                    <div className="flex items-center gap-3">
-                      <span className={`w-1.5 h-1.5 rounded-full ${trade.side === "BUY" || trade.side === "Buy" ? "bg-green-400" : "bg-red-400"}`} />
-                      <div>
-                        <p className="text-[12px] font-medium text-white/70">{trade.symbol.replace(/-?USDT/, "")}</p>
-                        <p className="text-[10px] text-white/20">
-                          {trade.time ? new Date(trade.time).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Icon className={`w-3 h-3 ${pnlColor(trade.profit)}`} />
-                      <p className={`text-[13px] font-semibold ${pnlColor(trade.profit)}`}>{fmtUsd(trade.profit)}</p>
-                    </div>
+            {positions.map((pos, i) => {
+              const SideIcon = pos.side === "LONG" ? ArrowUp : ArrowDown;
+              const sideColor = pos.side === "LONG" ? "text-green-400" : "text-red-400";
+              return (
+                <div key={i} className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-3 py-2.5 rounded-lg hover:bg-white/[0.02] transition-colors items-center">
+                  <div className={`w-10 flex items-center gap-1 text-[10.5px] font-semibold ${sideColor}`}>
+                    <SideIcon className="w-3 h-3" />
+                    {pos.side}
                   </div>
-                );
-              })}
+                  <div className="min-w-0">
+                    <p className="text-[12.5px] font-semibold text-white font-mono truncate">{pos.symbol.replace(/-?USDT/, "")}</p>
+                    <p className="text-[9.5px] text-white/30 font-mono">{pos.leverage}× {pos.marginType}</p>
+                  </div>
+                  <p className="text-[11px] text-white/55 font-mono tabular-nums text-right">{pos.size.toFixed(4)}</p>
+                  <p className="text-[11px] text-white/55 font-mono tabular-nums text-right">{pos.entryPrice < 1 ? pos.entryPrice.toFixed(6) : pos.entryPrice.toFixed(2)}</p>
+                  <p className="text-[11px] text-white/55 font-mono tabular-nums text-right">{pos.markPrice < 1 ? pos.markPrice.toFixed(6) : pos.markPrice.toFixed(2)}</p>
+                  <p className={`text-[12.5px] font-semibold font-mono tabular-nums text-right w-24 ${pnlColor(pos.unrealizedPnL)}`}>
+                    {fmtUsd(pos.unrealizedPnL)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Grid 2 col: Journal (esquerda) · Breakdowns (direita) */}
+      <div className="animate-in-up delay-3 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+        {/* Journal */}
+        <div className="rounded-xl surface-card p-5">
+          <div className="flex items-center gap-2.5 mb-4">
+            <BarChart3 className="w-3.5 h-3.5 text-white/45" />
+            <h2 className="text-[12px] font-semibold text-white/80">Journal</h2>
+            <span className="text-[10px] text-white/25 ml-auto">últimos 7 dias</span>
+          </div>
+          <TradeJournal trades={trades} hideBalance={hideBalance} />
+        </div>
+
+        {/* Breakdowns stack */}
+        <div className="space-y-4">
+          <div className="rounded-xl surface-card p-5">
+            <div className="flex items-center gap-2.5 mb-3.5">
+              <TrendingUp className="w-3.5 h-3.5 text-white/45" />
+              <h2 className="text-[12px] font-semibold text-white/80">Por símbolo</h2>
             </div>
-          )}
+            <SymbolBreakdown rows={symbolBreakdown} />
+          </div>
+
+          <div className="rounded-xl surface-card p-5">
+            <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por hora (BRT)</h2>
+            <HourlyBreakdown rows={hourlyBreakdown} />
+          </div>
+
+          <div className="rounded-xl surface-card p-5">
+            <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por dia da semana</h2>
+            <DowBreakdown rows={dowBreakdown} />
+          </div>
         </div>
       </div>
 
-      {data.cached && (
-        <p className="text-[10px] text-white/15 text-center">Dados em cache — clique em atualizar para dados em tempo real</p>
-      )}
+      {/* Calendar heatmap — rodapé */}
+      <div className="animate-in-up delay-4 rounded-xl surface-card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-[12px] font-semibold text-white/80">Calendário PnL</h2>
+            <p className="text-[10.5px] text-white/30 mt-0.5">Últimos 3 meses · hover pra detalhes</p>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-white/30">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400/70" /> ganho
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400/70" /> perda
+            </span>
+          </div>
+        </div>
+        <PnLHeatmap data={dailyPnL} />
+      </div>
+
+      <p className="text-[10px] text-white/15 text-center pt-2">
+        Dados de 7 dias (limite da API BingX em trade history). Equity curve expande com o tempo conforme acumular snapshots diários.
+      </p>
     </div>
   );
 }

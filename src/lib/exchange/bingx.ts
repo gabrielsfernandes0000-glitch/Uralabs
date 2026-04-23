@@ -149,24 +149,55 @@ export async function getIncome(
 
 /** Compute performance metrics from trade history */
 export function computeMetrics(trades: ReturnType<typeof getTradeHistory> extends Promise<infer T> ? T : never) {
-  if (!trades.length) {
-    return { totalTrades: 0, wins: 0, losses: 0, winRate: 0, totalPnL: 0, avgPnL: 0, bestTrade: 0, worstTrade: 0 };
-  }
+  const empty = {
+    totalTrades: 0, wins: 0, losses: 0, winRate: 0,
+    totalPnL: 0, avgPnL: 0, bestTrade: 0, worstTrade: 0,
+    avgWin: 0, avgLoss: 0, profitFactor: 0, expectancy: 0,
+    currentStreak: 0, currentStreakType: "none" as "win" | "loss" | "none",
+    maxWinStreak: 0, maxLossStreak: 0,
+  };
+  if (!trades.length) return empty;
 
-  const closedTrades = trades.filter((t) => t.profit !== 0);
-  const wins = closedTrades.filter((t) => t.profit > 0);
-  const losses = closedTrades.filter((t) => t.profit < 0);
-  const totalPnL = closedTrades.reduce((s, t) => s + t.profit, 0);
-  const profits = closedTrades.map((t) => t.profit);
+  const closed = trades.filter((t) => t.profit !== 0);
+  if (!closed.length) return empty;
+
+  const wins = closed.filter((t) => t.profit > 0);
+  const losses = closed.filter((t) => t.profit < 0);
+  const totalPnL = closed.reduce((s, t) => s + t.profit, 0);
+  const grossWin = wins.reduce((s, t) => s + t.profit, 0);
+  const grossLoss = Math.abs(losses.reduce((s, t) => s + t.profit, 0));
+  const profits = closed.map((t) => t.profit);
+  const avgWin = wins.length ? grossWin / wins.length : 0;
+  const avgLoss = losses.length ? -grossLoss / losses.length : 0;
+  const winRate = wins.length / closed.length;
+
+  // Ordena por tempo ASC pra calcular streaks cronologicamente
+  const chrono = [...closed].sort((a, b) => a.time - b.time);
+  let maxWinStreak = 0, maxLossStreak = 0, curWin = 0, curLoss = 0;
+  for (const t of chrono) {
+    if (t.profit > 0) { curWin++; curLoss = 0; maxWinStreak = Math.max(maxWinStreak, curWin); }
+    else if (t.profit < 0) { curLoss++; curWin = 0; maxLossStreak = Math.max(maxLossStreak, curLoss); }
+  }
+  const last = chrono[chrono.length - 1];
+  const currentStreak = last.profit > 0 ? curWin : last.profit < 0 ? curLoss : 0;
+  const currentStreakType: "win" | "loss" | "none" = last.profit > 0 ? "win" : last.profit < 0 ? "loss" : "none";
 
   return {
-    totalTrades: closedTrades.length,
+    totalTrades: closed.length,
     wins: wins.length,
     losses: losses.length,
-    winRate: closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0,
+    winRate: winRate * 100,
     totalPnL,
-    avgPnL: closedTrades.length > 0 ? totalPnL / closedTrades.length : 0,
-    bestTrade: profits.length ? Math.max(...profits) : 0,
-    worstTrade: profits.length ? Math.min(...profits) : 0,
+    avgPnL: totalPnL / closed.length,
+    bestTrade: Math.max(...profits),
+    worstTrade: Math.min(...profits),
+    avgWin,
+    avgLoss,
+    profitFactor: grossLoss > 0 ? grossWin / grossLoss : grossWin > 0 ? 999 : 0,
+    expectancy: winRate * avgWin + (1 - winRate) * avgLoss,
+    currentStreak,
+    currentStreakType,
+    maxWinStreak,
+    maxLossStreak,
   };
 }
