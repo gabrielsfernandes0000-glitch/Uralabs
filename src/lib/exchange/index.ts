@@ -68,3 +68,6 @@ export async function getIncome(exchange: ExchangeId, creds: ExchangeCredentials
 
 // Re-export computeMetrics from bingx (it's exchange-agnostic)
 export { computeMetrics } from "./bingx";
+
+// BingX-specific helpers (outros exchanges podem ganhar implementacao depois)
+export { getForceOrders, getOpenOrders, getKlines } from "./bingx";

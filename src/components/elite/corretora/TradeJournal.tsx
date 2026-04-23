@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, StickyNote } from "lucide-react";
+import { ChevronDown, StickyNote, Zap } from "lucide-react";
 
 export interface JournalTrade {
   orderId: string;
@@ -10,11 +10,17 @@ export interface JournalTrade {
   price: number;
   quantity: number;
   profit: number;
+  commission?: number;
   time: number;
   tags?: string[];
   notes?: string | null;
   stopLoss?: number | null;
   uraCall?: boolean;
+  liquidated?: boolean;
+  mfe?: number | null;
+  mae?: number | null;
+  mfeR?: number | null;
+  maeR?: number | null;
 }
 
 type Filter = "all" | "wins" | "losses" | "ura";
@@ -165,6 +171,11 @@ export function TradeJournal({
                           </span>
                           {t.uraCall && (
                             <span className="text-[8.5px] font-bold text-brand-500 tracking-wider">URA</span>
+                          )}
+                          {t.liquidated && (
+                            <span title="Posição liquidada" className="flex items-center gap-0.5 text-[8.5px] font-bold text-red-400 tracking-wider">
+                              <Zap className="w-2.5 h-2.5" /> LIQ
+                            </span>
                           )}
                           {tags.slice(0, 2).map((tag) => (
                             <span key={tag} className="text-[9.5px] font-medium text-white/45 border border-white/[0.08] rounded px-1 py-[0.5px] truncate">

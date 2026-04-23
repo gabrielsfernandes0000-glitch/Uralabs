@@ -16,6 +16,7 @@ import { TradeJournal, type JournalTrade } from "@/components/elite/corretora/Tr
 import { TradeDetailModal, type TradeForModal } from "@/components/elite/corretora/TradeDetailModal";
 import { UraCallSplit, EventExposureCard, TagBreakdown, RMultiplesCard, PropRulesBanner } from "@/components/elite/corretora/Insights";
 import { PropRulesModal } from "@/components/elite/corretora/PropRulesModal";
+import { OpenOrdersCard, type OpenOrder } from "@/components/elite/corretora/OpenOrdersCard";
 
 /* ────────────────────────────────────────────
    Types
@@ -132,12 +133,18 @@ interface Trade {
   price: number;
   quantity: number;
   profit: number;
+  commission?: number;
   status: string;
   time: number;
   uraCall?: boolean;
   tags?: string[];
   notes?: string | null;
   stopLoss?: number | null;
+  liquidated?: boolean;
+  mfe?: number | null;
+  mae?: number | null;
+  mfeR?: number | null;
+  maeR?: number | null;
 }
 
 interface Metrics {
@@ -200,6 +207,10 @@ interface ExchangeData {
   rMultiples?: RMultiples;
   eventExposure?: EventExposure;
   propStatus?: PropStatus | null;
+  forceOrders?: Array<{ orderId: string; symbol: string; side: string; price: number; quantity: number; time: number }>;
+  openOrders?: OpenOrder[];
+  totalCommission?: number;
+  fundingBySymbol?: Record<string, number>;
   label?: string;
 }
 
@@ -601,6 +612,9 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
   const rMultiples = data.rMultiples;
   const eventExposure = data.eventExposure;
   const propStatus = data.propStatus || null;
+  const openOrders = data.openOrders || [];
+  const forceOrders = data.forceOrders || [];
+  const totalCommission = data.totalCommission || 0;
 
   // Busca tags permitidas sob demanda (cache simples)
   useEffect(() => {
@@ -683,9 +697,10 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
               <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold text-green-400 tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> conectada
               </span>
-              {data.cached && (
-                <span className="text-[9.5px] text-white/25 font-mono">cache · clique atualizar</span>
-              )}
+              <span className="text-[9.5px] text-white/25 font-mono flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-green-400/70 animate-pulse" />
+                auto ·&nbsp;30s
+              </span>
             </div>
             {data.label && <p className="text-[11px] text-white/30 truncate">{data.label}</p>}
           </div>
@@ -801,6 +816,9 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
             {metrics && metrics.totalTrades > 0 && (
               <p className="text-[11px] text-white/35 mt-2.5 font-mono tabular-nums">
                 {metrics.totalTrades} trades · <span className={pnlColor(metrics.avgPnL)}>{fmtUsd(metrics.avgPnL)}</span> médio
+                {totalCommission < 0 && (
+                  <span className="text-white/25"> · taxa {fmtUsd(totalCommission)}</span>
+                )}
               </p>
             )}
           </div>
@@ -899,6 +917,23 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         </div>
       )}
 
+      {/* Ordens pendentes (limits/stops aguardando gatilho) */}
+      {openOrders.length > 0 && <OpenOrdersCard orders={openOrders} />}
+
+      {/* Liquidações alerta (se houve nos últimos 7d) */}
+      {forceOrders.length > 0 && (
+        <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-red-400/40 bg-red-500/[0.03]">
+          <div>
+            <p className="text-[12.5px] font-semibold text-red-300">
+              {forceOrders.length} {forceOrders.length === 1 ? "posição foi liquidada" : "posições foram liquidadas"} nos últimos 7 dias
+            </p>
+            <p className="text-[11px] text-white/40 mt-1 leading-relaxed">
+              Stop não acionou a tempo ou margem insuficiente. Veja os trades marcados com badge <span className="font-semibold text-red-400">LIQ</span> no journal abaixo.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Journal full-width — sem sidebar presa */}
       <div className="animate-in-up delay-3 rounded-xl surface-card p-5">
         <div className="flex items-center gap-2.5 mb-4">
@@ -916,11 +951,17 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
             price: t.price,
             quantity: t.quantity,
             profit: t.profit,
+            commission: t.commission,
             time: t.time,
             tags: t.tags || [],
             notes: t.notes || null,
             stopLoss: t.stopLoss || null,
             uraCall: !!t.uraCall,
+            liquidated: !!t.liquidated,
+            mfe: t.mfe ?? null,
+            mae: t.mae ?? null,
+            mfeR: t.mfeR ?? null,
+            maeR: t.maeR ?? null,
           })}
         />
       </div>
@@ -1056,6 +1097,39 @@ export default function CorretoraPage() {
     await fetchData(activeExchange, true);
     setRefreshing(false);
   };
+
+  // Polling inteligente: auto-refresh a cada 30s enquanto a aba esta visivel.
+  // Pausa quando o user troca de aba (Page Visibility API) pra economizar
+  // chamadas BingX e nao queimar o cache quando ninguem ta olhando.
+  useEffect(() => {
+    if (!activeExchange || view !== "dashboard") return;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (interval) return;
+      interval = setInterval(() => {
+        if (document.visibilityState === "visible") {
+          // Nao usa refresh=1 aqui — deixa o cache servir se outra aba puxou recentemente.
+          // Cache TTL de 30s no server garante freshness.
+          fetchData(activeExchange);
+        }
+      }, 30_000);
+    };
+    const stop = () => {
+      if (interval) { clearInterval(interval); interval = null; }
+    };
+
+    start();
+    const onVis = () => {
+      if (document.visibilityState === "visible") start();
+      else stop();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [activeExchange, view, fetchData]);
 
   const handleDisconnect = async () => {
     if (!activeExchange) return;

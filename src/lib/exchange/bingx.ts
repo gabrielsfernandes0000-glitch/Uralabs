@@ -123,6 +123,71 @@ export async function getTradeHistory(
   }));
 }
 
+/** Get liquidation history (forced orders). Empty array = nunca liquidou. */
+export async function getForceOrders(creds: BingXCredentials, opts: { lastDays?: number; limit?: number } = {}) {
+  const params: Record<string, string> = {};
+  params.limit = String(opts.limit || 100);
+  if (opts.lastDays) {
+    const days = Math.min(opts.lastDays, 7);
+    params.startTime = (Date.now() - days * 24 * 60 * 60 * 1000).toString();
+  }
+  const result = await request("/openApi/swap/v2/trade/forceOrders", creds, params);
+  const orders = result.data?.orders || result.data || [];
+  return (Array.isArray(orders) ? orders : []).map((o: Record<string, string>) => ({
+    orderId: o.orderId || "",
+    symbol: o.symbol || "",
+    side: o.side || "",
+    type: o.type || "LIQUIDATION",
+    price: parseFloat(o.avgPrice || o.price || "0"),
+    quantity: parseFloat(o.executedQty || o.origQty || "0"),
+    time: parseInt(o.updateTime || o.time || "0"),
+  }));
+}
+
+/** Get open (pending) orders — limits, stops, tp/sl aguardando gatilho */
+export async function getOpenOrders(creds: BingXCredentials) {
+  const result = await request("/openApi/swap/v2/trade/openOrders", creds);
+  const orders = result.data?.orders || result.data || [];
+  return (Array.isArray(orders) ? orders : []).map((o: Record<string, string>) => ({
+    orderId: o.orderId || "",
+    symbol: o.symbol || "",
+    side: o.side || "",
+    positionSide: o.positionSide || "",
+    type: o.type || "",
+    price: parseFloat(o.price || "0"),
+    stopPrice: parseFloat(o.stopPrice || "0"),
+    quantity: parseFloat(o.origQty || "0"),
+    leverage: o.leverage || "",
+    time: parseInt(o.time || "0"),
+  }));
+}
+
+/** Get klines (candles) — endpoint público, sem auth */
+export async function getKlines(symbol: string, interval: string, startTime: number, endTime: number, limit = 500) {
+  const qs = new URLSearchParams({
+    symbol,
+    interval,
+    startTime: String(startTime),
+    endTime: String(endTime),
+    limit: String(limit),
+  });
+  const res = await fetch(`${BASE_URL}/openApi/swap/v2/quote/klines?${qs.toString()}`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) throw new Error(`BingX klines: ${res.status}`);
+  const json = await res.json();
+  if (json.code && json.code !== 0) throw new Error(`BingX klines: code ${json.code} — ${json.msg || ""}`);
+  const data = Array.isArray(json.data) ? json.data : [];
+  return data.map((k: Record<string, string>) => ({
+    time: parseInt(k.time || "0"),
+    open: parseFloat(k.open || "0"),
+    high: parseFloat(k.high || "0"),
+    low: parseFloat(k.low || "0"),
+    close: parseFloat(k.close || "0"),
+    volume: parseFloat(k.volume || "0"),
+  })).sort((a: { time: number }, b: { time: number }) => a.time - b.time);
+}
+
 /** Get PnL summary — income history (funding, realized PnL, commissions) */
 export async function getIncome(
   creds: BingXCredentials,

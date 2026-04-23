@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Check, AlertCircle, RefreshCw, Save } from "lucide-react";
+import { X, Check, AlertCircle, RefreshCw, Save, Zap } from "lucide-react";
+import { TradeChart } from "./TradeChart";
 
 export interface TradeForModal {
   orderId: string;
@@ -11,11 +12,17 @@ export interface TradeForModal {
   price: number;
   quantity: number;
   profit: number;
+  commission?: number;
   time: number;
   tags: string[];
   notes: string | null;
   stopLoss: number | null;
   uraCall: boolean;
+  liquidated?: boolean;
+  mfe?: number | null;
+  mae?: number | null;
+  mfeR?: number | null;
+  maeR?: number | null;
 }
 
 interface Props {
@@ -135,26 +142,79 @@ export function TradeDetailModal({ trade, exchange, allowedTags, onClose, onSave
           </button>
         </div>
 
-        {/* Metrics row */}
-        <div className="grid grid-cols-3 gap-px bg-white/[0.04]">
-          <div className="bg-[#0e0e10] px-4 py-3">
+        {/* Liquidation banner (se aplicavel) */}
+        {trade.liquidated && (
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-red-400/20 bg-red-500/[0.05]">
+            <Zap className="w-3.5 h-3.5 text-red-400" />
+            <p className="text-[11.5px] font-semibold text-red-300">Posição liquidada — stop não foi acionado a tempo</p>
+          </div>
+        )}
+
+        {/* Metrics row com commission */}
+        <div className="grid grid-cols-4 gap-px bg-white/[0.04]">
+          <div className="bg-[#0e0e10] px-3 py-3">
             <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-0.5">PnL</p>
-            <p className={`text-[15px] font-bold font-mono tabular-nums ${pnlColor}`}>
+            <p className={`text-[14px] font-bold font-mono tabular-nums ${pnlColor}`}>
               {pnlPrefix}{Math.abs(trade.profit).toFixed(2)}
             </p>
           </div>
-          <div className="bg-[#0e0e10] px-4 py-3">
+          <div className="bg-[#0e0e10] px-3 py-3">
+            <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-0.5">Taxa</p>
+            <p className="text-[14px] font-bold text-white/70 font-mono tabular-nums">
+              {trade.commission !== undefined && trade.commission !== 0
+                ? `-$${Math.abs(trade.commission).toFixed(4)}`
+                : "—"}
+            </p>
+          </div>
+          <div className="bg-[#0e0e10] px-3 py-3">
             <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-0.5">Entry</p>
-            <p className="text-[15px] font-bold text-white/85 font-mono tabular-nums">
+            <p className="text-[14px] font-bold text-white/85 font-mono tabular-nums">
               {trade.price < 1 ? trade.price.toFixed(6) : trade.price.toFixed(2)}
             </p>
           </div>
-          <div className="bg-[#0e0e10] px-4 py-3">
+          <div className="bg-[#0e0e10] px-3 py-3">
             <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-0.5">Qty</p>
-            <p className="text-[15px] font-bold text-white/85 font-mono tabular-nums">
+            <p className="text-[14px] font-bold text-white/85 font-mono tabular-nums">
               {trade.quantity.toFixed(4)}
             </p>
           </div>
+        </div>
+
+        {/* Chart inline + MFE/MAE */}
+        <div className="p-5 pt-4 border-b border-white/[0.04] space-y-3">
+          <TradeChart
+            symbol={trade.symbol}
+            tradeTime={trade.time}
+            entryPrice={trade.price}
+            stopLoss={parseStop() ?? trade.stopLoss}
+            side={trade.side}
+            height={180}
+          />
+          {(trade.mfe !== undefined && trade.mfe !== null) && (
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="flex items-baseline gap-2">
+                <p className="text-[9.5px] font-semibold text-white/45 uppercase tracking-wider">MFE</p>
+                <p className="text-[12px] font-mono tabular-nums text-green-400">
+                  +${Math.abs(trade.mfe).toFixed(2)}
+                  {trade.mfeR !== null && trade.mfeR !== undefined && (
+                    <span className="text-white/40 ml-1.5">({trade.mfeR > 0 ? "+" : ""}{trade.mfeR.toFixed(2)}R)</span>
+                  )}
+                </p>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <p className="text-[9.5px] font-semibold text-white/45 uppercase tracking-wider">MAE</p>
+                <p className="text-[12px] font-mono tabular-nums text-red-400">
+                  -${Math.abs(trade.mae || 0).toFixed(2)}
+                  {trade.maeR !== null && trade.maeR !== undefined && (
+                    <span className="text-white/40 ml-1.5">({trade.maeR.toFixed(2)}R)</span>
+                  )}
+                </p>
+              </div>
+              <p className="col-span-2 text-[10px] text-white/30 leading-relaxed">
+                MFE = quanto o trade andou a favor · MAE = quanto andou contra. Janela ±30min ao redor da entrada.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Body */}

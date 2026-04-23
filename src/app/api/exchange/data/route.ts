@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { decrypt } from "@/lib/exchange/crypto";
-import { getBalance, getPositions, getTradeHistory, getIncome, computeMetrics, type ExchangeId } from "@/lib/exchange";
+import { getBalance, getPositions, getTradeHistory, getIncome, computeMetrics, getForceOrders, getOpenOrders, getKlines, type ExchangeId } from "@/lib/exchange";
 
 export const dynamic = "force-dynamic";
 
@@ -261,7 +261,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ connected: false, exchange });
   }
 
-  const CACHE_TTL = 5 * 60 * 1000;
+  const CACHE_TTL = 30 * 1000; // 30s — client faz auto-refresh visivel, pedagogia de "quase tempo real"
 
   if (!forceRefresh) {
     const { data: cached } = await supabase
@@ -304,11 +304,15 @@ export async function GET(req: Request) {
   const creds = { apiKey, apiSecret, passphrase };
 
   try {
-    const [balance, positions, trades, income] = await Promise.all([
+    // BingX tem endpoints extras (forceOrders, openOrders). Outros exchanges retornam []
+    const isBingx = exchange === "bingx";
+    const [balance, positions, trades, income, forceOrders, openOrders] = await Promise.all([
       getBalance(exchange, creds),
       getPositions(exchange, creds),
       getTradeHistory(exchange, creds, { lastDays: 7, limit: 200 }),
       getIncome(exchange, creds, { lastDays: 30, limit: 200 }),
+      isBingx ? getForceOrders(creds, { lastDays: 7 }).catch(() => []) : Promise.resolve([]),
+      isBingx ? getOpenOrders(creds).catch(() => []) : Promise.resolve([]),
     ]);
 
     // Paralelo: dados auxiliares do DB
@@ -392,6 +396,73 @@ export async function GET(req: Request) {
     const rMultiples = computeRMultiples(enrichedTrades);
     const eventExposure = crossEventExposure(trades, events);
 
+    // Agregados de commission (já vem no trade)
+    const totalCommission = trades.reduce((s, t) => s + (t.commission || 0), 0);
+    // Agregado de funding fee por símbolo
+    const fundingBySymbol = new Map<string, number>();
+    for (const i of income) {
+      if (i.incomeType?.toUpperCase() === "FUNDING_FEE" && i.symbol) {
+        fundingBySymbol.set(i.symbol, (fundingBySymbol.get(i.symbol) || 0) + i.income);
+      }
+    }
+
+    // Marcar trades que cruzam com forceOrders — liquidação
+    const liqKeys = new Set<string>();
+    for (const f of forceOrders) {
+      liqKeys.add(`${f.symbol}_${Math.floor(f.time / 60000)}`); // minuto-level
+    }
+
+    // MFE/MAE via klines: so computa pros TOP 20 trades closed mais recentes
+    //   (limite pra nao blastar o rate da API BingX numa request).
+    // Se trade.price > 0 e profit != 0, temos entry. Exit price vem do avgPrice se presente.
+    const closedTradesSorted = [...enrichedTrades].filter((t) => t.profit !== 0 && t.time > 0).sort((a, b) => b.time - a.time).slice(0, 20);
+    const mfeMae = new Map<string, { mfe: number; mae: number; mfeR: number | null; maeR: number | null; entryPrice: number; exitPrice: number | null }>();
+    if (isBingx) {
+      await Promise.all(
+        closedTradesSorted.map(async (t) => {
+          try {
+            // Janela de +- 30min ao redor do trade, interval 1m
+            const windowMs = 30 * 60 * 1000;
+            const start = Math.max(0, t.time - windowMs);
+            const end = t.time + windowMs;
+            const klines = await getKlines(t.symbol, "1m", start, end, 100);
+            if (!klines.length) return;
+            const entry = t.price;
+            if (!entry) return;
+            const isLong = (t.side || "").toUpperCase() === "BUY";
+            let mfe = 0;
+            let mae = 0;
+            for (const k of klines) {
+              if (isLong) {
+                mfe = Math.max(mfe, k.high - entry);
+                mae = Math.min(mae, k.low - entry);
+              } else {
+                mfe = Math.max(mfe, entry - k.low);
+                mae = Math.min(mae, entry - k.high);
+              }
+            }
+            // Converte para $ multiplicando pelo size
+            const qty = Math.abs(t.quantity || 0);
+            const mfeUsd = mfe * qty;
+            const maeUsd = mae * qty;
+            // R-multiple se tem stop no metadata
+            const stop = t.meta?.stop_loss ? parseFloat(t.meta.stop_loss) : null;
+            const risk = stop ? Math.abs(entry - stop) * qty : null;
+            mfeMae.set(t.orderId, {
+              mfe: mfeUsd,
+              mae: maeUsd,
+              mfeR: risk && risk > 0 ? mfeUsd / risk : null,
+              maeR: risk && risk > 0 ? maeUsd / risk : null,
+              entryPrice: entry,
+              exitPrice: null, // BingX retorna avgPrice só se foi um trade fechado; nao tem campo exit claro
+            });
+          } catch {
+            // Silently ignore — klines pode falhar sem comprometer a response inteira
+          }
+        })
+      );
+    }
+
     const todayKey = (() => {
       const n = new Date();
       n.setHours(n.getHours() - 3);
@@ -400,23 +471,32 @@ export async function GET(req: Request) {
     const todayPnL = dailyPnL.find((d) => d.date === todayKey)?.pnl || 0;
     const propStatus = computePropStatus(propRules, todayPnL, balance.totalEquity, equityCurve);
 
-    // Trades enriquecidos na resposta (com meta + uraCall flag)
-    const tradesForClient = enrichedTrades.slice(0, 100).map((t) => ({
-      orderId: t.orderId,
-      symbol: t.symbol,
-      side: t.side,
-      type: t.type,
-      price: t.price,
-      quantity: t.quantity,
-      profit: t.profit,
-      commission: t.commission,
-      status: t.status,
-      time: t.time,
-      uraCall: t.uraCall,
-      tags: t.meta?.tags || [],
-      notes: t.meta?.notes || null,
-      stopLoss: t.meta?.stop_loss ? parseFloat(t.meta.stop_loss) : null,
-    }));
+    // Trades enriquecidos na resposta (com meta + uraCall flag + liq flag + MFE/MAE)
+    const tradesForClient = enrichedTrades.slice(0, 100).map((t) => {
+      const liqKey = `${t.symbol}_${Math.floor(t.time / 60000)}`;
+      const mm = mfeMae.get(t.orderId);
+      return {
+        orderId: t.orderId,
+        symbol: t.symbol,
+        side: t.side,
+        type: t.type,
+        price: t.price,
+        quantity: t.quantity,
+        profit: t.profit,
+        commission: t.commission,
+        status: t.status,
+        time: t.time,
+        uraCall: t.uraCall,
+        tags: t.meta?.tags || [],
+        notes: t.meta?.notes || null,
+        stopLoss: t.meta?.stop_loss ? parseFloat(t.meta.stop_loss) : null,
+        liquidated: liqKeys.has(liqKey),
+        mfe: mm?.mfe ?? null,
+        mae: mm?.mae ?? null,
+        mfeR: mm?.mfeR ?? null,
+        maeR: mm?.maeR ?? null,
+      };
+    });
 
     const snapshot = {
       balance,
@@ -436,6 +516,10 @@ export async function GET(req: Request) {
       rMultiples,
       eventExposure,
       propStatus,
+      forceOrders,
+      openOrders,
+      totalCommission,
+      fundingBySymbol: Object.fromEntries(fundingBySymbol),
       label: conn.label,
     };
 
