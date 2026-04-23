@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -6,6 +7,14 @@ export const revalidate = 0;
 // Proxy pro symbol-search público do TradingView. Chamar direto do browser falha
 // por CORS — o endpoint não envia Access-Control-Allow-Origin.
 export async function GET(req: Request) {
+  // Rate limit por IP (endpoint sem auth, rota pública — evita que alguém
+  // use nosso Vercel como proxy anônimo pra TradingView e a gente tome ban).
+  const ip = getClientIp(req);
+  const allowed = await checkRateLimit(`tv-search:${ip}`, 30, 60);
+  if (!allowed) {
+    return NextResponse.json({ error: "rate limited" }, { status: 429 });
+  }
+
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").trim();
   if (!q) return NextResponse.json([]);

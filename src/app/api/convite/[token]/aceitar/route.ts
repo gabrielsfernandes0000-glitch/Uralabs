@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAnon } from "@/lib/supabase";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,15 @@ function json(status: number, body: unknown) {
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
+  // Rate limit por IP: 20 tentativas/10min. Brute-force de token 14-char é
+  // inviável matematicamente (36^14), mas rate limit reduz footprint e
+  // dificulta enumeração de tokens vazados parcialmente.
+  const ip = getClientIp(req);
+  const allowed = await checkRateLimit(`convite-aceitar:${ip}`, 20, 600);
+  if (!allowed) {
+    return json(429, { ok: false, error: "Muitas tentativas. Aguarde alguns minutos." });
+  }
+
   const { token } = await ctx.params;
   if (!token || token.length < 8 || token.length > 64) {
     return json(400, { ok: false, error: "Token inválido" });

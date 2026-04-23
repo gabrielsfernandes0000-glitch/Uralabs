@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getKlines } from "@/lib/exchange";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,13 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit: 60 reqs/min/user. Flood autenticado pode causar ban IP
+  // no nosso CF proxy pela BingX.
+  const allowed = await checkRateLimit(`exchange-klines:${session.userId}`, 60, 60);
+  if (!allowed) {
+    return NextResponse.json({ error: "rate limited" }, { status: 429 });
+  }
 
   const url = new URL(req.url);
   const symbol = url.searchParams.get("symbol");
