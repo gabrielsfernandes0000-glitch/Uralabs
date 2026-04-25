@@ -8,7 +8,6 @@ export const contentType = "image/png";
 /**
  * Open Graph image gerada em runtime pelo Next.js.
  * Aparece em preview de compartilhamento (X, Discord, WhatsApp, LinkedIn).
- * Antes não existia — links compartilhados abriam sem preview.
  */
 export default function OGImage() {
   return new ImageResponse(
@@ -22,62 +21,71 @@ export default function OGImage() {
           alignItems: "flex-start",
           justifyContent: "space-between",
           background:
-            "radial-gradient(ellipse at top left, rgba(255,85,0,0.18) 0%, transparent 55%), radial-gradient(ellipse at bottom right, rgba(255,85,0,0.10) 0%, transparent 60%), #0a0a0b",
-          padding: "72px 80px",
+            "radial-gradient(ellipse 60% 50% at 20% 0%, rgba(255,85,0,0.06) 0%, transparent 60%), #0a0a0b",
+          padding: "64px 72px",
           color: "#ffffff",
           fontFamily: "Inter",
         }}
       >
-        {/* Top: brand + tag */}
+        {/* Top: brand */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 16,
+            gap: 14,
           }}
         >
           <div
             style={{
-              width: 56,
-              height: 56,
-              borderRadius: 14,
-              background: "linear-gradient(135deg, #FF5500 0%, #FF8800 100%)",
+              width: 44,
+              height: 44,
+              borderRadius: 8,
+              background: "#FF5500",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 36,
-              fontWeight: 800,
-              color: "#000",
-              boxShadow: "0 0 48px rgba(255,85,0,0.4)",
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#ffffff",
             }}
           >
             U
           </div>
           <div
             style={{
-              fontSize: 28,
-              fontWeight: 800,
+              fontSize: 24,
+              fontWeight: 600,
               letterSpacing: "-0.02em",
               display: "flex",
-              gap: 8,
+              gap: 6,
             }}
           >
             <span>URA</span>
-            <span style={{ color: "#FF5500" }}>LABS</span>
+            <span style={{ color: "#FF5500" }}>Labs</span>
           </div>
           <div
             style={{
-              marginLeft: 8,
-              fontSize: 12,
+              marginLeft: 12,
+              fontSize: 13,
               padding: "6px 12px",
-              border: "1px solid rgba(255,85,0,0.4)",
+              border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: 999,
-              color: "#FF8844",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.65)",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 999,
+                background: "#22C55E",
+                display: "block",
+              }}
+            />
             Comunidade ao vivo
           </div>
         </div>
@@ -87,38 +95,32 @@ export default function OGImage() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 20,
+            gap: 18,
           }}
         >
           <div
             style={{
               fontSize: 76,
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
+              fontWeight: 600,
+              letterSpacing: "-0.025em",
               lineHeight: 1.05,
               display: "flex",
               flexDirection: "column",
+              color: "#ffffff",
             }}
           >
             <span>Cansado de ser</span>
-            <span>
-              <span
-                style={{
-                  background: "linear-gradient(90deg, #FF5500, #FFAA33)",
-                  backgroundClip: "text",
-                  color: "transparent",
-                }}
-              >
-                liquidez do mercado?
-              </span>
+            <span style={{ display: "flex", gap: 18 }}>
+              <span>liquidez do</span>
+              <span style={{ color: "#FF5500" }}>mercado?</span>
             </span>
           </div>
           <div
             style={{
-              fontSize: 26,
-              color: "#9ca3af",
+              fontSize: 24,
+              color: "rgba(255,255,255,0.55)",
               maxWidth: 900,
-              lineHeight: 1.35,
+              lineHeight: 1.4,
             }}
           >
             Calls diários, mentoria Elite e comunidade de traders sérios. SMC,
@@ -130,76 +132,73 @@ export default function OGImage() {
         <div
           style={{
             display: "flex",
-            gap: 48,
+            gap: 40,
             alignItems: "center",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span
               style={{
-                fontSize: 40,
-                fontWeight: 800,
-                color: "#FF5500",
+                fontSize: 36,
+                fontWeight: 600,
+                color: "#ffffff",
                 letterSpacing: "-0.02em",
+                lineHeight: 1,
               }}
             >
               +1.775%
             </span>
             <span
               style={{
-                fontSize: 14,
-                color: "#6b7280",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontWeight: 600,
+                fontSize: 13,
+                color: "rgba(255,255,255,0.50)",
+                marginTop: 6,
               }}
             >
-              Março 2026
+              Calls em março/2026
             </span>
           </div>
-          <div style={{ width: 1, height: 48, background: "rgba(255,255,255,0.1)" }} />
+          <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.08)" }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span
               style={{
-                fontSize: 40,
-                fontWeight: 800,
-                color: "#22c55e",
+                fontSize: 36,
+                fontWeight: 600,
+                color: "#ffffff",
                 letterSpacing: "-0.02em",
+                lineHeight: 1,
               }}
             >
               70%
             </span>
             <span
               style={{
-                fontSize: 14,
-                color: "#6b7280",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontWeight: 600,
+                fontSize: 13,
+                color: "rgba(255,255,255,0.50)",
+                marginTop: 6,
               }}
             >
-              Acerto nas calls
+              De acerto
             </span>
           </div>
-          <div style={{ width: 1, height: 48, background: "rgba(255,255,255,0.1)" }} />
+          <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.08)" }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span
               style={{
-                fontSize: 40,
-                fontWeight: 800,
+                fontSize: 28,
+                fontWeight: 600,
                 color: "#ffffff",
-                letterSpacing: "-0.02em",
+                letterSpacing: "-0.01em",
+                lineHeight: 1,
               }}
             >
               uralabs.com.br
             </span>
             <span
               style={{
-                fontSize: 14,
-                color: "#6b7280",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontWeight: 600,
+                fontSize: 13,
+                color: "rgba(255,255,255,0.50)",
+                marginTop: 8,
               }}
             >
               Entrar grátis no Discord
