@@ -17,13 +17,15 @@ const FAQS = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-white/5 rounded-lg bg-dark-900/50 overflow-hidden mb-3 transition-all hover:border-brand-500/30">
-      <button onClick={() => setOpen(!open)} className="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none cursor-pointer">
-        <span className="font-semibold text-white">{q}</span>
-        {open ? <ChevronUp className="w-5 h-5 text-brand-500 shrink-0" /> : <ChevronDown className="w-5 h-5 text-gray-500 shrink-0" />}
+    <div className="border border-white/[0.05] rounded-md bg-dark-950 overflow-hidden mb-2 transition-colors hover:border-white/[0.12]">
+      <button onClick={() => setOpen(!open)} className="w-full px-5 py-4 flex items-center justify-between text-left focus:outline-none cursor-pointer gap-4">
+        <span className="text-[14px] font-medium text-white">{q}</span>
+        {open
+          ? <ChevronUp className="w-4 h-4 text-white/60 shrink-0" strokeWidth={2} />
+          : <ChevronDown className="w-4 h-4 text-white/40 shrink-0" strokeWidth={2} />}
       </button>
-      <div className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-48 opacity-100 pb-4" : "max-h-0 opacity-0"}`}>
-        <p className="text-gray-400 text-sm leading-relaxed">{a}</p>
+      <div className={`px-5 overflow-hidden transition-all duration-200 ease-out ${open ? "max-h-64 opacity-100 pb-4" : "max-h-0 opacity-0"}`}>
+        <p className="text-[13px] text-white/55 leading-relaxed">{a}</p>
       </div>
     </div>
   );
@@ -32,10 +34,13 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 export function FAQ() {
   return (
     <section className="py-24 bg-dark-950">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center p-3 bg-brand-500/10 rounded-xl mb-4"><HelpCircle className="w-8 h-8 text-brand-500" /></div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Dúvidas Frequentes</h2>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-md surface-card mb-4">
+            <HelpCircle className="w-4 h-4 text-white/60" strokeWidth={2} />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-3">Dúvidas frequentes</h2>
+          <p className="text-[14px] text-white/50">O que mais perguntam antes de entrar.</p>
         </div>
         <div>
           {FAQS.map((faq, i) => <FAQItem key={i} q={faq.q} a={faq.a} />)}

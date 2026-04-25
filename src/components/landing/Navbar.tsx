@@ -36,18 +36,18 @@ export function Navbar() {
     <>
       <AnalyticsBoot />
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-dark-950/90 backdrop-blur-md border-b border-white/5 py-4" : "bg-transparent py-6"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+          isScrolled ? "bg-dark-950/90 backdrop-blur-md border-b border-white/[0.05] py-3" : "bg-transparent py-5"
         }`}
       >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <div className="p-2 bg-gradient-to-br from-brand-500 to-red-600 rounded-lg shadow-lg shadow-brand-500/20">
-              <Flame className="w-6 h-6 text-white fill-white" />
+            <div className="w-8 h-8 rounded-md bg-brand-500 flex items-center justify-center">
+              <Flame className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
-              URA <span className="text-brand-500">LABS</span>
+            <span className="text-[15px] font-semibold tracking-tight text-white">
+              URA <span className="text-brand-500">Labs</span>
             </span>
           </div>
 
@@ -57,7 +57,7 @@ export function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNav(e, link.href)}
-                className="text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors cursor-pointer"
+                className="text-[13px] font-medium text-white/60 hover:text-white transition-colors cursor-pointer"
               >
                 {link.name}
               </a>
@@ -68,30 +68,26 @@ export function Navbar() {
               rel="noopener noreferrer"
               onClick={() => trackEvent("click_discord_free", { location: "navbar" })}
               variant="primary"
-              className="!px-4 !py-2 text-sm bg-gradient-to-r from-brand-600 to-red-600 border-none relative overflow-hidden group"
+              className="!px-4 !py-2 !h-9 text-[13px] font-semibold bg-brand-500 hover:bg-brand-400 text-white border-none transition-colors"
             >
-              <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
-              <span className="relative z-10 flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
-                </span>
+              <span className="flex items-center gap-2">
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white/90" />
                 Entrar no Discord
               </span>
             </Button>
           </div>
 
-          <button className="md:hidden text-gray-300 hover:text-brand-500 transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button className="md:hidden text-white/70 hover:text-white transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       {menuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-dark-950 border-b border-gray-800 p-4 shadow-xl">
-          <div className="flex flex-col gap-4">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-dark-950 border-b border-white/[0.05] p-4">
+          <div className="flex flex-col gap-3">
             {NAV_LINKS.map((link) => (
-              <a key={link.name} href={link.href} onClick={(e) => handleNav(e, link.href)} className="text-base font-medium text-gray-300 hover:text-white cursor-pointer">
+              <a key={link.name} href={link.href} onClick={(e) => handleNav(e, link.href)} className="text-[14px] font-medium text-white/70 hover:text-white cursor-pointer py-1">
                 {link.name}
               </a>
             ))}
@@ -104,12 +100,9 @@ export function Navbar() {
                 setMenuOpen(false);
                 trackEvent("click_discord_free", { location: "navbar_mobile" });
               }}
-              className="flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-400 text-white border-none font-semibold"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-              </span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white/90" />
               Entrar no Discord
             </Button>
           </div>

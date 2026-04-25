@@ -25,20 +25,20 @@ export function FloatingCTA() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:hidden animate-fade-in-up">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:hidden">
       <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-950/95 to-transparent pointer-events-none" />
       <div className="relative">
         <Button
           fullWidth
           href="#pricing"
           onClick={scrollTo}
-          className="h-16 shadow-[0_0_30px_rgba(234,179,8,0.2)] bg-gradient-to-r from-brand-600 via-yellow-600 to-brand-600 text-white text-lg font-bold flex items-center justify-between px-6 border border-white/10 rounded-xl"
+          className="h-12 bg-brand-500 hover:bg-brand-400 text-white text-[14px] font-semibold flex items-center justify-between px-5 border-none rounded-md transition-colors"
         >
-          <span className="flex items-center gap-3">
-            <div className="p-1.5 bg-white/20 rounded-full backdrop-blur-sm"><Crown className="w-5 h-5 text-white fill-white" /></div>
-            <span className="text-lg font-bold">Ver Planos</span>
+          <span className="flex items-center gap-2">
+            <Crown className="w-4 h-4" strokeWidth={2} />
+            <span>Ver planos</span>
           </span>
-          <ArrowRight className="w-6 h-6 animate-pulse" />
+          <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
     </div>

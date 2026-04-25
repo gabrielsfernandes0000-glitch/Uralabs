@@ -23,25 +23,25 @@ export function StickyBar({ memberCount, onlineCount }: Props) {
         visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       }`}
     >
-      <div className="bg-dark-950/95 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-dark-950/95 backdrop-blur-md border-b border-white/[0.05]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             {memberCount > 0 ? (
               <>
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-brand-500" />
-                  <span className="text-sm font-bold text-white">{memberCount.toLocaleString("pt-BR")} traders no Discord</span>
+                  <Users className="w-3.5 h-3.5 text-white/55" strokeWidth={2} />
+                  <span className="text-[12px] font-medium text-white tabular-nums">{memberCount.toLocaleString("pt-BR")} traders no Discord</span>
                 </div>
-                <div className="h-4 w-px bg-white/10" />
+                <div className="h-3 w-px bg-white/[0.08]" />
                 <div className="flex items-center gap-1.5">
-                  <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs text-green-500 font-medium">{onlineCount} online agora</span>
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)]" />
+                  <span className="text-[11px] text-white/55 tabular-nums">{onlineCount} online</span>
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-brand-500" />
-                <span className="text-sm font-bold text-white">Comunidade ao vivo no Discord</span>
+                <Users className="w-3.5 h-3.5 text-white/55" strokeWidth={2} />
+                <span className="text-[12px] font-medium text-white">Comunidade ao vivo no Discord</span>
               </div>
             )}
           </div>
@@ -49,9 +49,9 @@ export function StickyBar({ memberCount, onlineCount }: Props) {
             href="https://discord.gg/SrxZSGN6"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-1.5 bg-brand-500 hover:bg-brand-400 text-white text-xs font-bold rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 hover:bg-brand-400 text-white text-[12px] font-semibold rounded-md transition-colors"
           >
-            Entrar Grátis <ArrowRight className="w-3.5 h-3.5" />
+            Entrar grátis <ArrowRight className="w-3 h-3" />
           </a>
         </div>
       </div>
