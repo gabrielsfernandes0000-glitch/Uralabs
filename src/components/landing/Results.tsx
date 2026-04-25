@@ -223,7 +223,7 @@ export function Results() {
             </div>
             <div className="divide-y divide-white/[0.03] max-h-[420px] overflow-y-auto no-scrollbar">
               {TRADES.map((t, i) => (
-                <div key={i} className="grid grid-cols-[80px_70px_1fr_80px_100px] gap-4 items-center p-4 hover:bg-white/[0.02] transition-colors">
+                <div key={i} className="grid grid-cols-[52px_48px_1fr_44px_70px] md:grid-cols-[80px_70px_1fr_80px_100px] gap-2 md:gap-4 items-center p-3 md:p-4 hover:bg-white/[0.02] transition-colors">
                   <div className="text-[12px] text-white/40 font-mono tabular-nums">{t.date}</div>
                   <div>
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
