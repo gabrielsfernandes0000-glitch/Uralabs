@@ -84,13 +84,13 @@ export function Hero({ onlineCount, memberCount }: Props) {
           <Reveal delay={0.4}>
             <div className="flex items-center gap-8 md:gap-12 mb-12">
               <div className="text-center">
-                <p className="text-[28px] font-semibold text-white tabular-nums leading-none">+1.775%</p>
+                <p className="text-[28px] font-semibold text-white leading-none">+1.775%</p>
                 <p className="text-[11px] text-white/50 mt-1.5">Calls em março/2026</p>
                 <p className="text-[10px] text-white/30 mt-0.5">20 operações · referência</p>
               </div>
               <div className="h-10 w-px bg-white/[0.08]" />
               <div className="text-center">
-                <p className="text-[28px] font-semibold text-white tabular-nums leading-none">70%</p>
+                <p className="text-[28px] font-semibold text-white leading-none">70%</p>
                 <p className="text-[11px] text-white/50 mt-1.5">De acerto</p>
                 <p className="text-[10px] text-white/30 mt-0.5">14 wins · 6 loss</p>
               </div>
@@ -98,7 +98,7 @@ export function Hero({ onlineCount, memberCount }: Props) {
                 <>
                   <div className="h-10 w-px bg-white/[0.08]" />
                   <div className="text-center">
-                    <p className="text-[28px] font-semibold text-white tabular-nums leading-none">{members.toLocaleString("pt-BR")}</p>
+                    <p className="text-[28px] font-semibold text-white leading-none">{members.toLocaleString("pt-BR")}</p>
                     <p className="text-[11px] text-white/50 mt-1.5">No Discord</p>
                     <p className="text-[10px] text-white/30 mt-0.5">entrada gratuita</p>
                   </div>

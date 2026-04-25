@@ -102,7 +102,7 @@ export function Pricing() {
                 <h3 className="text-[20px] font-semibold text-white mt-1">Grátis</h3>
                 <p className="text-[13px] text-white/50 mt-1">Entra, conhece, decide depois.</p>
               </div>
-              <div className="text-[28px] font-semibold text-white tabular-nums leading-none mb-6">R$ 0</div>
+              <div className="text-[28px] font-semibold text-white leading-none mb-6">R$ 0</div>
               <ul className="space-y-2.5 mb-8 flex-1">
                 {["Chat geral e dúvidas", "1 conceito educacional por semana", "Ver resultados dos membros", "Notícias do mercado"].map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -113,11 +113,12 @@ export function Pricing() {
               </ul>
               <Button
                 fullWidth
+                variant="secondary"
                 href="https://discord.gg/SrxZSGN6"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackEvent("click_discord_free", { location: "pricing_free" })}
-                className="bg-white text-dark-950 hover:bg-white/90 border-none font-semibold text-[13px]"
+                className="!bg-white !text-dark-950 hover:!bg-white/90 font-semibold text-[13px]"
               >
                 Entrar no Discord
               </Button>
@@ -131,9 +132,9 @@ export function Pricing() {
                 <p className="text-[13px] text-white/50 mt-1">Calls diários + aulas gravadas pra aprender.</p>
               </div>
               <div className="mb-6">
-                <span className="text-[28px] font-semibold text-white tabular-nums leading-none">R$ 120</span>
+                <span className="text-[28px] font-semibold text-white leading-none">R$ 120</span>
                 <span className="text-[13px] text-white/45 ml-1">/mês</span>
-                <div className="flex gap-3 mt-2 text-[11px] text-white/40 tabular-nums">
+                <div className="flex gap-3 mt-2 text-[11px] text-white/40">
                   <span>R$ 480/sem</span>
                   <span>R$ 840/ano <span className="text-[var(--color-semantic-up)] font-medium">−42%</span></span>
                 </div>
@@ -181,10 +182,10 @@ export function Pricing() {
                 <p className="text-[13px] text-white/50 mt-1">Aprenda a operar sozinho. Pra sempre.</p>
               </div>
               <div className="mb-1">
-                <span className="text-[12px] text-white/35 line-through tabular-nums">R$ 3.500</span>
+                <span className="text-[12px] text-white/35 line-through">R$ 3.500</span>
               </div>
               <div className="mb-3">
-                <span className="text-[28px] font-semibold text-white tabular-nums leading-none">R$ 2.500</span>
+                <span className="text-[28px] font-semibold text-white leading-none">R$ 2.500</span>
                 <span className="text-[13px] text-white/45 ml-1">/6 meses</span>
               </div>
               <div className="flex items-center gap-2 mb-6">
@@ -194,7 +195,7 @@ export function Pricing() {
                 <div className="flex items-center gap-1 px-2 py-1 rounded surface-card">
                   <Bitcoin className="w-3 h-3 text-white/55" strokeWidth={2} /><span className="text-[10px] text-white/70 font-medium">Cripto</span>
                 </div>
-                <span className="text-[10px] text-white/35 tabular-nums">ou 12× R$ 249</span>
+                <span className="text-[10px] text-white/35">ou 12× R$ 249</span>
               </div>
               <ul className="space-y-2.5 mb-6 flex-1">
                 {[
