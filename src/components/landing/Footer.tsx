@@ -13,9 +13,9 @@ export function Footer() {
             </div>
             <p className="text-white/55 text-[13px] leading-relaxed max-w-sm">Sinais diários, mentoria ao vivo e formação completa em Smart Money Concepts. Cripto e Nasdaq.</p>
             <div className="flex gap-3 mt-6">
-              <a href="https://www.youtube.com/@uranickk" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-md surface-card flex items-center justify-center text-white/55 hover:text-white hover:border-white/[0.12] transition-colors"><Video className="w-4 h-4" strokeWidth={2} /></a>
-              <a href="https://x.com/uralabstrading" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-md surface-card flex items-center justify-center text-white/55 hover:text-white hover:border-white/[0.12] transition-colors"><AtSign className="w-4 h-4" strokeWidth={2} /></a>
-              <a href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-md surface-card flex items-center justify-center text-white/55 hover:text-white hover:border-white/[0.12] transition-colors"><MessageCircle className="w-4 h-4" strokeWidth={2} /></a>
+              <a aria-label="YouTube" href="https://www.youtube.com/@uranickk" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-md surface-card flex items-center justify-center text-white/55 hover:text-white hover:border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors"><Video className="w-4 h-4" strokeWidth={2} /></a>
+              <a aria-label="X (Twitter)" href="https://x.com/uralabstrading" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-md surface-card flex items-center justify-center text-white/55 hover:text-white hover:border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors"><AtSign className="w-4 h-4" strokeWidth={2} /></a>
+              <a aria-label="Discord" href="https://discord.gg/SrxZSGN6" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-md surface-card flex items-center justify-center text-white/55 hover:text-white hover:border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors"><MessageCircle className="w-4 h-4" strokeWidth={2} /></a>
             </div>
           </div>
           <div>
