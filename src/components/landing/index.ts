@@ -2,6 +2,7 @@ export { Navbar } from "./Navbar";
 export { Hero } from "./Hero";
 export { HowItWorks } from "./HowItWorks";
 export { Results } from "./Results";
+export { CallPreview } from "./CallPreview";
 export { DiscordWidget } from "./DiscordWidget";
 export { ElitePreview } from "./ElitePreview";
 export { AboutMethod } from "./AboutMethod";

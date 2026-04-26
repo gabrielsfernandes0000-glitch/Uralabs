@@ -3,6 +3,7 @@ import {
   Hero,
   HowItWorks,
   Results,
+  CallPreview,
   DiscordWidget,
   AboutMethod,
   Comparison,
@@ -46,7 +47,10 @@ export default async function Home() {
         {/* 4. Proof — números + trades + testimonials (esquenta pra venda) */}
         <Results />
 
-        {/* 5. Authority — URA + método + jornada */}
+        {/* 5. Show call format — como rola uma call no VIP */}
+        <CallPreview />
+
+        {/* 6. Authority — URA + método + jornada */}
         <AboutMethod />
 
         {/* 6. Differentiate — URA Labs vs grupo de sinais / curso / YouTube */}
