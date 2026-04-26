@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { impactMeta, type EconomicEvent } from "@/lib/market-news";
 import { Check } from "lucide-react";
 
 /**
- * Timeline horizontal — últimas 2h até próximas 6h.
- * "Agora" marcado no centro. Scroll horizontal livre.
- * Cada tick = evento econômico. Densidade adaptável ao horário.
+ * Agenda intradiária — últimas 2h até próximas 6h, em cards divididos.
+ * Cada evento é um card self-contained. Separador "Agora" entre passado/futuro.
  */
 
-const WINDOW_BACK_MIN = 120;   // 2h atrás
-const WINDOW_FWD_MIN = 360;    // 6h pra frente
-const TOTAL_WINDOW = WINDOW_BACK_MIN + WINDOW_FWD_MIN;
-const PX_PER_MIN = 4;          // 4px por min = 1920px total = scroll horizontal
+const WINDOW_BACK_MIN = 120;
+const WINDOW_FWD_MIN = 360;
 
 function parseMins(time: string): number | null {
   const match = /^(\d{1,2}):(\d{2})$/.exec(time);
@@ -23,7 +20,6 @@ function parseMins(time: string): number | null {
 
 export function EventsTimeline({ events }: { events: EconomicEvent[] }) {
   const [nowMins, setNowMins] = useState<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const update = () => {
@@ -35,125 +31,126 @@ export function EventsTimeline({ events }: { events: EconomicEvent[] }) {
     return () => clearInterval(t);
   }, []);
 
-  const visible = useMemo(() => {
-    if (nowMins === null) return [];
-    return events
+  const { past, future } = useMemo(() => {
+    if (nowMins === null) return { past: [] as EconomicEvent[], future: [] as EconomicEvent[] };
+    const inWindow = events
       .filter((e) => {
         const m = parseMins(e.time);
         if (m === null) return false;
         return m >= nowMins - WINDOW_BACK_MIN && m <= nowMins + WINDOW_FWD_MIN;
       })
       .sort((a, b) => (parseMins(a.time) ?? 0) - (parseMins(b.time) ?? 0));
+    return {
+      past: inWindow.filter((e) => (parseMins(e.time) ?? 0) < nowMins),
+      future: inWindow.filter((e) => (parseMins(e.time) ?? 0) >= nowMins),
+    };
   }, [events, nowMins]);
 
-  // Scroll inicial pro "agora" ficar no primeiro terço visível
-  useEffect(() => {
-    if (!scrollRef.current || nowMins === null) return;
-    const el = scrollRef.current;
-    const nowPx = WINDOW_BACK_MIN * PX_PER_MIN;
-    el.scrollLeft = Math.max(0, nowPx - el.clientWidth / 3);
-  }, [nowMins]);
-
   if (nowMins === null) {
-    return <div className="h-[90px] rounded-xl bg-white/[0.02] animate-pulse" />;
+    return <div className="h-[140px] rounded-xl bg-white/[0.02] animate-pulse" />;
   }
 
-  const totalWidth = TOTAL_WINDOW * PX_PER_MIN;
-  const nowPx = WINDOW_BACK_MIN * PX_PER_MIN;
-
-  // Hour ticks (cada hora cheia)
-  const hourTicks: Array<{ px: number; label: string; isNow?: boolean }> = [];
-  const startHour = Math.floor((nowMins - WINDOW_BACK_MIN) / 60);
-  const endHour = Math.ceil((nowMins + WINDOW_FWD_MIN) / 60);
-  for (let h = startHour; h <= endHour; h++) {
-    const absMin = h * 60;
-    const px = (absMin - (nowMins - WINDOW_BACK_MIN)) * PX_PER_MIN;
-    if (px >= 0 && px <= totalWidth) {
-      const hourMod = ((h % 24) + 24) % 24;
-      hourTicks.push({ px, label: `${String(hourMod).padStart(2, "0")}h` });
-    }
+  const total = past.length + future.length;
+  if (total === 0) {
+    return (
+      <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e] px-5 py-10 flex flex-col items-center text-center">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+          <span className="text-[11px] font-semibold text-brand-500">Agora</span>
+        </div>
+        <p className="text-[12px] text-white/45">Sem eventos nas próximas 6h</p>
+      </div>
+    );
   }
 
   return (
-    <div className="relative rounded-xl border border-white/[0.05] bg-[#0c0c0e] overflow-hidden">
-      <div ref={scrollRef} className="overflow-x-auto overflow-y-hidden scrollbar-thin">
-        <div className="relative h-[110px]" style={{ width: totalWidth, minWidth: "100%" }}>
-          {/* Hour grid */}
-          {hourTicks.map((t, i) => (
-            <div
-              key={i}
-              className="absolute top-0 bottom-0 flex flex-col items-start pointer-events-none"
-              style={{ left: t.px }}
-            >
-              <div className="w-px h-full bg-white/[0.04]" />
-              <span className="absolute top-1 left-1.5 text-[9px] font-mono tabular-nums text-white/25">{t.label}</span>
-            </div>
-          ))}
-
-          {/* Now line — marcador central */}
-          <div
-            className="absolute top-0 bottom-0 w-[1.5px] bg-brand-500 z-10 pointer-events-none"
-            style={{ left: nowPx, boxShadow: "0 0 12px rgba(255,85,0,0.6)" }}
-          >
-            <span className="absolute top-1 left-1 text-[10px] font-semibold text-brand-500 whitespace-nowrap">
-              Agora
-            </span>
+    <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e] p-4 space-y-3">
+      {/* Seção passado (se houver) */}
+      {past.length > 0 && (
+        <section>
+          <SectionLabel text={`Últimas ${Math.min(WINDOW_BACK_MIN / 60, 2)}h`} count={past.length} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+            {past.map((ev) => (
+              <EventCard key={ev.id} ev={ev} past />
+            ))}
           </div>
+        </section>
+      )}
 
-          {/* Events como pins */}
-          {visible.map((ev) => {
-            const m = parseMins(ev.time)!;
-            const px = (m - (nowMins - WINDOW_BACK_MIN)) * PX_PER_MIN;
-            return <TimelinePin key={ev.id} ev={ev} px={px} isPast={m < nowMins} />;
-          })}
-
-          {/* Empty state */}
-          {visible.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-[11px] text-white/35">Sem eventos nas próximas 6h</p>
-            </div>
-          )}
-        </div>
+      {/* Separador "Agora" */}
+      <div className="flex items-center gap-3">
+        <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+        <span className="text-[10px] font-bold text-brand-500 tracking-[0.2em] uppercase">Agora</span>
+        <div className="flex-1 h-px bg-gradient-to-r from-brand-500/40 via-white/[0.06] to-transparent" />
       </div>
+
+      {/* Seção futuro */}
+      {future.length > 0 ? (
+        <section>
+          <SectionLabel text={`Próximas ${WINDOW_FWD_MIN / 60}h`} count={future.length} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+            {future.map((ev) => (
+              <EventCard key={ev.id} ev={ev} />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <p className="text-[11px] text-white/35 text-center py-3">Sem eventos nas próximas 6h</p>
+      )}
     </div>
   );
 }
 
-function TimelinePin({ ev, px, isPast }: { ev: EconomicEvent; px: number; isPast: boolean }) {
+function SectionLabel({ text, count }: { text: string; count: number }) {
+  return (
+    <div className="flex items-baseline gap-2 mb-2 px-0.5">
+      <span className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-white/45">{text}</span>
+      <span className="text-[10px] font-mono tabular-nums text-white/30">{count}</span>
+    </div>
+  );
+}
+
+function EventCard({ ev, past = false }: { ev: EconomicEvent; past?: boolean }) {
   const m = impactMeta(ev.impact);
   const released = !!ev.actual;
-  const opacity = isPast && !released ? 0.35 : isPast ? 0.55 : 1;
-
   const isHigh = ev.impact === "high";
-  const dotSize = isHigh ? "w-2.5 h-2.5" : "w-2 h-2";
 
   return (
     <div
-      className="absolute group"
-      style={{ left: px - 6, top: 36, opacity }}
+      className={`group relative rounded-lg border px-2.5 py-2 transition-colors ${
+        past ? "border-white/[0.04] bg-white/[0.01]" : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.03]"
+      }`}
+      style={past ? { opacity: released ? 0.7 : 0.45 } : undefined}
+      title={`${ev.event} · ${ev.country} · ${m.label}`}
     >
-      <div className="flex flex-col items-center">
+      {/* Header: hora + dot + country */}
+      <div className="flex items-center gap-1.5 mb-1">
         <span
-          className={`${dotSize} rounded-full shrink-0 relative`}
+          className="w-1.5 h-1.5 rounded-full shrink-0"
           style={{
             backgroundColor: m.dotBg,
-            boxShadow: isHigh && !isPast ? `0 0 0 3px ${m.dotBg}28, 0 0 10px ${m.dotBg}66` : undefined,
+            boxShadow: isHigh && !past ? `0 0 0 2px ${m.dotBg}22` : undefined,
           }}
-        >
-          {released && (
-            <Check className="absolute inset-0 w-full h-full text-[#0c0c0e] p-0.5" strokeWidth={3.5} />
-          )}
-        </span>
-        <span className="mt-2 text-[9.5px] font-mono tabular-nums text-white/60 whitespace-nowrap">{ev.time}</span>
-
-        {/* Tooltip on hover */}
-        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-20">
-          <div className="px-2.5 py-1.5 rounded-lg bg-[#0a0a0c] border border-white/[0.12] shadow-lg whitespace-nowrap max-w-[280px]">
-            <p className="text-[10.5px] font-semibold text-white truncate">{ev.event}</p>
-            <p className="text-[9.5px] text-white/50 font-mono">{ev.country} · {m.label}</p>
-          </div>
-        </div>
+        />
+        <span className="text-[11px] font-mono tabular-nums font-bold text-white/85">{ev.time}</span>
+        <span className="text-white/15 text-[9px]">·</span>
+        <span className="text-[10px] font-mono text-white/40 truncate">{ev.country}</span>
+        {released && (
+          <Check className="ml-auto w-3 h-3 text-white/55" strokeWidth={2.5} />
+        )}
       </div>
+
+      {/* Event name */}
+      <p className="text-[11.5px] text-white/80 leading-snug line-clamp-2">{ev.event}</p>
+
+      {/* Actual vs forecast (se liberado) */}
+      {released && (
+        <div className="mt-1.5 pt-1.5 border-t border-white/[0.04] flex items-center gap-2 text-[9.5px] font-mono tabular-nums">
+          <span className="text-white/35">Prev. {ev.forecast ?? "—"}</span>
+          <span className="text-white/15">·</span>
+          <span className="text-white/85">Real {ev.actual}</span>
+        </div>
+      )}
     </div>
   );
 }

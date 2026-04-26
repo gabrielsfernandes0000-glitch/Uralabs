@@ -3,10 +3,12 @@ import { getSupabaseAnon } from "@/lib/supabase";
 import type { EconomicEvent, MarketNews, NewsCategory } from "@/lib/market-news";
 import { NoticiasFeedV2 } from "@/components/elite/NoticiasFeedV2";
 import { NewsFiltersBar } from "@/components/elite/NoticiasFilters";
+import { NewsLangProvider } from "@/components/elite/NewsLangProvider";
+import { NewsLangToggle } from "@/components/elite/NewsLangToggle";
 import { NowCard } from "@/components/elite/NowCard";
 import { EventsTimeline } from "@/components/elite/EventsTimeline";
 import { UpcomingAgenda } from "@/components/elite/UpcomingAgenda";
-import { NoticiasSidebar } from "@/components/elite/NoticiasSidebar";
+import { NoticiasStripBar } from "@/components/elite/NoticiasStripBar";
 import { KillzoneBanner, KillzoneWarmup } from "@/components/elite/KillzoneBanner";
 import { CryptoPulseBar } from "@/components/elite/CryptoPulseBar";
 import { MultiAssetTape } from "@/components/elite/MultiAssetTape";
@@ -140,6 +142,7 @@ export default async function NoticiasPage({
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
 
   return (
+    <NewsLangProvider>
     <div className="space-y-5">
       {/* ── Header 1-line — substitui hero gigante ── */}
       <div className="flex items-center justify-between gap-3 flex-wrap animate-in-up">
@@ -157,6 +160,7 @@ export default async function NoticiasPage({
           <TimestampAgo iso={new Date().toISOString()} prefix="sync" className="ml-2" />
         </div>
         <div className="flex items-center gap-2">
+          <NewsLangToggle />
           <PushToggle />
         </div>
       </div>
@@ -182,25 +186,22 @@ export default async function NoticiasPage({
         />
       </div>
 
-      {/* ── Hero section: NowCard + EventsTimeline (main) + Sidebar (direita) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
-        <div className="min-w-0 space-y-5">
-          {/* NOW CARD — único hero da página, contextual */}
-          <div className="animate-in-up">
-            <NowCard events={events} news={news} />
-          </div>
-
-          {/* Timeline horizontal — 2h atrás ↔ 6h à frente */}
-          <div className="animate-in-up">
-            <EventsTimeline events={events} />
-          </div>
-        </div>
-
-        {/* Sidebar sticky — watchlist + saved + toolbar */}
-        <NoticiasSidebar />
+      {/* ── Strip horizontal — toggles + watchlist + add + drawer ── */}
+      <div className="animate-in-up">
+        <NoticiasStripBar />
       </div>
 
-      {/* ── Conteúdo full-width abaixo do hero (não compete por coluna com a sidebar) ── */}
+      {/* ── Hero full-width: NowCard + EventsTimeline ── */}
+      <div className="space-y-5">
+        <div className="animate-in-up">
+          <NowCard events={events} news={news} />
+        </div>
+        <div className="animate-in-up">
+          <EventsTimeline events={events} />
+        </div>
+      </div>
+
+      {/* ── Conteúdo full-width abaixo do hero ── */}
       <div className="space-y-5">
         {/* Agenda estendida — calendário de eventos vem ANTES das manchetes
             (mais acionável pro trader: o que vai impactar o mercado hoje/semana) */}
@@ -227,6 +228,7 @@ export default async function NoticiasPage({
         />
       </div>
     </div>
+    </NewsLangProvider>
   );
 }
 

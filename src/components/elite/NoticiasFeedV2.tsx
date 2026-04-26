@@ -1,38 +1,39 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Clock, Filter, Newspaper, SearchX, ChevronDown } from "lucide-react";
 import { categoryMeta, impactMeta, formatRelative, type MarketNews } from "@/lib/market-news";
 import { NewsReaderModal } from "@/components/elite/NewsReaderModal";
 import { NewsThumbFallback } from "@/components/elite/NewsThumbFallback";
-import { NewsTTSButton } from "@/components/elite/NewsTTSButton";
 import { BookmarkButton } from "@/components/elite/BookmarkButton";
 import { LogTradeFromNewsButton } from "@/components/elite/LogTradeFromEventButton";
 import { useReadState } from "@/hooks/useReadState";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { clusterNews, scoreNews } from "@/lib/news-urgency";
+import { applyT, useNewsLang } from "./NewsLangProvider";
+
+const INITIAL_ROWS = 12;
 
 /**
- * Feed V2 — dupla densidade. 3 hero com imagem, resto em lista compacta.
- * Read state dimma as já clicadas. Collapse/expand no resto.
+ * Feed V2 — grid de cards uniforme com imagem/fallback.
+ * Read state dimma as já clicadas. Collapse/expand após INITIAL_ROWS.
  */
 export function NoticiasFeedV2({
   feed,
   filtersActive = false,
   filtersBar,
-  hideTopStories = false,
 }: {
   feed: MarketNews[];
   filtersActive?: boolean;
   filtersBar?: React.ReactNode;
-  hideTopStories?: boolean;
 }) {
   const [openItem, setOpenItem] = useState<MarketNews | null>(null);
   const [expanded, setExpanded] = useState(false);
   const prefetched = useRef<Set<string>>(new Set());
   const { isRead, markRead } = useReadState();
   const { items: watchlist } = useWatchlist();
+  const { lang, translations, ensureTranslated } = useNewsLang();
 
   // Cluster similar headlines — mesma notícia em várias fontes vira 1 item + badge "+3 fontes"
   const clusters = useMemo(() => {
@@ -40,12 +41,19 @@ export function NoticiasFeedV2({
     return clusterNews(feed, (n) => scoreNews(n, nowMs, watchlist));
   }, [feed, watchlist]);
 
-  const { top, rest } = useMemo(() => {
-    if (hideTopStories) return { top: [] as typeof clusters, rest: clusters };
-    return { top: clusters.slice(0, 3), rest: clusters.slice(3) };
-  }, [clusters, hideTopStories]);
+  const displayed = clusters;
 
-  const visibleRest = expanded ? rest : rest.slice(0, 10);
+  const visible = expanded ? displayed : displayed.slice(0, INITIAL_ROWS);
+  const overflowCount = Math.max(0, displayed.length - INITIAL_ROWS);
+
+  // Quando liga PT, pede tradução do feed INTEIRO (não só visível). Assim "ver
+  // mais" não precisa esperar nem retriggerar fetch — já chega traduzido.
+  useEffect(() => {
+    if (lang !== "pt") return;
+    ensureTranslated(
+      clusters.map((c) => ({ id: c.primary.id, headline: c.primary.headline, summary: c.primary.summary ?? null })),
+    );
+  }, [lang, clusters, ensureTranslated]);
 
   const handleOpen = (item: MarketNews, duplicateIds: string[] = []) => {
     markRead(item.id);
@@ -87,51 +95,39 @@ export function NoticiasFeedV2({
           <EmptyFeed filtersActive={filtersActive} />
         ) : (
           <>
-            {top.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                {top.map((cluster, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {visible.map((cluster, i) => {
+                const view = applyT(cluster.primary, lang, translations);
+                return (
                   <div
                     key={cluster.primary.id}
                     data-filterable-news
-                    data-headline-upper={`${cluster.primary.headline} ${cluster.primary.summary ?? ""}`.toUpperCase()}
+                    data-headline-upper={`${cluster.primary.headline} ${cluster.primary.summary ?? ""} ${view.headline} ${view.summary ?? ""}`.toUpperCase()}
                     className="animate-in-fade"
-                    style={{ animationDelay: `${i * 40}ms` }}
+                    style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
                   >
                     <HeroCard
                       item={cluster.primary}
+                      displayHeadline={view.headline}
                       dupeCount={cluster.duplicates.length}
                       onOpen={() => handleOpen(cluster.primary, cluster.duplicates.map((d) => d.id))}
                       onPrefetch={handlePrefetch}
                       read={isRead(cluster.primary.id)}
                     />
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
 
-            {rest.length > 0 && (
-              <div className="surface-panel rounded-xl divide-y divide-white/[0.04]">
-                {visibleRest.map((cluster) => (
-                  <CompactRow
-                    key={cluster.primary.id}
-                    item={cluster.primary}
-                    dupeCount={cluster.duplicates.length}
-                    onOpen={() => handleOpen(cluster.primary, cluster.duplicates.map((d) => d.id))}
-                    onPrefetch={handlePrefetch}
-                    read={isRead(cluster.primary.id)}
-                  />
-                ))}
-                {rest.length > 10 && (
-                  <button
-                    type="button"
-                    onClick={() => setExpanded((v) => !v)}
-                    className="w-full py-3 text-[11px] font-semibold text-white/55 hover:text-white/85 hover:bg-white/[0.02] transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} strokeWidth={2} />
-                    {expanded ? "Recolher" : `Ver mais ${rest.length - 10} manchetes`}
-                  </button>
-                )}
-              </div>
+            {overflowCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-3 w-full py-3 rounded-xl surface-panel text-[11px] font-semibold text-white/55 hover:text-white/85 hover:bg-white/[0.03] transition-colors flex items-center justify-center gap-1.5"
+              >
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} strokeWidth={2} />
+                {expanded ? "Recolher" : `Ver mais ${overflowCount} manchetes`}
+              </button>
             )}
           </>
         )}
@@ -148,12 +144,14 @@ export function NoticiasFeedV2({
 
 function HeroCard({
   item,
+  displayHeadline,
   dupeCount = 0,
   onOpen,
   onPrefetch,
   read,
 }: {
   item: MarketNews;
+  displayHeadline: string;
   dupeCount?: number;
   onOpen: () => void;
   onPrefetch?: (n: MarketNews) => void;
@@ -161,7 +159,6 @@ function HeroCard({
 }) {
   const cat = categoryMeta(item.category);
   const imp = impactMeta(item.importance);
-  const ttsText = item.summary ? `${item.headline}. ${item.summary}` : item.headline;
 
   return (
     <div className="relative group">
@@ -199,7 +196,7 @@ function HeroCard({
             <span className="text-[11px] text-white/55">{item.source}</span>
           </div>
           <h4 className="text-[13px] font-semibold text-white/90 leading-snug line-clamp-3 group-hover:text-white mb-2">
-            {item.headline}
+            {displayHeadline}
           </h4>
           <div className="mt-auto pt-2 flex items-center justify-between gap-2">
             <span className="text-[10px] text-white/35 font-mono tabular-nums inline-flex items-center gap-1">
@@ -215,58 +212,6 @@ function HeroCard({
         </div>
       </button>
       <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10 bg-[#0a0a0c]/85 backdrop-blur-sm rounded-lg border border-white/[0.08] p-0.5">
-        <NewsTTSButton id={item.id} text={ttsText} />
-        <BookmarkButton id={item.id} headline={item.headline} url={item.url} source={item.source} publishedAt={item.publishedAt} />
-        <LogTradeFromNewsButton newsId={item.id} headline={item.headline} />
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   Compact row — uma linha só
-   ──────────────────────────────────────────── */
-
-function CompactRow({
-  item,
-  dupeCount = 0,
-  onOpen,
-  onPrefetch,
-  read,
-}: {
-  item: MarketNews;
-  dupeCount?: number;
-  onOpen: () => void;
-  onPrefetch?: (n: MarketNews) => void;
-  read: boolean;
-}) {
-  const cat = categoryMeta(item.category);
-  const imp = impactMeta(item.importance);
-  const ttsText = item.summary ? `${item.headline}. ${item.summary}` : item.headline;
-
-  return (
-    <div
-      data-filterable-news
-      data-headline-upper={`${item.headline} ${item.summary ?? ""}`.toUpperCase()}
-      className="group relative flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors"
-    >
-      <button
-        type="button"
-        onClick={onOpen}
-        onMouseEnter={onPrefetch ? () => onPrefetch(item) : undefined}
-        className={`flex-1 min-w-0 flex items-center gap-3 text-left transition-opacity ${read ? "opacity-55" : ""}`}
-      >
-        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: imp.dotBg }} />
-        <span className="text-[9px] font-bold tracking-[0.2em] uppercase shrink-0 w-[50px]" style={{ color: cat.accent }}>{cat.label}</span>
-        <span className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-white/45 shrink-0 w-[90px] truncate">{item.source}</span>
-        <span className="flex-1 min-w-0 text-[12.5px] text-white/85 truncate group-hover:text-white">{item.headline}</span>
-        {dupeCount > 0 && (
-          <span className="shrink-0 text-[10px] text-white/35 font-mono">+{dupeCount}</span>
-        )}
-        <span className="shrink-0 text-[10px] font-mono tabular-nums text-white/35 w-[60px] text-right">{formatRelative(item.publishedAt)}</span>
-      </button>
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
-        <NewsTTSButton id={item.id} text={ttsText} />
         <BookmarkButton id={item.id} headline={item.headline} url={item.url} source={item.source} publishedAt={item.publishedAt} />
         <LogTradeFromNewsButton newsId={item.id} headline={item.headline} />
       </div>

@@ -4,19 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, ExternalLink, Clock, Loader2 } from "lucide-react";
-import { categoryMeta, impactMeta, formatRelative, type MarketNews, type NewsCategory } from "@/lib/market-news";
+import { categoryMeta, impactMeta, formatRelative, type MarketNews } from "@/lib/market-news";
 import { NewsThumbFallback } from "@/components/elite/NewsThumbFallback";
-import { TradingViewChart } from "@/components/elite/TradingViewChart";
-
-/** Símbolo TradingView default por categoria de notícia, pra mini-chart contextual. */
-function defaultSymbolForCategory(cat: NewsCategory): { symbol: string; label: string } {
-  switch (cat) {
-    case "crypto": return { symbol: "BINANCE:BTCUSDT", label: "Bitcoin" };
-    case "forex":  return { symbol: "FX:EURUSD",       label: "EUR/USD" };
-    case "stocks": return { symbol: "NASDAQ:NDX",      label: "Nasdaq 100" };
-    default:       return { symbol: "TVC:DXY",         label: "Dólar Index" };
-  }
-}
+import { applyT, useNewsLang } from "@/components/elite/NewsLangProvider";
 
 interface ReadResponse {
   ok: boolean;
@@ -98,6 +88,47 @@ export function NewsReaderModal({
   const cat = categoryMeta(item.category);
   const imp = impactMeta(item.importance);
   const published = new Date(item.publishedAt);
+  const { lang, translations, ensureTranslated } = useNewsLang();
+  const view = applyT({ id: item.id, headline: item.headline, summary: item.summary ?? null }, lang, translations);
+
+  // Body translation: só roda quando body "real" (jina/guardian) chegou e PT tá ligado
+  const [bodyPt, setBodyPt] = useState<string | null>(null);
+  const [translatingBody, setTranslatingBody] = useState(false);
+
+  useEffect(() => {
+    if (lang === "pt") {
+      ensureTranslated([{ id: item.id, headline: item.headline, summary: item.summary ?? null }]);
+    }
+  }, [lang, item.id, item.headline, item.summary, ensureTranslated]);
+
+  useEffect(() => {
+    if (lang !== "pt") return;
+    if (!data) return;
+    if (data.content_source !== "jina" && data.content_source !== "guardian") return;
+    if (!data.content || data.content.length < 40) return;
+    if (bodyPt) return;
+
+    let cancelled = false;
+    setTranslatingBody(true);
+    (async () => {
+      try {
+        const r = await fetch("/api/news/translate-body", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ id: data.id, content: data.content }),
+        });
+        if (!r.ok) return;
+        const json = (await r.json()) as { ok: boolean; body?: string };
+        if (!cancelled && json.ok && json.body) setBodyPt(json.body);
+      } finally {
+        if (!cancelled) setTranslatingBody(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [lang, data, bodyPt]);
+
+  const bodyText = lang === "pt" && bodyPt ? bodyPt : data?.content ?? "";
+  const bodySource = data?.content_source ?? "none";
 
   return (
     <div
@@ -155,7 +186,7 @@ export function NewsReaderModal({
           </div>
 
           <h1 className="text-[20px] lg:text-[26px] font-bold text-white leading-[1.2] tracking-tight">
-            {item.headline}
+            {view.headline}
           </h1>
 
           <p className="text-[11px] text-white/30 font-mono tabular-nums mt-2">
@@ -163,37 +194,24 @@ export function NewsReaderModal({
           </p>
         </div>
 
-        {/* Mini chart contextual — ativo relacionado à categoria da notícia */}
-        <div className="relative z-10 px-6 lg:px-8 pb-3">
-          {(() => {
-            const d = defaultSymbolForCategory(item.category);
-            return (
-              <div className="rounded-xl overflow-hidden border border-white/[0.06] bg-[#0a0a0c]">
-                <div className="px-3 h-9 flex items-center justify-between border-b border-white/[0.05]">
-                  <span className="text-[10px] text-white/40">
-                    Contexto · <span className="text-white/70 font-mono">{d.label}</span>
-                  </span>
-                  <Link
-                    href={`/elite/graficos`}
-                    className="text-[10px] text-white/30 hover:text-white/70"
-                  >
-                    Abrir gráfico completo →
-                  </Link>
-                </div>
-                <TradingViewChart symbol={d.symbol} height={220} hideTopToolbar allowSymbolChange={false} bare />
-              </div>
-            );
-          })()}
-        </div>
-
         {/* Body — enquanto Jina busca mostra skeleton; depois mostra artigo completo */}
         <div className="relative z-10 px-6 lg:px-8 pb-5">
           {loading ? (
-            <LoadingSkeleton summary={item.summary} />
+            <LoadingSkeleton summary={view.summary ?? undefined} />
           ) : error || !data ? (
-            <ContentError summary={item.summary} />
+            <ContentError summary={view.summary ?? undefined} />
           ) : (
-            <MarkdownContent text={data.content} source={data.content_source} fetching={false} />
+            <>
+              {translatingBody && (
+                <div className="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06]">
+                  <Loader2 className="w-3 h-3 text-white/60 animate-spin" strokeWidth={2} />
+                  <span className="text-[10.5px] font-semibold tracking-wider uppercase text-white/60">
+                    Traduzindo artigo
+                  </span>
+                </div>
+              )}
+              <MarkdownContent text={bodyText} source={bodySource} fetching={false} />
+            </>
           )}
         </div>
 

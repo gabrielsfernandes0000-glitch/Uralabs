@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Zap, TrendingUp, TrendingDown, Radio, Newspaper, Calendar, ArrowRight } from "lucide-react";
-import { useTTS } from "@/hooks/useTTS";
 import { useWatchlist } from "@/hooks/useWatchlist";
-import { Volume2, Square } from "lucide-react";
 import { computeSurprise } from "@/lib/economic-events";
 import { impactMeta, formatRelative, type EconomicEvent, type MarketNews } from "@/lib/market-news";
 import { scoreEvent, scoreNews } from "@/lib/news-urgency";
 import { diarioNewTradeUrl } from "@/lib/trade-prefill";
+import { applyT, useNewsLang } from "./NewsLangProvider";
 
 /**
  * NowCard — o único hero da /noticias. O sistema decide o conteúdo baseado em urgência:
@@ -309,9 +308,14 @@ function KillzoneFocusCard({ state }: { state: Extract<NowState, { kind: "killzo
 
 function TopHeadlineCard({ state }: { state: Extract<NowState, { kind: "top-headline" }> }) {
   const n = state.news;
-  const ttsText = n.summary ? `${n.headline}. ${n.summary}` : n.headline;
-  const tts = useTTS();
-  const speaking = tts.speaking && tts.currentId === "now-headline";
+  const { lang, translations, ensureTranslated } = useNewsLang();
+  const view = applyT({ id: n.id, headline: n.headline, summary: n.summary ?? null }, lang, translations);
+
+  useEffect(() => {
+    if (lang === "pt") {
+      ensureTranslated([{ id: n.id, headline: n.headline, summary: n.summary ?? null }]);
+    }
+  }, [lang, n.id, n.headline, n.summary, ensureTranslated]);
 
   return (
     <CardShell accent="rgba(255,255,255,0.25)">
@@ -321,21 +325,9 @@ function TopHeadlineCard({ state }: { state: Extract<NowState, { kind: "top-head
             Manchete · {n.source} · {formatRelative(n.publishedAt)}
           </span>
         </div>
-        <h2 className="text-[22px] md:text-[26px] font-semibold text-white leading-tight tracking-tight mb-3">{n.headline}</h2>
-        {n.summary && <p className="text-[12.5px] text-white/60 leading-relaxed line-clamp-3">{n.summary}</p>}
-        <div className="mt-5 pt-4 border-t border-white/[0.04] flex items-center justify-between gap-3">
-          {tts.supported && (
-            <button
-              type="button"
-              onClick={() => tts.toggle(ttsText, "now-headline")}
-              className={`interactive-tap inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors border ${
-                speaking ? "border-white/25 text-white bg-white/[0.06]" : "border-white/[0.08] text-white/60 hover:text-white hover:border-white/[0.20]"
-              }`}
-            >
-              {speaking ? <Square className="w-3 h-3" strokeWidth={2.2} /> : <Volume2 className="w-3 h-3" strokeWidth={2} />}
-              {speaking ? "Parar" : "Ouvir"}
-            </button>
-          )}
+        <h2 className="text-[22px] md:text-[26px] font-semibold text-white leading-tight tracking-tight mb-3">{view.headline}</h2>
+        {view.summary && <p className="text-[12.5px] text-white/60 leading-relaxed line-clamp-3">{view.summary}</p>}
+        <div className="mt-5 pt-4 border-t border-white/[0.04] flex items-center justify-end gap-3">
           <a
             href={n.url}
             target="_blank"
