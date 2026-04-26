@@ -1,9 +1,11 @@
 export { Navbar } from "./Navbar";
 export { Hero } from "./Hero";
+export { HowItWorks } from "./HowItWorks";
 export { Results } from "./Results";
 export { DiscordWidget } from "./DiscordWidget";
 export { ElitePreview } from "./ElitePreview";
 export { AboutMethod } from "./AboutMethod";
+export { Comparison } from "./Comparison";
 export { Pricing } from "./Pricing";
 export { FAQ } from "./FAQ";
 export { Footer } from "./Footer";

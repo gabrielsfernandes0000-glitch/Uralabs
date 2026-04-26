@@ -1,9 +1,11 @@
 import {
   Navbar,
   Hero,
+  HowItWorks,
   Results,
   DiscordWidget,
   AboutMethod,
+  Comparison,
   Pricing,
   FAQ,
   Footer,
@@ -35,19 +37,25 @@ export default async function Home() {
         {/* 1. Hook — dor + CTA Discord (grátis) */}
         <Hero onlineCount={discordData.onlineCount} memberCount={discordData.memberCount} />
 
-        {/* 2. Community — mostra o Discord primeiro (conversão principal pra tráfego frio) */}
+        {/* 2. Orienta — 3 passos pra tráfego frio entender o caminho */}
+        <HowItWorks />
+
+        {/* 3. Community — mostra o Discord (conversão principal pra tráfego frio) */}
         <DiscordWidget data={discordData} />
 
-        {/* 3. Proof — números + trades + testimonials (esquenta pra venda) */}
+        {/* 4. Proof — números + trades + testimonials (esquenta pra venda) */}
         <Results />
 
-        {/* 4. Authority — URA + método + jornada */}
+        {/* 5. Authority — URA + método + jornada */}
         <AboutMethod />
 
-        {/* 6. Convert — pricing + comparison + garantia */}
+        {/* 6. Differentiate — URA Labs vs grupo de sinais / curso / YouTube */}
+        <Comparison />
+
+        {/* 7. Convert — pricing + garantia */}
         <Pricing />
 
-        {/* 7. Resolve — FAQ */}
+        {/* 8. Resolve — FAQ */}
         <FAQ />
       </main>
 

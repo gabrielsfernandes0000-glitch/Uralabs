@@ -1,63 +1,63 @@
 import { Check, X, Minus } from "lucide-react";
 import { Reveal } from "./Reveal";
 
+type Status = "yes" | "no" | "partial";
 type Feature = {
   name: string;
-  ura: "yes" | "no" | "partial";
-  signals: "yes" | "no" | "partial";
-  course: "yes" | "no" | "partial";
-  free: "yes" | "no" | "partial";
+  ura: Status;
+  signals: Status;
+  course: Status;
+  free: Status;
 };
 
 const FEATURES: Feature[] = [
-  { name: "Sinais diários com R:R definido", ura: "yes", signals: "yes", course: "no", free: "no" },
+  { name: "Calls com entrada, stop e alvo definidos", ura: "yes", signals: "yes", course: "no", free: "no" },
   { name: "Sala operacional ao vivo", ura: "yes", signals: "no", course: "no", free: "no" },
-  { name: "Mentor operando junto (não só falando)", ura: "yes", signals: "no", course: "no", free: "no" },
-  { name: "Formação SMC/ICT/CRT estruturada", ura: "yes", signals: "no", course: "yes", free: "partial" },
-  { name: "Aulas gravadas + ao vivo na plataforma", ura: "yes", signals: "no", course: "yes", free: "partial" },
-  { name: "Comunidade ativa com resultados reais", ura: "yes", signals: "partial", course: "partial", free: "no" },
-  { name: "Mostra os LOSS (transparência total)", ura: "yes", signals: "no", course: "no", free: "no" },
-  { name: "Mentoria individual por turma", ura: "yes", signals: "no", course: "no", free: "no" },
-  { name: "Aprovação de mesas funded ao vivo", ura: "yes", signals: "no", course: "no", free: "no" },
-  { name: "Custo real vs valor entregue", ura: "yes", signals: "partial", course: "partial", free: "yes" },
+  { name: "URA opera junto, na call (não só fala)", ura: "yes", signals: "no", course: "no", free: "no" },
+  { name: "Mostra os loss (transparência total)", ura: "yes", signals: "no", course: "no", free: "no" },
+  { name: "Formação SMC/CRT estruturada", ura: "yes", signals: "no", course: "yes", free: "partial" },
+  { name: "Plataforma com aulas + treinos", ura: "yes", signals: "no", course: "yes", free: "partial" },
+  { name: "Mentoria por turma com revisão", ura: "yes", signals: "no", course: "no", free: "no" },
+  { name: "Aprovação em mesa proprietária real", ura: "yes", signals: "no", course: "no", free: "no" },
+  { name: "Comunidade ativa com track record verificável", ura: "yes", signals: "partial", course: "partial", free: "no" },
+  { name: "Garantia incondicional de 7 dias", ura: "yes", signals: "no", course: "no", free: "yes" },
 ];
 
-function StatusIcon({ status }: { status: "yes" | "no" | "partial" }) {
-  if (status === "yes") return <Check className="w-4 h-4 text-green-500" />;
-  if (status === "partial") return <Minus className="w-4 h-4 text-yellow-500" />;
-  return <X className="w-4 h-4 text-gray-600" />;
+function StatusIcon({ status }: { status: Status }) {
+  if (status === "yes") return <Check className="w-3.5 h-3.5 text-[var(--color-semantic-up)]" strokeWidth={2.5} />;
+  if (status === "partial") return <Minus className="w-3.5 h-3.5 text-white/40" strokeWidth={2} />;
+  return <X className="w-3.5 h-3.5 text-white/15" strokeWidth={2} />;
 }
 
 export function Comparison() {
   return (
-    <section className="py-24 bg-dark-950 border-t border-white/5 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
+    <section className="py-24 bg-dark-950 border-t border-white/[0.05]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
           <Reveal width="100%">
-            <span className="text-gray-500 text-xs font-bold tracking-[0.2em] uppercase">Comparativo Honesto</span>
-            <h2 className="text-3xl md:text-5xl font-bold mt-3 mb-4">URA Labs vs O Resto</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Não somos o mais barato. Somos o mais completo. Compare você mesmo.</p>
+            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-3">URA Labs vs o resto</h2>
+            <p className="text-[14px] text-white/55 max-w-xl mx-auto">
+              Não somos o mais barato. Somos o mais completo. Compare você mesmo.
+            </p>
           </Reveal>
         </div>
 
-        <Reveal delay={0.2} width="100%">
-          <div className="bg-dark-900 border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+        <Reveal delay={0.1} width="100%">
+          <div className="surface-panel rounded-md overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-5 gap-0 border-b border-white/5">
-              <div className="p-4 col-span-1" />
-              <div className="p-4 text-center border-l border-white/5 bg-brand-500/5">
-                <span className="text-sm font-bold text-brand-500">URA Labs</span>
+            <div className="grid grid-cols-[1fr_70px_70px_70px_70px] md:grid-cols-[1.6fr_90px_90px_90px_90px] gap-0 border-b border-white/[0.05]">
+              <div className="p-3 md:p-4" />
+              <div className="p-3 md:p-4 text-center border-l border-white/[0.05]">
+                <span className="text-[11px] font-medium text-brand-500">URA Labs</span>
               </div>
-              <div className="p-4 text-center border-l border-white/5">
-                <span className="text-xs font-medium text-gray-500">Grupo de Sinais</span>
+              <div className="p-3 md:p-4 text-center border-l border-white/[0.05]">
+                <span className="text-[11px] font-medium text-white/40">Sinais</span>
               </div>
-              <div className="p-4 text-center border-l border-white/5">
-                <span className="text-xs font-medium text-gray-500">Curso Gravado</span>
+              <div className="p-3 md:p-4 text-center border-l border-white/[0.05]">
+                <span className="text-[11px] font-medium text-white/40">Curso</span>
               </div>
-              <div className="p-4 text-center border-l border-white/5">
-                <span className="text-xs font-medium text-gray-500">YouTube Free</span>
+              <div className="p-3 md:p-4 text-center border-l border-white/[0.05]">
+                <span className="text-[11px] font-medium text-white/40">YouTube</span>
               </div>
             </div>
 
@@ -65,47 +65,32 @@ export function Comparison() {
             {FEATURES.map((feat, i) => (
               <div
                 key={i}
-                className={`grid grid-cols-5 gap-0 ${
-                  i !== FEATURES.length - 1 ? "border-b border-white/5" : ""
+                className={`grid grid-cols-[1fr_70px_70px_70px_70px] md:grid-cols-[1.6fr_90px_90px_90px_90px] gap-0 ${
+                  i !== FEATURES.length - 1 ? "border-b border-white/[0.03]" : ""
                 } hover:bg-white/[0.02] transition-colors`}
               >
-                <div className="p-4 flex items-center">
-                  <span className="text-sm text-gray-300">{feat.name}</span>
+                <div className="p-3 md:p-4 flex items-center">
+                  <span className="text-[12px] md:text-[13px] text-white/65">{feat.name}</span>
                 </div>
-                <div className="p-4 flex items-center justify-center border-l border-white/5 bg-brand-500/[0.03]">
+                <div className="p-3 md:p-4 flex items-center justify-center border-l border-white/[0.05]">
                   <StatusIcon status={feat.ura} />
                 </div>
-                <div className="p-4 flex items-center justify-center border-l border-white/5">
+                <div className="p-3 md:p-4 flex items-center justify-center border-l border-white/[0.05]">
                   <StatusIcon status={feat.signals} />
                 </div>
-                <div className="p-4 flex items-center justify-center border-l border-white/5">
+                <div className="p-3 md:p-4 flex items-center justify-center border-l border-white/[0.05]">
                   <StatusIcon status={feat.course} />
                 </div>
-                <div className="p-4 flex items-center justify-center border-l border-white/5">
+                <div className="p-3 md:p-4 flex items-center justify-center border-l border-white/[0.05]">
                   <StatusIcon status={feat.free} />
                 </div>
               </div>
             ))}
-
-            {/* Price row */}
-            <div className="grid grid-cols-5 gap-0 border-t border-white/10 bg-white/[0.02]">
-              <div className="p-4 flex items-center">
-                <span className="text-sm font-bold text-white">Investimento</span>
-              </div>
-              <div className="p-4 text-center border-l border-white/5 bg-brand-500/[0.03]">
-                <span className="text-sm font-bold text-brand-500">R$ 120/mês</span>
-              </div>
-              <div className="p-4 text-center border-l border-white/5">
-                <span className="text-xs text-gray-500">R$ 50-200/mês</span>
-              </div>
-              <div className="p-4 text-center border-l border-white/5">
-                <span className="text-xs text-gray-500">R$ 500-3.000</span>
-              </div>
-              <div className="p-4 text-center border-l border-white/5">
-                <span className="text-xs text-gray-500">Grátis</span>
-              </div>
-            </div>
           </div>
+
+          <p className="text-center text-[11px] text-white/35 mt-4">
+            Comparação genérica de mercado · não nomeia concorrentes específicos
+          </p>
         </Reveal>
       </div>
     </section>
