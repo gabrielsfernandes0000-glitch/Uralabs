@@ -34,45 +34,150 @@ function FeatureCheck({ v }: { v: boolean }) {
 }
 
 /* ── Mini Elite Preview (embedded) ── */
+type Tab = "aulas" | "dashboard" | "diario";
+
+const LESSONS = [
+  { num: "01", title: "Introdução ao Trade", dur: "20min", done: true },
+  { num: "02", title: "Leitura de Candle", dur: "18min", done: true },
+  { num: "03", title: "Order Blocks", dur: "25min", done: false },
+  { num: "04", title: "FVG & Breaker", dur: "20min", done: false },
+  { num: "05", title: "Premium & Discount", dur: "18min", done: false },
+];
+
+const DASH_STATS = [
+  { label: "P&L mês", value: "+12.4R", color: "var(--color-semantic-up)" },
+  { label: "Win rate", value: "68%", color: "white" },
+  { label: "Trades", value: "23", color: "white" },
+  { label: "Disciplina", value: "92%", color: "var(--color-semantic-up)" },
+];
+
+const RECENT_TRADES = [
+  { date: "12/04", asset: "NQ", side: "LONG", r: "+2.1R", win: true },
+  { date: "11/04", asset: "BTC", side: "SHORT", r: "+1.4R", win: true },
+  { date: "10/04", asset: "ES", side: "LONG", r: "−1.0R", win: false },
+];
+
 function ElitePlatformPreview() {
-  const lessons = [
-    { num: "01", title: "Introdução ao Trade", dur: "20min", done: true },
-    { num: "02", title: "Leitura de Candle", dur: "18min", done: true },
-    { num: "03", title: "Order Blocks", dur: "25min", done: false },
-    { num: "04", title: "FVG & Breaker", dur: "20min", done: false },
-    { num: "05", title: "Premium & Discount", dur: "18min", done: false },
-    { num: "06", title: "AMD", dur: "25min", done: false },
+  const [tab, setTab] = useState<Tab>("aulas");
+
+  const TABS: { id: Tab; label: string; path: string }[] = [
+    { id: "aulas", label: "Aulas", path: "/elite/aulas" },
+    { id: "dashboard", label: "Dashboard", path: "/elite" },
+    { id: "diario", label: "Diário", path: "/elite/diario" },
   ];
+
+  const activePath = TABS.find((t) => t.id === tab)?.path ?? "/elite";
 
   return (
     <div className="mt-6 rounded-md surface-panel overflow-hidden">
+      {/* Browser chrome */}
       <div className="h-7 border-b border-white/[0.05] flex items-center px-3 gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
         <div className="flex-1 flex justify-center">
-          <span className="text-[10px] text-white/30 font-mono">uralabs.com.br/elite/aulas</span>
+          <span className="text-[10px] text-white/30 font-mono">uralabs.com.br{activePath}</span>
         </div>
       </div>
-      <div className="p-3 space-y-1.5">
-        <div className="flex items-center gap-2 mb-2 px-1">
-          <span className="text-[11px] font-medium text-white/60">5 módulos · 14 aulas · treinos</span>
-        </div>
-        {lessons.map((l, i) => (
-          <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.02] border border-white/[0.04]">
-            <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 bg-white/[0.04]">
-              {l.done
-                ? <Check className="w-3 h-3 text-[var(--color-semantic-up)]" strokeWidth={2.5} />
-                : <Play className="w-2.5 h-2.5 text-white/40" strokeWidth={2} />}
-            </div>
-            <span className="text-[10px] font-mono text-white/35 shrink-0">{l.num}</span>
-            <span className="text-[11px] text-white/70 flex-1 truncate">{l.title}</span>
-            <span className="text-[10px] text-white/30 tabular-nums">{l.dur}</span>
-          </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 px-2 pt-2 border-b border-white/[0.04]">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`text-[10.5px] font-medium px-2.5 py-1.5 rounded-t transition-colors cursor-pointer ${
+              tab === t.id
+                ? "bg-white/[0.05] text-white"
+                : "text-white/40 hover:text-white/65"
+            }`}
+          >
+            {t.label}
+          </button>
         ))}
-        <div className="text-center pt-2">
-          <span className="text-[10px] text-white/25">+ 8 aulas · 9 treinos · badges</span>
-        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-3">
+        {tab === "aulas" && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[11px] font-medium text-white/60">5 módulos · 14 aulas · treinos</span>
+              <span className="text-[9px] text-white/35 tabular-nums">2/14</span>
+            </div>
+            {LESSONS.map((l, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.02] border border-white/[0.04]">
+                <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 bg-white/[0.04]">
+                  {l.done
+                    ? <Check className="w-3 h-3 text-[var(--color-semantic-up)]" strokeWidth={2.5} />
+                    : <Play className="w-2.5 h-2.5 text-white/40" strokeWidth={2} />}
+                </div>
+                <span className="text-[10px] font-mono text-white/35 shrink-0">{l.num}</span>
+                <span className="text-[11px] text-white/70 flex-1 truncate">{l.title}</span>
+                <span className="text-[10px] text-white/30 tabular-nums">{l.dur}</span>
+              </div>
+            ))}
+            <p className="text-center text-[10px] text-white/25 pt-2">+ 9 aulas · treinos · badges</p>
+          </div>
+        )}
+
+        {tab === "dashboard" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-4 gap-2">
+              {DASH_STATS.map((s, i) => (
+                <div key={i} className="bg-white/[0.02] border border-white/[0.04] rounded-md p-2.5 text-center">
+                  <p className="text-[9px] text-white/45 mb-1">{s.label}</p>
+                  <p className="text-[15px] font-semibold leading-none" style={{ color: s.color === "white" ? "#fff" : `var(${s.color.replace("var(", "").replace(")", "")})` || s.color }}>
+                    {s.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {/* Mini chart */}
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-md p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] text-white/55">Curva de capital · 30d</span>
+                <span className="text-[10px] text-[var(--color-semantic-up)] font-mono">+12.4R</span>
+              </div>
+              <svg viewBox="0 0 200 60" className="w-full h-12" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="capCurve" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="rgb(34,197,94)" stopOpacity="0.18" />
+                    <stop offset="100%" stopColor="rgb(34,197,94)" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path d="M0,52 L20,48 L40,50 L60,42 L80,38 L100,32 L120,30 L140,22 L160,18 L180,14 L200,8 L200,60 L0,60 Z" fill="url(#capCurve)" />
+                <path d="M0,52 L20,48 L40,50 L60,42 L80,38 L100,32 L120,30 L140,22 L160,18 L180,14 L200,8" fill="none" stroke="rgb(34,197,94)" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <p className="text-center text-[10px] text-white/25">P&amp;L · metas · drawdown · disciplina</p>
+          </div>
+        )}
+
+        {tab === "diario" && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-1 px-1">
+              <span className="text-[11px] font-medium text-white/60">Trades recentes</span>
+              <span className="text-[9px] text-white/35">3 últimos</span>
+            </div>
+            {RECENT_TRADES.map((t, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.02] border border-white/[0.04]">
+                <span className="text-[10px] font-mono text-white/40 tabular-nums w-10 shrink-0">{t.date}</span>
+                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
+                  t.side === "LONG"
+                    ? "bg-[color:var(--color-semantic-up)]/[0.08] text-[var(--color-semantic-up)]"
+                    : "bg-[color:var(--color-semantic-down)]/[0.08] text-[var(--color-semantic-down)]"
+                }`}>{t.side}</span>
+                <span className="text-[11px] text-white font-medium flex-1">{t.asset}</span>
+                <span className={`text-[11px] font-mono tabular-nums ${t.win ? "text-[var(--color-semantic-up)]" : "text-[var(--color-semantic-down)]"}`}>
+                  {t.r}
+                </span>
+              </div>
+            ))}
+            <p className="text-center text-[10px] text-white/25 pt-2">Form de registro · KPIs · calendar</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -96,7 +201,7 @@ export function Pricing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
 
             {/* FREE */}
-            <div className="rounded-lg border border-white/[0.05] bg-dark-950 p-6 flex flex-col">
+            <div className="rounded-lg border border-white/[0.05] bg-dark-950 p-6 flex flex-col hover:border-white/[0.12] hover:-translate-y-0.5 transition-all duration-200">
               <div className="mb-5">
                 <span className="text-[11px] font-medium text-white/45">Comunidade</span>
                 <h3 className="text-[20px] font-semibold text-white mt-1">Grátis</h3>
@@ -125,7 +230,7 @@ export function Pricing() {
             </div>
 
             {/* VIP */}
-            <div className="rounded-lg border border-white/[0.08] bg-dark-950 p-6 flex flex-col relative">
+            <div className="rounded-lg border border-white/[0.08] bg-dark-950 p-6 flex flex-col relative hover:border-white/[0.18] hover:-translate-y-0.5 transition-all duration-200">
               <div className="mb-5">
                 <span className="text-[11px] font-medium text-white/55">Sinais VIP + plataforma</span>
                 <h3 className="text-[20px] font-semibold text-white mt-1">VIP</h3>

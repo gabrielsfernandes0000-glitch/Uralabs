@@ -5,20 +5,20 @@ const STEPS = [
   {
     n: "01",
     icon: MessageSquare,
-    title: "Entra no Discord grátis",
-    desc: "Calls free, chat ao vivo, conheça a comunidade. Sem cadastro complicado, sem cartão.",
+    title: "Entra no Discord — é grátis",
+    desc: "Você vê as calls abertas, conhece a comunidade e tira dúvidas no chat. Sem cadastro, sem cartão.",
   },
   {
     n: "02",
     icon: Eye,
-    title: "Acompanha os resultados reais",
-    desc: "Operações públicas — wins e loss. Sem cherry picking, sem print fora de contexto.",
+    title: "Acompanha os resultados como eles são",
+    desc: "Toda operação aparece — as que dão certo e as que dão errado. Sem print editado, sem esconder perda.",
   },
   {
     n: "03",
     icon: ArrowUpRight,
-    title: "Quando fizer sentido, assina",
-    desc: "VIP pra calls diários e plataforma de aulas. Elite pra mentoria ao vivo e mesa proprietária.",
+    title: "Quando fizer sentido, você assina",
+    desc: "VIP para acompanhar as calls do dia e estudar pelas aulas. Elite para mentoria ao vivo e aprovação em mesa proprietária.",
   },
 ];
 
@@ -30,7 +30,7 @@ export function HowItWorks() {
           <Reveal width="100%">
             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-3">Como funciona</h2>
             <p className="text-[14px] text-white/55 max-w-xl mx-auto">
-              Sem ladeira, sem upsell agressivo. Você decide o ritmo.
+              Sem pressa, sem empurrão. Você decide o ritmo.
             </p>
           </Reveal>
         </div>
