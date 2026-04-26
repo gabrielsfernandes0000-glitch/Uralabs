@@ -33,12 +33,10 @@ const TRADES = [
 
 interface Testimonial {
   name: string;
-  role: string;
   text: string;
   avatar: string;
   avatarUrl: string | null;
   avatarBg: string;
-  highlight?: string;
 }
 
 // Testimonials REAIS coletados via Discord API do canal #feedbacks
@@ -47,52 +45,41 @@ interface Testimonial {
 const ROW_1: Testimonial[] = [
   {
     name: "Cadu",
-    role: "Elite há 8 dias",
     text: "Em 3 dias peguei minha primeira conta em mesa proprietária. Hoje passei pra conta funded. URA me deu atenção mesmo em viagem, dicas e direcionamentos que fizeram diferença.",
     avatar: "C",
     avatarUrl: "https://cdn.discordapp.com/avatars/317172462221787146/b32ceb3862a21d4786a7f480d9906446.png?size=128",
     avatarBg: "bg-white/[0.08]",
-    highlight: "Funded em 8 dias",
   },
   {
     name: "Dolan",
-    role: "Elite há 6 meses",
     text: "Comecei do zero e depois entrei na Elite. Hoje opero sozinho e minha evolução foi fora da curva. Se estivesse sozinho, levaria 3 anos pra aprender o que aprendi em 6 meses.",
     avatar: "D",
     avatarUrl: "https://cdn.discordapp.com/avatars/366663531107713046/f789bc45637a2c150599bd1713872c7d.png?size=128",
     avatarBg: "bg-white/[0.08]",
-    highlight: "3 anos em 6 meses",
   },
   {
     name: "R.S.",
-    role: "Elite há 1 mês",
     text: "Entrei sem saber praticamente nada. Hoje opero solo, inclusive já estou com uma conta financiada. Em menos de 2 meses terei o retorno do valor da turma só com os trades.",
     avatar: "R",
     avatarUrl: "https://cdn.discordapp.com/avatars/852325743199256637/a797305608beeb3f91f758e511fa7979.png?size=128",
     avatarBg: "bg-white/[0.08]",
-    highlight: "ROI em 2 meses",
   },
   {
     name: "Vitu",
-    role: "Elite 1.0",
     text: "Não sabia nem o que era bid e ask direito, hoje mando calls. Ganhei sorteio de mesa de 25k, profits de cripto absurdos, e o conhecimento da galera da Elite.",
     avatar: "V",
     avatarUrl: "https://cdn.discordapp.com/avatars/847989746381750293/c1fb0c44dc9219e9c0383deacd215977.png?size=128",
     avatarBg: "bg-white/[0.08]",
-    highlight: "Mesa 25k",
   },
   {
     name: "Xing xing",
-    role: "VIP há menos de 1 mês",
     text: "Em pouco tempo no VIP, resultados que me surpreenderam — comprado um kit rodas novo graças a uma única operação. Logo mais quero estar na Elite com vocês.",
     avatar: "X",
     avatarUrl: "https://cdn.discordapp.com/avatars/272926390154690571/a1f7f9b910b62f9e5a9f9187347090c3.png?size=128",
     avatarBg: "bg-white/[0.08]",
-    highlight: "Rodas em 1 trade",
   },
   {
     name: "VNS",
-    role: "Elite (veio do VIP)",
     text: "Entrei sem saber de futuros, via post de milhões sendo liquidado. URA deu atenção pras dúvidas. Peguei 1 mês no VIP pra aprender na prática e entrei na Elite sem medo.",
     avatar: "V",
     avatarUrl: "https://cdn.discordapp.com/avatars/506562979609968640/809cfe783e9b3c0a0c2610ff458d4dae.png?size=128",
@@ -100,7 +87,6 @@ const ROW_1: Testimonial[] = [
   },
   {
     name: "Tchelao",
-    role: "VIP",
     text: "Grupo de calls VIP vale muito a pena. URA é honesto e com conhecimento absurdo, fora a resenha que rola no chat. Quem não tá profitando é maluco.",
     avatar: "T",
     avatarUrl: "https://cdn.discordapp.com/avatars/240974837281980419/2dccb6e5a5fbd6126e731b489320dcc8.png?size=128",
@@ -111,16 +97,13 @@ const ROW_1: Testimonial[] = [
 const ROW_2: Testimonial[] = [
   {
     name: "Gorilaone",
-    role: "Membro",
     text: "Transparência, atenção e humildade são grandes diferenciais. Sempre tive minhas dúvidas respondidas direto e simples. Tô escrevendo depois de fazer dinheiro operando na beira da praia pela primeira vez.",
     avatar: "G",
     avatarUrl: "https://cdn.discordapp.com/avatars/1469701084783055078/f7f2e9361e8a54ce6e72580ac7b967af.png?size=128",
     avatarBg: "bg-white/[0.08]",
-    highlight: "Profit na praia",
   },
   {
     name: "LM",
-    role: "Elite",
     text: "As calls têm me ajudado muito e me motivado a continuar me aprofundando. Ganhei nova visão sobre maneiras de lucrar com cripto. Networking muito maneiro, recomendo.",
     avatar: "L",
     avatarUrl: "https://cdn.discordapp.com/avatars/1098027827472896111/dddb6d16ea383586deb59df870ff9549.png?size=128",
@@ -128,7 +111,6 @@ const ROW_2: Testimonial[] = [
   },
   {
     name: "Casali",
-    role: "Há menos de 1 mês",
     text: "A comunidade vem crescendo e sempre trazendo uma quantidade absurda de informações. Em menos de um mês já aprendi muita coisa. O pessoal daqui é parceria.",
     avatar: "C",
     avatarUrl: "https://cdn.discordapp.com/avatars/394903563735662593/49900209621b4d3bec7dcf7b0b9fe32c.png?size=128",
@@ -136,7 +118,6 @@ const ROW_2: Testimonial[] = [
   },
   {
     name: "Thiagym",
-    role: "Elite desde fev/2026",
     text: "Desde que entrei, minha evolução tem sido constante. Aprendendo mais a cada dia com o URA e os demais amigos da Elite. Ainda iniciante, mas convicto do caminho.",
     avatar: "T",
     avatarUrl: "https://cdn.discordapp.com/avatars/1455623933956194378/a94521e1c3775603d2c713267b12f3b2.png?size=128",
@@ -144,7 +125,6 @@ const ROW_2: Testimonial[] = [
   },
   {
     name: "giolos",
-    role: "Prestes a entrar na Elite",
     text: "Não participo muito no servidor, mas as calls me ajudaram muito. Logo menos estarei na Elite aí com vocês.",
     avatar: "G",
     avatarUrl: "https://cdn.discordapp.com/avatars/559544926443012097/710dbc6dcf6c0de4e2b22aa0727b3d23.png?size=128",
@@ -152,7 +132,6 @@ const ROW_2: Testimonial[] = [
   },
   {
     name: "ez1o",
-    role: "Comunidade recente",
     text: "Entrei na comunidade faz pouco tempo, mas deu pra ver que o trampo é sério. Chama forra.",
     avatar: "E",
     avatarUrl: "https://cdn.discordapp.com/avatars/689484663059775607/916618aca6ef91c6305a5fc4fbb2e0f4.png?size=128",
@@ -160,7 +139,6 @@ const ROW_2: Testimonial[] = [
   },
   {
     name: "vieira",
-    role: "Membro VIP",
     text: "Tô bem positivo nas calls. Bora pra cima.",
     avatar: "V",
     avatarUrl: null,
@@ -184,13 +162,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           ) : (
             <div className={`w-9 h-9 rounded-full ${t.avatarBg} flex items-center justify-center text-white font-medium text-[12px] shrink-0`}>{t.avatar}</div>
           )}
-          <div className="min-w-0">
-            <p className="text-white font-medium text-[13px] truncate">{t.name}</p>
-            <p className="text-white/40 text-[10.5px] truncate">{t.role}</p>
-          </div>
-          {t.highlight && (
-            <span className="ml-auto text-[10px] font-medium text-brand-500 bg-brand-500/[0.08] px-2 py-0.5 rounded shrink-0">{t.highlight}</span>
-          )}
+          <p className="text-white font-medium text-[13px] truncate min-w-0">{t.name}</p>
         </div>
         <p className="text-white/60 text-[13px] leading-relaxed">{t.text}</p>
       </div>
@@ -325,22 +297,16 @@ export function Results() {
               {[
                 {
                   name: "Cadu",
-                  role: "Elite há 8 dias",
-                  tag: "Funded",
                   quote: "Em 3 dias peguei minha primeira conta em mesa proprietária. Hoje passei pra conta funded.",
                   avatarUrl: "https://cdn.discordapp.com/avatars/317172462221787146/b32ceb3862a21d4786a7f480d9906446.png?size=128",
                 },
                 {
                   name: "R.S.",
-                  role: "Elite há 1 mês",
-                  tag: "Funded",
                   quote: "Entrei sem saber praticamente nada. Já estou com uma conta financiada. Em menos de 2 meses terei o retorno do Elite.",
                   avatarUrl: "https://cdn.discordapp.com/avatars/852325743199256637/a797305608beeb3f91f758e511fa7979.png?size=128",
                 },
                 {
                   name: "Vitu",
-                  role: "Elite 1.0",
-                  tag: "Mesa 25k",
                   quote: "Não sabia nem o que era bid e ask. Ganhei sorteio de mesa de 25k, profits de cripto absurdos, e hoje mando calls.",
                   avatarUrl: "https://cdn.discordapp.com/avatars/847989746381750293/c1fb0c44dc9219e9c0383deacd215977.png?size=128",
                 },
@@ -354,11 +320,7 @@ export function Results() {
                       loading="lazy"
                       className="w-7 h-7 rounded-full object-cover shrink-0"
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white text-[12px] font-medium truncate">{s.name}</p>
-                      <p className="text-white/40 text-[10.5px]">{s.role}</p>
-                    </div>
-                    <span className="text-[10px] font-medium text-brand-500 bg-brand-500/[0.08] px-1.5 py-0.5 rounded shrink-0">{s.tag}</span>
+                    <p className="text-white text-[12px] font-medium truncate min-w-0">{s.name}</p>
                   </div>
                   <p className="text-white/65 text-[12px] leading-relaxed">
                     &quot;{s.quote}&quot;
