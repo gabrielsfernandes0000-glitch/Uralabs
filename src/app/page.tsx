@@ -10,7 +10,6 @@ import {
   FAQ,
   Footer,
   FloatingCTA,
-  SocialProofToasts,
   StickyBar,
 } from "@/components/landing";
 import { getLPGuildData } from "@/lib/discord-lp";
@@ -61,7 +60,6 @@ export default async function Home() {
 
       <Footer />
       <FloatingCTA />
-      <SocialProofToasts messages={discordData.messages} />
     </div>
   );
 }
