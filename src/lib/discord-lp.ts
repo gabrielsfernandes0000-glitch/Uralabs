@@ -159,8 +159,6 @@ export async function getLPGuildData(): Promise<LPGuildData> {
     // Categories to show on LP (whitelist)
     // Whitelist explícita: só canais que geram gatilho mental na LP.
     // Cada um aqui tem um propósito de venda:
-    // - anúncios: autoridade oficial
-    // - calls-free: valor entregue de graça
     // - sucesso: prova social (resultados reais dos membros)
     // - análises-crypto: conteúdo técnico
     // - chat-geral: comunidade ativa
@@ -168,8 +166,6 @@ export async function getLPGuildData(): Promise<LPGuildData> {
     // - chat-vip / calls-vip: tier pago visível (FOMO)
     // - chat-elite / aulas-elite: produto premium tangível
     const SHOW_CHANNELS = new Set([
-      "anúncios",
-      "calls-free",
       "sucesso",
       "análises-crypto",
       "chat-geral",
