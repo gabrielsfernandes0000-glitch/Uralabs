@@ -136,7 +136,7 @@ export async function getLPGuildData(): Promise<LPGuildData> {
       }>(`/guilds/${GUILD_ID}?with_counts=true`),
       discordFetch<RawChannel[]>(`/guilds/${GUILD_ID}/channels`),
       fetchAllMembers(GUILD_ID),
-      discordFetch<RawMessage[]>(`/channels/${SUCESSO_CHANNEL_ID}/messages?limit=100`),
+      discordFetch<RawMessage[]>(`/channels/${SUCESSO_CHANNEL_ID}/messages?limit=30`),
     ]);
 
     // Count VIP/Elite
@@ -157,11 +157,17 @@ export async function getLPGuildData(): Promise<LPGuildData> {
     }
 
     // Categories to show on LP (whitelist)
+    // Categorias públicas a mostrar na sidebar do mockup. Nomes precisam
+    // bater EXATO com o Discord — se renomear lá, atualizar aqui também.
+    // Excluir admin, tickets, voz, "ACESSO" (canais de pagamento que confundem
+    // visitante novo) e canais técnicos.
     const SHOW_CATEGORIES = new Set([
-      "❇ COMECE AQUI ❇",
-      "🔸 URA 🔸",
-      "CHATS",
-      "ELITE",
+      "🔥 BEM-VINDO",
+      "📢 CENTRAL",
+      "🎯 CONTEÚDO ABERTO",
+      "💬 COMUNIDADE",
+      "💎 ÁREA VIP",
+      "🟢 ELITE",
     ]);
 
     // Build channel list
