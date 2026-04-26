@@ -6,7 +6,6 @@ import {
   CallPreview,
   DiscordWidget,
   AboutMethod,
-  Comparison,
   Pricing,
   FAQ,
   Footer,
@@ -53,10 +52,7 @@ export default async function Home() {
         {/* 6. Authority — URA + método + jornada */}
         <AboutMethod />
 
-        {/* 6. Differentiate — URA Labs vs grupo de sinais / curso / YouTube */}
-        <Comparison />
-
-        {/* 7. Convert — pricing + garantia */}
+        {/* 7. Convert — pricing + comparação detalhada + garantia */}
         <Pricing />
 
         {/* 8. Resolve — FAQ */}

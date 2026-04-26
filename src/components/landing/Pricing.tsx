@@ -1,10 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ShieldCheck, Crown, Zap, ArrowRight, QrCode, Bitcoin, ChevronDown, Play } from "lucide-react";
+import { Check, X, ShieldCheck, Crown, Zap, ArrowRight, QrCode, Bitcoin, ChevronDown, Play } from "lucide-react";
 import { Button } from "./Button";
 import { Reveal } from "./Reveal";
 import { trackEvent } from "@/lib/analytics";
+
+/* ── Tier comparison data ── */
+const FEATURES = [
+  { name: "Comunidade Discord", free: true, vip: true, elite: true },
+  { name: "Canal #educação-free", free: true, vip: true, elite: true },
+  { name: "Resultados públicos", free: true, vip: true, elite: true },
+  { name: "Calls diários (entrada/stop/alvo)", free: false, vip: true, elite: true },
+  { name: "Chat VIP exclusivo", free: false, vip: true, elite: true },
+  { name: "Análises exclusivas", free: false, vip: true, elite: true },
+  { name: "Plataforma de aulas gravadas (14 aulas SMC)", free: false, vip: true, elite: true },
+  { name: "Quiz por aula + PDFs + flashcards", free: false, vip: true, elite: true },
+  { name: "Turma, ranking e conquistas (ver)", free: false, vip: true, elite: true },
+  { name: "Calls ao vivo operando junto com o URA", free: false, vip: false, elite: true },
+  { name: "Aulas de mesa prop (FundingPips, TopStep…)", free: false, vip: false, elite: true },
+  { name: "Treinos interativos (121+ cenários)", free: false, vip: false, elite: true },
+  { name: "Corretora conectada (PnL automático)", free: false, vip: false, elite: true },
+  { name: "Mentoria ao vivo por turma", free: false, vip: false, elite: true },
+  { name: "Revisão das suas operações", free: false, vip: false, elite: true },
+  { name: "Publicar + submeter conquistas (mural)", free: false, vip: false, elite: true },
+  { name: "WhatsApp exclusivo + sorteios", free: false, vip: false, elite: true },
+];
+
+function FeatureCheck({ v }: { v: boolean }) {
+  return v
+    ? <Check className="w-3.5 h-3.5 text-[var(--color-semantic-up)]" strokeWidth={2.5} />
+    : <X className="w-3.5 h-3.5 text-white/15" strokeWidth={2} />;
+}
 
 /* ── Mini Elite Preview (embedded) ── */
 type Tab = "aulas" | "dashboard" | "diario";
@@ -313,6 +340,29 @@ export function Pricing() {
                 <ChevronDown className={`w-3 h-3 transition-transform ${showPlatform ? "rotate-180" : ""}`} strokeWidth={2} />
               </button>
               {showPlatform && <ElitePlatformPreview />}
+            </div>
+          </div>
+        </Reveal>
+
+        {/* ── Feature comparison table ── */}
+        <Reveal delay={0.2} width="100%">
+          <div className="max-w-4xl mx-auto mb-16">
+            <h4 className="text-center text-[14px] font-medium text-white/70 mb-5">Comparação detalhada</h4>
+            <div className="surface-panel rounded-md overflow-hidden">
+              <div className="grid grid-cols-[1fr_70px_70px_70px] gap-0 border-b border-white/[0.05] px-5 py-3">
+                <div />
+                <div className="text-center text-[11px] font-medium text-white/40">Grátis</div>
+                <div className="text-center text-[11px] font-medium text-white/55">VIP</div>
+                <div className="text-center text-[11px] font-medium text-brand-500">Elite</div>
+              </div>
+              {FEATURES.map((row, i) => (
+                <div key={i} className={`grid grid-cols-[1fr_70px_70px_70px] gap-0 px-5 py-2.5 ${i !== FEATURES.length - 1 ? "border-b border-white/[0.03]" : ""}`}>
+                  <span className="text-[12px] text-white/65">{row.name}</span>
+                  <div className="flex justify-center"><FeatureCheck v={row.free} /></div>
+                  <div className="flex justify-center"><FeatureCheck v={row.vip} /></div>
+                  <div className="flex justify-center"><FeatureCheck v={row.elite} /></div>
+                </div>
+              ))}
             </div>
           </div>
         </Reveal>
