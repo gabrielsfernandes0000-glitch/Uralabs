@@ -8,9 +8,11 @@ type Props = {
   suffix?: string;
   duration?: number;
   className?: string;
+  /** Formata o número com separador de milhar PT-BR (ex: 1775 → "1.775"). */
+  formatBR?: boolean;
 };
 
-export function AnimatedCounter({ value, prefix = "", suffix = "", duration = 2000, className = "" }: Props) {
+export function AnimatedCounter({ value, prefix = "", suffix = "", duration = 2000, className = "", formatBR = false }: Props) {
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -48,9 +50,11 @@ export function AnimatedCounter({ value, prefix = "", suffix = "", duration = 20
     return () => clearInterval(timer);
   }, [started, value, duration]);
 
+  const display = formatBR ? count.toLocaleString("pt-BR") : count;
+
   return (
     <span ref={ref} className={className}>
-      {prefix}{count}{suffix}
+      {prefix}{display}{suffix}
     </span>
   );
 }

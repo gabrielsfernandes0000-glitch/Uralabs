@@ -86,7 +86,7 @@ export function DiscordWidget({ data }: Props) {
         <div className="text-center mb-12">
           <Reveal width="100%">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full surface-card mb-4">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)]" />
+              <span className="relative flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)] live-pulse text-[var(--color-semantic-up)] live-ring" />
               <span className="text-[11px] font-medium text-white/65">
                 {data.fallback ? "Conecte direto no Discord" : "Comunidade ao vivo"}
               </span>
@@ -286,7 +286,7 @@ export function DiscordWidget({ data }: Props) {
                 Entrar na comunidade grátis
               </a>
               <div className="flex items-center gap-2 text-[12px] text-white/50 tabular-nums">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)]" />
+                <span className="relative flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)] live-pulse text-[var(--color-semantic-up)] live-ring" />
                 <span>{data.onlineCount.toLocaleString("pt-BR")} online agora</span>
               </div>
             </div>

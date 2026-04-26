@@ -98,10 +98,10 @@ function ElitePlatformPreview() {
         ))}
       </div>
 
-      {/* Content */}
-      <div className="p-3">
+      {/* Content — key força remount em troca de tab pra triggar fade-in */}
+      <div className="p-3" key={tab}>
         {tab === "aulas" && (
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 animate-in-fade">
             <div className="flex items-center justify-between mb-2 px-1">
               <span className="text-[11px] font-medium text-white/60">5 módulos · 14 aulas · treinos</span>
               <span className="text-[9px] text-white/35 tabular-nums">2/14</span>
@@ -123,7 +123,7 @@ function ElitePlatformPreview() {
         )}
 
         {tab === "dashboard" && (
-          <div className="space-y-3">
+          <div className="space-y-3 animate-in-fade">
             <div className="grid grid-cols-4 gap-2">
               {DASH_STATS.map((s, i) => (
                 <div key={i} className="bg-white/[0.02] border border-white/[0.04] rounded-md p-2.5 text-center">
@@ -156,7 +156,7 @@ function ElitePlatformPreview() {
         )}
 
         {tab === "diario" && (
-          <div className="space-y-2">
+          <div className="space-y-2 animate-in-fade">
             <div className="flex items-center justify-between mb-1 px-1">
               <span className="text-[11px] font-medium text-white/60">Trades recentes</span>
               <span className="text-[9px] text-white/35">3 últimos</span>

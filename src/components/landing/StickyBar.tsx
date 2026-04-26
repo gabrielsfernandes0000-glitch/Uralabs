@@ -34,7 +34,7 @@ export function StickyBar({ memberCount, onlineCount }: Props) {
                 </div>
                 <div className="h-3 w-px bg-white/[0.08]" />
                 <div className="flex items-center gap-1.5">
-                  <span className="flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)]" />
+                  <span className="relative flex h-1.5 w-1.5 rounded-full bg-[var(--color-semantic-up)] live-pulse text-[var(--color-semantic-up)] live-ring" />
                   <span className="text-[11px] text-white/55 tabular-nums">{onlineCount} online</span>
                 </div>
               </>

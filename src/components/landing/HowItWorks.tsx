@@ -42,7 +42,7 @@ export function HowItWorks() {
               return (
                 <div
                   key={i}
-                  className="surface-panel rounded-md p-6 hover:border-white/[0.12] transition-colors"
+                  className="surface-panel rounded-md p-6 hover:border-white/[0.12] hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-9 h-9 rounded-md surface-card flex items-center justify-center text-brand-500">

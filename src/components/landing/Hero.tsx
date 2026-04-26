@@ -3,6 +3,7 @@
 import { Radio, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "./Button";
 import { Reveal } from "./Reveal";
+import { AnimatedCounter } from "./AnimatedCounter";
 import { trackEvent } from "@/lib/analytics";
 
 type Props = {
@@ -25,7 +26,7 @@ export function Hero({ onlineCount, memberCount }: Props) {
           <Reveal>
             <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full surface-card mb-8">
               <div className="flex items-center gap-2">
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-semantic-up)]" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-semantic-up)] live-pulse text-[var(--color-semantic-up)] live-ring" />
                 <span className="text-[11px] font-medium text-white/75">
                   Sala operacional ativa
                 </span>
@@ -84,13 +85,25 @@ export function Hero({ onlineCount, memberCount }: Props) {
           <Reveal delay={0.4}>
             <div className={`grid ${showStats ? "grid-cols-3" : "grid-cols-2"} gap-4 md:gap-12 mb-12 max-w-md md:max-w-none mx-auto md:flex md:items-center`}>
               <div className="text-center md:px-2">
-                <p className="text-[22px] md:text-[28px] font-semibold text-white leading-none">+1.775%</p>
+                <AnimatedCounter
+                  value={1775}
+                  prefix="+"
+                  suffix="%"
+                  formatBR
+                  duration={1600}
+                  className="block text-[22px] md:text-[28px] font-semibold text-white leading-none"
+                />
                 <p className="text-[10.5px] md:text-[11px] text-white/50 mt-1.5">Calls em março/2026</p>
                 <p className="text-[10px] text-white/30 mt-0.5 hidden sm:block">20 operações · referência</p>
               </div>
               <div className="hidden md:block h-10 w-px bg-white/[0.08]" />
               <div className="text-center md:px-2">
-                <p className="text-[22px] md:text-[28px] font-semibold text-white leading-none">70%</p>
+                <AnimatedCounter
+                  value={70}
+                  suffix="%"
+                  duration={1400}
+                  className="block text-[22px] md:text-[28px] font-semibold text-white leading-none"
+                />
                 <p className="text-[10.5px] md:text-[11px] text-white/50 mt-1.5">De acerto</p>
                 <p className="text-[10px] text-white/30 mt-0.5 hidden sm:block">14 wins · 6 loss</p>
               </div>
@@ -98,7 +111,12 @@ export function Hero({ onlineCount, memberCount }: Props) {
                 <>
                   <div className="hidden md:block h-10 w-px bg-white/[0.08]" />
                   <div className="text-center md:px-2">
-                    <p className="text-[22px] md:text-[28px] font-semibold text-white leading-none">{members.toLocaleString("pt-BR")}</p>
+                    <AnimatedCounter
+                      value={members}
+                      formatBR
+                      duration={1800}
+                      className="block text-[22px] md:text-[28px] font-semibold text-white leading-none"
+                    />
                     <p className="text-[10.5px] md:text-[11px] text-white/50 mt-1.5">No Discord</p>
                     <p className="text-[10px] text-white/30 mt-0.5 hidden sm:block">entrada gratuita</p>
                   </div>
