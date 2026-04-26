@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, XCircle, ArrowUpRight, Lock, ArrowRight, Star, Quote } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowUpRight, Lock, ArrowRight } from "lucide-react";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { Reveal } from "./Reveal";
 
@@ -277,70 +277,12 @@ export function Results() {
       </div>
 
       {/* ── Histórias destacadas: do zero à conta funded ── */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
-        <Reveal width="100%">
-          <div className="surface-panel border-brand-500/30 rounded-md p-6 md:p-8 relative overflow-hidden">
-            <div className="absolute inset-x-0 top-0 h-px bg-brand-500/55" />
-            <div className="text-center mb-6">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-brand-500 surface-card px-2.5 py-1 rounded-full">
-                <Star className="w-3 h-3 fill-brand-500 text-brand-500" />
-                Do zero à conta funded
-              </span>
-              <h3 className="text-[18px] md:text-[22px] font-semibold tracking-tight mt-3 text-white">
-                Membros reais passando em mesas proprietárias
-              </h3>
-              <p className="text-white/55 text-[13px] mt-1.5 max-w-xl mx-auto">
-                Depois de entrar no Elite, esses membros conseguiram contas financiadas em poucas semanas.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {[
-                {
-                  name: "Cadu",
-                  quote: "Em 3 dias peguei minha primeira conta em mesa proprietária. Hoje passei pra conta funded.",
-                  avatarUrl: "https://cdn.discordapp.com/avatars/317172462221787146/b32ceb3862a21d4786a7f480d9906446.png?size=128",
-                },
-                {
-                  name: "R.S.",
-                  quote: "Entrei sem saber praticamente nada. Já estou com uma conta financiada. Em menos de 2 meses terei o retorno do Elite.",
-                  avatarUrl: "https://cdn.discordapp.com/avatars/852325743199256637/a797305608beeb3f91f758e511fa7979.png?size=128",
-                },
-                {
-                  name: "Vitu",
-                  quote: "Não sabia nem o que era bid e ask. Ganhei sorteio de mesa de 25k, profits de cripto absurdos, e hoje mando calls.",
-                  avatarUrl: "https://cdn.discordapp.com/avatars/847989746381750293/c1fb0c44dc9219e9c0383deacd215977.png?size=128",
-                },
-              ].map((s, i) => (
-                <div key={i} className="bg-dark-950 border border-white/[0.05] rounded-md p-4">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={s.avatarUrl}
-                      alt={s.name}
-                      loading="lazy"
-                      className="w-7 h-7 rounded-full object-cover shrink-0"
-                    />
-                    <p className="text-white text-[12px] font-medium truncate min-w-0">{s.name}</p>
-                  </div>
-                  <p className="text-white/65 text-[12px] leading-relaxed">
-                    &quot;{s.quote}&quot;
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p className="text-center text-[10px] text-white/30 mt-5">
-              Histórias reais coletadas do canal #feedbacks · resultados individuais variam conforme dedicação e disciplina
-            </p>
-          </div>
-        </Reveal>
-      </div>
-
       {/* ── Testimonials marquee — full width ── */}
-      <div className="mt-8">
-        <div className="text-center mb-8">
+      <div className="mt-16">
+        <div className="text-center mb-10">
           <Reveal width="100%">
-            <h3 className="text-[22px] md:text-[26px] font-semibold tracking-tight text-white">A voz da comunidade</h3>
-            <p className="text-white/55 text-[13px] mt-1.5 max-w-xl mx-auto">
+            <h3 className="text-[22px] md:text-[28px] font-semibold tracking-tight text-white">A voz da comunidade</h3>
+            <p className="text-white/55 text-[13px] mt-2 max-w-xl mx-auto">
               Feedbacks reais coletados direto do Discord. Membros reais, nomes reais.
             </p>
           </Reveal>
