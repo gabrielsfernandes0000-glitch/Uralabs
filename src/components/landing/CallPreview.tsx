@@ -68,8 +68,18 @@ export function CallPreview() {
                 muted
                 playsInline
                 preload="metadata"
-                className="w-full h-auto block"
+                className="hidden md:block w-full h-auto"
                 aria-label="Animação demonstrando uma call de trade do canal VIP"
+              />
+              <video
+                src="/motion/trade-ladder-vertical.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                className="md:hidden w-full h-auto block"
+                aria-label="Animação demonstrando uma call de trade do canal VIP (versão vertical)"
               />
               <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/55 border border-white/10 backdrop-blur-sm">
                 <span className="relative flex h-1.5 w-1.5">
@@ -82,7 +92,7 @@ export function CallPreview() {
                 type="button"
                 onClick={toggleSound}
                 aria-label={muted ? "Ativar som" : "Desativar som"}
-                className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/60 border border-white/10 backdrop-blur-sm hover:bg-black/80 transition-colors text-white/80 hover:text-white"
+                className="hidden md:flex absolute bottom-3 right-3 items-center gap-1.5 px-3 py-2 rounded-full bg-black/60 border border-white/10 backdrop-blur-sm hover:bg-black/80 transition-colors text-white/80 hover:text-white"
               >
                 {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                 <span className="text-[10px] font-medium tracking-wide">{muted ? "Som" : "Mudo"}</span>
