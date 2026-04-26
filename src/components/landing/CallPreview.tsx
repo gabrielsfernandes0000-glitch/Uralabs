@@ -21,8 +21,8 @@ export function CallPreview() {
 
   return (
     <section className="py-24 bg-dark-950 border-t border-white/[0.05]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-10 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-12 items-center">
           {/* Left: copy */}
           <div>
             <Reveal>
