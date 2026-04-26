@@ -157,27 +157,32 @@ export async function getLPGuildData(): Promise<LPGuildData> {
     }
 
     // Categories to show on LP (whitelist)
-    // Categorias públicas a mostrar na sidebar do mockup. Nomes precisam
-    // bater EXATO com o Discord — se renomear lá, atualizar aqui também.
-    // Excluir admin, tickets, voz, "ACESSO" (canais de pagamento que confundem
-    // visitante novo) e canais técnicos.
-    const SHOW_CATEGORIES = new Set([
-      "🔥 BEM-VINDO",
-      "📢 CENTRAL",
-      "🎯 CONTEÚDO ABERTO",
-      "💬 COMUNIDADE",
-      "💎 ÁREA VIP",
-      "🟢 ELITE",
+    // Whitelist explícita: só canais que geram gatilho mental na LP.
+    // Cada um aqui tem um propósito de venda:
+    // - anúncios: autoridade oficial
+    // - calls-free: valor entregue de graça
+    // - sucesso: prova social (resultados reais dos membros)
+    // - análises-crypto: conteúdo técnico
+    // - chat-geral: comunidade ativa
+    // - feedbacks: prova social (depoimentos)
+    // - chat-vip / calls-vip: tier pago visível (FOMO)
+    // - chat-elite / aulas-elite: produto premium tangível
+    const SHOW_CHANNELS = new Set([
+      "anúncios",
+      "calls-free",
+      "sucesso",
+      "análises-crypto",
+      "chat-geral",
+      "feedbacks",
+      "chat-vip",
+      "calls-vip",
+      "chat-elite",
+      "aulas-elite",
     ]);
 
     // Build channel list
     const channels: LPChannel[] = rawChannels
-      .filter((c) => {
-        if (c.type !== 0 && c.type !== 2) return false;
-        const cat = catNames[c.parent_id ?? ""] ?? "";
-        return SHOW_CATEGORIES.has(cat);
-      })
-      .sort((a, b) => a.position - b.position)
+      .filter((c) => c.type === 0 || c.type === 2)
       .map((c) => {
         const cat = catNames[c.parent_id ?? ""] ?? "GERAL";
         const cleanName = c.name.replace(/^[^\w│]*│/, "").trim() || c.name;
@@ -187,8 +192,12 @@ export async function getLPGuildData(): Promise<LPGuildData> {
           category: cat,
           unread: false,
           active: cleanName === "sucesso",
+          position: c.position,
         };
-      });
+      })
+      .filter((c) => SHOW_CHANNELS.has(c.name))
+      .sort((a, b) => a.position - b.position)
+      .map(({ position: _p, ...rest }) => rest);
 
     // Mark some channels as "unread"
     const unreadNames = new Set(["calls-vip", "anúncios", "sucesso", "calls-free"]);
