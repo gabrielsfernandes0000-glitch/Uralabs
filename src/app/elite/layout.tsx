@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession, canAccessPlatform } from "@/lib/session";
+import { getSession, canAccessPlatform, isAdmin } from "@/lib/session";
 import { EliteSidebar } from "@/components/elite/Sidebar";
 import { CommandPalette } from "@/components/elite/CommandPalette";
 import { getUserState } from "@/lib/ura-coin";
@@ -16,6 +16,8 @@ export default async function EliteLayout({ children }: { children: React.ReactN
   if (!canAccessPlatform(session)) {
     redirect("/login?error=not_authorized");
   }
+
+  const admin = isAdmin(session);
 
   // Saldo URA Coin + banner cosmético pra mostrar no sidebar. Falha silenciosa
   // se DB não responder — sidebar esconde a pill e não aplica banner, plataforma continua navegável.
@@ -43,7 +45,7 @@ export default async function EliteLayout({ children }: { children: React.ReactN
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:60px_60px] opacity-40" />
       </div>
 
-      <EliteSidebar session={session} coinBalance={coinBalance} bannerSlug={bannerSlug} frameSlug={frameSlug} effectSlug={effectSlug} />
+      <EliteSidebar session={session} coinBalance={coinBalance} bannerSlug={bannerSlug} frameSlug={frameSlug} effectSlug={effectSlug} isAdmin={admin} />
 
       <main className="relative z-10 flex-1 min-w-0 ml-0 lg:ml-[272px] min-h-screen">
         <div className="px-5 py-6 lg:px-10 lg:py-8 min-w-0 max-w-full overflow-x-hidden">
@@ -52,7 +54,7 @@ export default async function EliteLayout({ children }: { children: React.ReactN
       </main>
 
       {/* Cmd+K / Ctrl+K — busca global de aulas, treinos e páginas */}
-      <CommandPalette />
+      <CommandPalette isAdmin={admin} />
     </div>
   );
 }

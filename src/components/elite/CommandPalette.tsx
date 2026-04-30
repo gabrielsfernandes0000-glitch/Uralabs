@@ -24,6 +24,8 @@ type Item = {
   group: "Páginas" | "Aulas" | "Treinos";
   icon: LucideIcon;
   keywords: string;
+  /** Mantém em paridade com `Sidebar.tsx` — esconde para não-admin durante demo. */
+  adminOnly?: boolean;
 };
 
 const PAGES: Item[] = [
@@ -33,16 +35,16 @@ const PAGES: Item[] = [
   { id: "page-aulas",      label: "Aulas",      hint: "Currículo Elite",     href: "/elite/aulas",      group: "Páginas", icon: BookOpen,        keywords: "curso curriculo" },
   { id: "page-graficos",   label: "Gráficos",   hint: "TradingView real-time",href: "/elite/graficos",   group: "Páginas", icon: LineChart,       keywords: "chart grafico btc nasdaq ibov ouro forex" },
   { id: "page-pratica",    label: "Prática",    hint: "Treinos e cenários",  href: "/elite/pratica",    group: "Páginas", icon: Crosshair,       keywords: "treino cenario scenarios" },
-  { id: "page-diario",     label: "Diário",     hint: "Prep Sheet + review", href: "/elite/diario",     group: "Páginas", icon: NotebookPen,     keywords: "prep sheet diario trade journal plano" },
+  { id: "page-diario",     label: "Diário",     hint: "Prep Sheet + review", href: "/elite/diario",     group: "Páginas", icon: NotebookPen,     keywords: "prep sheet diario trade journal plano", adminOnly: true },
   { id: "page-noticias",   label: "Notícias",   hint: "Agenda + manchetes",  href: "/elite/noticias",   group: "Páginas", icon: Globe,           keywords: "news calendario cpi fomc nfp fed economia agenda" },
-  { id: "page-conquistas", label: "Conquistas", hint: "Badges e timeline",   href: "/elite/conquistas", group: "Páginas", icon: Trophy,          keywords: "achievements badges" },
-  { id: "page-loja",       label: "Loja",       hint: "URA Coin + caixas",   href: "/elite/loja",       group: "Páginas", icon: Gift,            keywords: "coin loot box" },
+  { id: "page-conquistas", label: "Conquistas", hint: "Badges e timeline",   href: "/elite/conquistas", group: "Páginas", icon: Trophy,          keywords: "achievements badges", adminOnly: true },
+  { id: "page-loja",       label: "Loja",       hint: "URA Coin + caixas",   href: "/elite/loja",       group: "Páginas", icon: Gift,            keywords: "coin loot box", adminOnly: true },
   { id: "page-corretora",  label: "Corretora",  hint: "API das exchanges",   href: "/elite/corretora",  group: "Páginas", icon: BarChart3,       keywords: "exchange binance" },
   { id: "page-perfil",     label: "Perfil",     hint: "Cosméticos",          href: "/elite/perfil",     group: "Páginas", icon: Users,           keywords: "banner frame aura" },
 ];
 
-function buildIndex(): Item[] {
-  const items: Item[] = [...PAGES];
+function buildIndex(isAdmin: boolean): Item[] {
+  const items: Item[] = PAGES.filter((p) => isAdmin || !p.adminOnly);
 
   // Aulas
   for (const mod of CURRICULUM) {
@@ -126,7 +128,7 @@ function score(item: Item, q: string): number {
   return 10;
 }
 
-export function CommandPalette() {
+export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -134,7 +136,7 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const items = useMemo(() => buildIndex(), []);
+  const items = useMemo(() => buildIndex(isAdmin), [isAdmin]);
 
   const results = useMemo(() => {
     const scored = items

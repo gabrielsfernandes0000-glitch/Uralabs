@@ -23,6 +23,9 @@ type NavItem = {
   label: string;
   exact?: boolean;
   eliteOnly?: boolean;
+  /** Se true, esconde o item para não-admin. Usado pra ocultar áreas em construção
+   *  durante demos pra founders (Loja/Conquistas/Diário). */
+  adminOnly?: boolean;
   children?: NavChild[];
   /** Quando o item é identificado por query param (ex: /elite/turma?view=mural). */
   queryKey?: string;
@@ -41,7 +44,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/elite/graficos", icon: LineChart,       label: "Gráficos" },
       { href: "/elite/aulas",    icon: BookOpen,        label: "Aulas" },
       { href: "/elite/pratica",  icon: Crosshair,       label: "Prática",    eliteOnly: true },
-      { href: "/elite/diario",   icon: NotebookPen,     label: "Diário",     eliteOnly: true },
+      { href: "/elite/diario",   icon: NotebookPen,     label: "Diário",     eliteOnly: true, adminOnly: true },
       { href: "/elite/noticias", icon: Globe,           label: "Notícias" },
     ],
   },
@@ -54,8 +57,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Conta",
     items: [
-      { href: "/elite/conquistas", icon: Trophy,    label: "Conquistas" },
-      { href: "/elite/loja",       icon: Gift,      label: "Loja" },
+      { href: "/elite/conquistas", icon: Trophy,    label: "Conquistas", adminOnly: true },
+      { href: "/elite/loja",       icon: Gift,      label: "Loja",       adminOnly: true },
       { href: "/elite/corretora",  icon: BarChart3, label: "Corretora",  eliteOnly: true },
     ],
   },
@@ -78,16 +81,23 @@ function pathOnly(href: string): string {
 function NavMenu({
   pathname,
   isElite,
+  isAdmin,
   onNavigate,
 }: {
   pathname: string;
   isElite: boolean;
+  isAdmin: boolean;
   onNavigate: () => void;
 }) {
   const searchParams = useSearchParams();
+  const sections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => isAdmin || !item.adminOnly),
+  })).filter((section) => section.items.length > 0);
+
   return (
     <nav className="flex-1 py-3 px-4 overflow-y-auto">
-      {NAV_SECTIONS.map((section, idx) => (
+      {sections.map((section, idx) => (
         <div key={section.label} className={idx > 0 ? "mt-3 pt-2 border-t border-white/[0.04]" : ""}>
           <p className="px-4 mb-1 text-[9px] font-bold text-white/25">
             {section.label}
@@ -302,12 +312,14 @@ export function EliteSidebar({
   bannerSlug,
   frameSlug,
   effectSlug,
+  isAdmin = false,
 }: {
   session: SessionPayload;
   coinBalance?: number;
   bannerSlug?: string | null;
   frameSlug?: string | null;
   effectSlug?: string | null;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -370,14 +382,15 @@ export function EliteSidebar({
             <NavMenu
               pathname={pathname}
               isElite={session.isElite}
+              isAdmin={isAdmin}
               onNavigate={() => setMobileOpen(false)}
             />
           </Suspense>
 
           <div className="mx-6 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
 
-          {/* Coin balance pill */}
-          {typeof coinBalance === "number" && (
+          {/* Coin balance pill — escondido pra não-admin enquanto Loja está oculta */}
+          {isAdmin && typeof coinBalance === "number" && (
             <Link
               href="/elite/loja"
               onClick={() => setMobileOpen(false)}

@@ -9,6 +9,9 @@ const COOKIE_NAME = "ura_session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days — janela de exposição menor se o cookie vazar.
                                    // Antes era 30d. Re-login via Discord OAuth é 1 clique.
 
+// IDs Discord com privilégios de admin na plataforma.
+const ADMIN_USER_IDS = new Set<string>(["580162059078074420"]);
+
 export interface SessionPayload {
   userId: string;
   username: string;
@@ -83,6 +86,12 @@ export function canAccessPlatform(session: SessionPayload | null): boolean {
 
 export function canAccessEliteOnly(session: SessionPayload | null): boolean {
   return !!session?.isElite;
+}
+
+/** Admin check baseado em userId Discord. Usado pra esconder/mostrar áreas
+ *  que ainda não estão prontas pra demo (ex: Loja/Conquistas/Diário). */
+export function isAdmin(session: SessionPayload | null): boolean {
+  return !!session && ADMIN_USER_IDS.has(session.userId);
 }
 
 /** Tier label ("Elite 4.0" / "VIP") for UI chips. */
