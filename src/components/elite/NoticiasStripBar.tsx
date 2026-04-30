@@ -9,6 +9,16 @@ import { NoticiasToolsDrawer } from "./NoticiasToolsDrawer";
 
 const FILTER_KEY = "ura:noticias:watchlist-only:v1";
 
+// Match permissivo: BTC na watchlist libera TODA a categoria crypto, e por aí
+// vai. Antes só passava news com o ticker exato no headline — 47 cripto viravam
+// 1 quando a watchlist era só "BTC".
+const TICKER_TO_CATEGORY: Record<string, "crypto" | "forex" | "stocks"> = {
+  BTC: "crypto", ETH: "crypto", SOL: "crypto",
+  DXY: "forex", EURUSD: "forex", GBPUSD: "forex", USDJPY: "forex", USDBRL: "forex",
+  NQ: "stocks", ES: "stocks", AAPL: "stocks", NVDA: "stocks",
+  TSLA: "stocks", META: "stocks", MSFT: "stocks", AMZN: "stocks",
+};
+
 /**
  * Strip horizontal no topo da /noticias. Substitui a sidebar vertical.
  * Contém: toggles (só watchlist + modo iniciante) · chips ativos + add ticker
@@ -22,6 +32,7 @@ export function NoticiasStripBar() {
   const [input, setInput] = useState("");
   const [onlyWatchlist, setOnlyWatchlist] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState<{ shown: number; total: number } | null>(null);
 
   useEffect(() => {
     try {
@@ -46,15 +57,39 @@ export function NoticiasStripBar() {
     }
     if (!onlyWatchlist || watchlist.length === 0) {
       style.textContent = "";
+      setVisibleCount(null);
       return;
     }
+    // Tickers libera categoria inteira (BTC → crypto, NQ → stocks, etc).
+    const watchedCats = new Set<string>();
+    for (const s of watchlist) {
+      const cat = TICKER_TO_CATEGORY[s];
+      if (cat) watchedCats.add(cat);
+    }
     const eventMatches = watchlist.map((s) => `[data-instruments*="${s}"]`).join(", ");
-    const newsMatches = watchlist.map((s) => `[data-headline-upper*="${s}"]`).join(", ");
+    const newsTickerSel = watchlist.map((s) => `[data-headline-upper*="${s}"]`);
+    const newsCatSel = [...watchedCats].map((c) => `[data-news-category="${c}"]`);
+    const newsMatches = [...newsTickerSel, ...newsCatSel].join(", ");
     style.textContent = `
       [data-filterable-event]:not(${eventMatches}) { display: none !important; }
       [data-filterable-news]:not(${newsMatches}) { display: none !important; }
     `;
-    return () => { if (style) style.textContent = ""; };
+
+    // Conta visíveis depois do paint pra mostrar "X/Y" no botão
+    const id = requestAnimationFrame(() => {
+      const all = document.querySelectorAll<HTMLElement>("[data-filterable-news]");
+      let shown = 0;
+      all.forEach((el) => {
+        const head = (el.dataset.headlineUpper ?? "").toUpperCase();
+        const cat = el.dataset.newsCategory ?? "";
+        if (watchedCats.has(cat) || watchlist.some((s) => head.includes(s))) shown++;
+      });
+      setVisibleCount({ shown, total: all.length });
+    });
+    return () => {
+      cancelAnimationFrame(id);
+      if (style) style.textContent = "";
+    };
   }, [onlyWatchlist, watchlist]);
 
   const handleAdd = () => {
@@ -84,6 +119,11 @@ export function NoticiasStripBar() {
           >
             {onlyWatchlist ? <Eye className="w-3 h-3" strokeWidth={2} /> : <EyeOff className="w-3 h-3" strokeWidth={2} />}
             <span>Só watchlist</span>
+            {onlyWatchlist && visibleCount && visibleCount.total > 0 && (
+              <span className="text-[9.5px] font-mono tabular-nums text-white/55">
+                {visibleCount.shown}/{visibleCount.total}
+              </span>
+            )}
           </button>
           <BeginnerModeToggle />
           <button

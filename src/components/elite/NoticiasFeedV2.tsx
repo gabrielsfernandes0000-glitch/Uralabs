@@ -102,6 +102,7 @@ export function NoticiasFeedV2({
                   <div
                     key={cluster.primary.id}
                     data-filterable-news
+                    data-news-category={cluster.primary.category}
                     data-headline-upper={`${cluster.primary.headline} ${cluster.primary.summary ?? ""} ${view.headline} ${view.summary ?? ""}`.toUpperCase()}
                     className="animate-in-fade"
                     style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
