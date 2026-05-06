@@ -629,6 +629,48 @@ function PrimaryStatCell({ label, value, sub, color, accent, progress }: {
    ──────────────────────────────────────────── */
 
 type Period = "7d" | "30d" | "all";
+type DashboardTab = "resumo" | "analise" | "journal";
+
+/** Tab bar do dashboard. Memoriza a tab ativa em localStorage por exchange
+ *  pra trader voltar pra mesma view depois de F5. */
+function DashboardTabs({ tab, setTab, journalCount }: {
+  tab: DashboardTab;
+  setTab: (t: DashboardTab) => void;
+  journalCount: number;
+}) {
+  const tabs: Array<{ id: DashboardTab; label: string; sub: string }> = [
+    { id: "resumo", label: "Resumo", sub: "visão geral" },
+    { id: "analise", label: "Análise", sub: "setups · breakdown" },
+    { id: "journal", label: "Journal", sub: `${journalCount} trades` },
+  ];
+  return (
+    <div className="border-b border-white/[0.05] flex items-center gap-1 -mx-1">
+      {tabs.map((t) => {
+        const active = tab === t.id;
+        return (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`relative px-4 py-2.5 text-[13px] font-semibold transition-colors group ${
+              active ? "text-white" : "text-white/40 hover:text-white/75"
+            }`}
+          >
+            <span className="flex items-baseline gap-2">
+              {t.label}
+              <span className={`text-[10.5px] font-mono font-normal tabular-nums ${active ? "text-white/45" : "text-white/25"}`}>
+                {t.sub}
+              </span>
+            </span>
+            {active && (
+              <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-brand-500 rounded-full" />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddMore, realtimeStatus }: {
   exchange: ExchangeMeta;
@@ -645,6 +687,10 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
   const [openTrade, setOpenTrade] = useState<TradeForModal | null>(null);
   const [allowedTags, setAllowedTags] = useState<string[]>([]);
   const [showPropRules, setShowPropRules] = useState(false);
+  // Tabs: dashboard estava 12 seções empilhadas (3000px+). Resumo = visão
+  // "tô bem ou não" (equity, kpi, posições). Análise = aprofundamento
+  // (setups, breakdowns, calendar). Journal = histórico de trades.
+  const [tab, setTab] = useState<DashboardTab>("resumo");
   const [propRulesExisting, setPropRulesExisting] = useState<{
     firm_name: string | null;
     account_size_usd: number | null;
@@ -813,6 +859,11 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {/* Prop rules banner (opcional) */}
       <PropRulesBanner status={propStatus} onConfigure={openPropRulesModal} />
+
+      {/* Tabs — dividem o dashboard em 3 visões pra reduzir scroll vertical */}
+      <DashboardTabs tab={tab} setTab={setTab} journalCount={trades.length} />
+
+      {tab === "resumo" && <>
 
       {/* HERO — Equity curve (60%) + KPI stack (40%) */}
       <div className="animate-in-up delay-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
@@ -1035,7 +1086,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       {/* Ordens pendentes (limits/stops aguardando gatilho) */}
       {openOrders.length > 0 && <OpenOrdersCard orders={openOrders} />}
 
-      {/* Liquidações alerta (se houve nos últimos 7d) */}
+      {/* Liquidações alerta (se houve nos últimos 7d) — link aponta pra tab journal */}
       {forceOrders.length > 0 && (
         <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-red-400/40 bg-red-500/[0.03]">
           <div>
@@ -1043,14 +1094,16 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
               {forceOrders.length} {forceOrders.length === 1 ? "posição foi liquidada" : "posições foram liquidadas"} nos últimos 7 dias
             </p>
             <p className="text-[11px] text-white/40 mt-1 leading-relaxed">
-              Stop não acionou a tempo ou margem insuficiente. Veja os trades marcados com badge <span className="font-semibold text-red-400">LIQ</span> no journal abaixo.
+              Stop não acionou a tempo ou margem insuficiente. Veja os trades marcados com badge <span className="font-semibold text-red-400">LIQ</span> na aba <button type="button" onClick={() => setTab("journal")} className="font-semibold text-red-300 underline-offset-2 hover:underline">Journal</button>.
             </p>
           </div>
         </div>
       )}
 
-      {/* Journal full-width — sem sidebar presa */}
-      <div className="animate-in-up delay-3 rounded-xl surface-card p-5">
+      </>}
+
+      {tab === "journal" && (
+      <div className="animate-in-up rounded-xl surface-card p-5">
         <div className="flex items-center gap-2.5 mb-4">
           <BarChart3 className="w-3.5 h-3.5 text-white/45" />
           <h2 className="text-[12px] font-semibold text-white/80">Journal</h2>
@@ -1080,10 +1133,13 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           })}
         />
       </div>
+      )}
+
+      {tab === "analise" && <>
 
       {/* Analytics row — Setup insights em 3 colunas */}
       {(rMultiples || eventExposure || tagStats.length > 0) && (
-        <div className="animate-in-up delay-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div className="animate-in-up grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
           {rMultiples && <RMultiplesCard r={rMultiples} />}
           {eventExposure && <EventExposureCard exposure={eventExposure} />}
           <TagBreakdown tags={tagStats} />
@@ -1129,6 +1185,8 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         </div>
         <PnLHeatmap data={dailyPnL} />
       </div>
+
+      </>}
 
       <p className="text-[10px] text-white/15 text-center pt-2">
         Dados de 7 dias (limite da API BingX em trade history). Equity curve expande com o tempo conforme acumular snapshots diários.
