@@ -18,6 +18,17 @@ import { UraCallSplit, EventExposureCard, TagBreakdown, RMultiplesCard, PropRule
 import { PropRulesModal } from "@/components/elite/corretora/PropRulesModal";
 import { OpenOrdersCard, type OpenOrder } from "@/components/elite/corretora/OpenOrdersCard";
 import { useExchangeRealtime, type RealtimeStatus } from "@/hooks/useExchangeRealtime";
+import { MOCK_CONNECTIONS, MOCK_DATA } from "./mock-data";
+
+/** Dev-only: ativa via `?mock=1`. Em build de produção sempre retorna false
+ *  (NODE_ENV checked via process.env, inlined no bundle pelo Next).
+ *  Síncrono — leitura direta do `window.location` evita race com o useEffect
+ *  inicial que dispara fetchConnections antes do mockMode flipar. */
+function isMockMode(): boolean {
+  if (process.env.NODE_ENV === "production") return false;
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("mock") === "1";
+}
 
 /* ────────────────────────────────────────────
    Types
@@ -588,6 +599,32 @@ function ConnectForm({ onConnected, connectedExchanges }: { onConnected: () => v
 }
 
 /* ────────────────────────────────────────────
+   PrimaryStatCell — destaque visual das duas métricas-âncora (Win Rate +
+   Profit Factor). Inclui mini-progress bar pra dar contexto rápido sem
+   precisar ler o número.
+   ──────────────────────────────────────────── */
+function PrimaryStatCell({ label, value, sub, color, accent, progress }: {
+  label: string; value: string; sub: string;
+  color: string; accent: string; progress: number;
+}) {
+  return (
+    <div className="lg:col-span-2 lg:px-4 first-of-type:lg:pl-0">
+      <p className="text-[9.5px] font-bold text-white/55 uppercase tracking-wider mb-1.5">{label}</p>
+      <div className="flex items-baseline gap-2 mb-2">
+        <p className={`text-[22px] font-bold font-mono tabular-nums leading-none ${color}`}>{value}</p>
+        <p className="text-[10.5px] text-white/35 font-mono tabular-nums truncate">{sub}</p>
+      </div>
+      <div className="h-[3px] rounded-full bg-white/[0.04] overflow-hidden">
+        <div
+          className="h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${Math.max(0, Math.min(100, progress))}%`, backgroundColor: accent, boxShadow: `0 0 8px ${accent}66` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────
    Dashboard (connected state)
    ──────────────────────────────────────────── */
 
@@ -811,26 +848,29 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           )}
         </div>
 
-        {/* KPI stack: Patrimônio · PnL período · Posições */}
+        {/* KPI stack: Patrimônio (card âncora com glow) · PnL período (com tendência visual) */}
         <div className="space-y-3">
           {balance && (
-            <div className="rounded-xl surface-card p-5">
+            <div className="relative overflow-hidden rounded-xl surface-card p-5">
+              {/* Glow sutil topo — destaca Patrimônio como métrica âncora sem
+                  poluir. Cor neutra (white/8%) pra não competir com PnL verde/vermelho. */}
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.18] to-transparent" />
               <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider mb-2">Patrimônio</p>
-              <p className="text-[32px] font-bold text-white leading-none font-mono tabular-nums">
+              <p className="text-[34px] font-bold text-white leading-none font-mono tabular-nums">
                 {fmtUsd(balance.totalEquity)}
               </p>
-              <div className="flex items-center gap-3 mt-3 text-[11px] text-white/45">
-                <span className="flex items-center gap-1">
-                  <span className="text-white/30">Disponível</span>
-                  <span className="text-white/70 font-mono tabular-nums">{fmtUsd(balance.availableMargin)}</span>
+              <div className="flex items-center gap-3 mt-3.5 pt-3 border-t border-white/[0.04] text-[11px]">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-white/35">Disponível</span>
+                  <span className="text-white/75 font-mono tabular-nums font-semibold">{fmtUsd(balance.availableMargin)}</span>
                 </span>
                 {balance.unrealizedPnL !== 0 && (
                   <>
                     <span className="text-white/15">·</span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-white/30">Não real.</span>
-                      <span className={`font-mono tabular-nums ${pnlColor(balance.unrealizedPnL)}`}>
-                        {fmtUsd(balance.unrealizedPnL)}
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-white/35">Não real.</span>
+                      <span className={`font-mono tabular-nums font-semibold ${pnlColor(balance.unrealizedPnL)}`}>
+                        {balance.unrealizedPnL >= 0 ? "+" : ""}{fmtUsd(balance.unrealizedPnL)}
                       </span>
                     </span>
                   </>
@@ -839,22 +879,38 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
             </div>
           )}
 
-          <div className="rounded-xl surface-card p-5">
-            <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider mb-2">
-              PnL {period === "7d" ? "7 dias" : period === "30d" ? "30 dias" : "total"}
-            </p>
+          {/* PnL period — accent stripe lateral verde/vermelho dá contexto
+              imediato. Tendência fica óbvia antes do trader ler o número. */}
+          <div className="relative overflow-hidden rounded-xl surface-card p-5">
+            <div
+              className="absolute left-0 top-0 bottom-0 w-[3px]"
+              style={{
+                backgroundColor: periodPnL > 0 ? "#22C55E" : periodPnL < 0 ? "#EF4444" : "rgba(255,255,255,0.1)",
+              }}
+            />
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider">
+                PnL {period === "7d" ? "7 dias" : period === "30d" ? "30 dias" : "total"}
+              </p>
+              {periodPnL !== 0 && !hideBalance && (
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${pnlColor(periodPnL)}`}>
+                  {periodPnL > 0 ? <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} /> : <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />}
+                  {periodPnL > 0 ? "lucro" : "perda"}
+                </span>
+              )}
+            </div>
             <div className="flex items-baseline gap-2">
-              <p className={`text-[28px] font-bold leading-none font-mono tabular-nums ${pnlColor(periodPnL)}`}>
+              <p className={`text-[30px] font-bold leading-none font-mono tabular-nums ${pnlColor(periodPnL)}`}>
                 {hideBalance ? "$••••" : fmtUsd(periodPnL)}
               </p>
               {equityAtStart > 0 && !hideBalance && (
-                <span className={`text-[13px] font-mono tabular-nums ${pnlColor(periodPnL)}`}>
+                <span className={`text-[13px] font-mono tabular-nums font-semibold ${pnlColor(periodPnL)}`}>
                   {periodPnL >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
                 </span>
               )}
             </div>
             {metrics && metrics.totalTrades > 0 && (
-              <p className="text-[11px] text-white/35 mt-2.5 font-mono tabular-nums">
+              <p className="text-[11px] text-white/40 mt-3 pt-3 border-t border-white/[0.04] font-mono tabular-nums">
                 {metrics.totalTrades} trades · <span className={pnlColor(metrics.avgPnL)}>{fmtUsd(metrics.avgPnL)}</span> médio
                 {totalCommission < 0 && (
                   <span className="text-white/25"> · taxa {fmtUsd(totalCommission)}</span>
@@ -868,27 +924,46 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       {/* URA call split — suas stats seguindo vs solo */}
       {metricsSplit && <UraCallSplit split={metricsSplit} />}
 
-      {/* Stats strip — 7 métricas em linha */}
+      {/* Stats strip — Win rate e Profit factor são as métricas-âncora do
+           trader (define se o setup é lucrativo). Ganham peso visual maior
+           (col-span-2 em lg) e os 5 secundários ficam compactos do lado. */}
       {metrics && metrics.totalTrades > 0 && (
         <div className="animate-in-up delay-2 rounded-xl surface-card px-5 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 lg:gap-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-x-4 gap-y-4 lg:gap-x-0 items-stretch">
+            {/* Métricas-âncora: Win rate + Profit factor (col-span-2 cada em lg) */}
+            <PrimaryStatCell
+              label="Win rate"
+              value={`${metrics.winRate.toFixed(1)}%`}
+              sub={`${metrics.wins}W · ${metrics.losses}L`}
+              color={metrics.winRate >= 50 ? "text-green-400" : "text-red-400"}
+              accent={metrics.winRate >= 50 ? "#22C55E" : "#EF4444"}
+              progress={metrics.winRate}
+            />
+            <PrimaryStatCell
+              label="Profit factor"
+              value={metrics.profitFactor >= 999 ? "∞" : metrics.profitFactor.toFixed(2)}
+              sub={metrics.profitFactor >= 1 ? "lucrativo" : "perdedor"}
+              color={metrics.profitFactor >= 1 ? "text-green-400" : "text-red-400"}
+              accent={metrics.profitFactor >= 1 ? "#22C55E" : "#EF4444"}
+              progress={metrics.profitFactor >= 999 ? 100 : Math.min(100, (metrics.profitFactor / 3) * 100)}
+            />
+
+            {/* Métricas secundárias (5 cells col-span-1 cada em lg) */}
             {[
-              { label: "Win rate", value: `${metrics.winRate.toFixed(1)}%`, sub: `${metrics.wins}W · ${metrics.losses}L`, color: metrics.winRate >= 50 ? "text-green-400" : "text-red-400" },
-              { label: "Profit factor", value: metrics.profitFactor >= 999 ? "∞" : metrics.profitFactor.toFixed(2), sub: metrics.profitFactor >= 1 ? "lucrativo" : "perdedor", color: metrics.profitFactor >= 1 ? "text-green-400" : "text-red-400" },
               { label: "Expectancy", value: fmtUsd(metrics.expectancy), sub: "por trade", color: pnlColor(metrics.expectancy) },
               { label: "Média ganho", value: fmtUsd(metrics.avgWin), sub: hideBalance ? "•" : `${metrics.wins} wins`, color: "text-green-400" },
               { label: "Média perda", value: fmtUsd(metrics.avgLoss), sub: hideBalance ? "•" : `${metrics.losses} losses`, color: "text-red-400" },
-              { label: "Melhor/pior", value: `${fmtUsd(metrics.bestTrade)}`, sub: fmtUsd(metrics.worstTrade), color: "text-white/75" },
+              { label: "Melhor/pior", value: fmtUsd(metrics.bestTrade), sub: fmtUsd(metrics.worstTrade), color: "text-white/75" },
               {
                 label: "Streak",
                 value: metrics.currentStreakType === "none" ? "—" : `${metrics.currentStreak}${metrics.currentStreakType === "win" ? "W" : "L"}`,
                 sub: `máx ${metrics.maxWinStreak}W · ${metrics.maxLossStreak}L`,
                 color: metrics.currentStreakType === "win" ? "text-green-400" : metrics.currentStreakType === "loss" ? "text-red-400" : "text-white/40",
               },
-            ].map((s, i, arr) => (
-              <div key={i} className={`${i < arr.length - 1 ? "lg:border-r lg:border-white/[0.04]" : ""} lg:px-4 first:lg:pl-0`}>
+            ].map((s, i) => (
+              <div key={i} className="lg:border-l lg:border-white/[0.04] lg:px-4 first-of-type:lg:pl-4">
                 <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-1">{s.label}</p>
-                <p className={`text-[16px] font-bold font-mono tabular-nums leading-tight ${s.color}`}>{s.value}</p>
+                <p className={`text-[15px] font-bold font-mono tabular-nums leading-tight ${s.color}`}>{s.value}</p>
                 <p className="text-[10px] text-white/25 mt-0.5 font-mono tabular-nums truncate">{s.sub}</p>
               </div>
             ))}
@@ -1094,6 +1169,10 @@ export default function CorretoraPage() {
   const [view, setView] = useState<"dashboard" | "add">("dashboard");
 
   const fetchConnections = useCallback(async () => {
+    if (isMockMode()) {
+      setConnections(MOCK_CONNECTIONS as Connection[]);
+      return MOCK_CONNECTIONS as unknown as Connection[];
+    }
     try {
       const res = await fetch("/api/exchange/connections");
       const json = await res.json();
@@ -1105,6 +1184,10 @@ export default function CorretoraPage() {
   }, []);
 
   const fetchData = useCallback(async (exchange: ExchangeId, refresh = false) => {
+    if (isMockMode()) {
+      setData(MOCK_DATA as ExchangeData);
+      return;
+    }
     try {
       const url = `/api/exchange/data?exchange=${exchange}${refresh ? "&refresh=1" : ""}`;
       const res = await fetch(url);

@@ -33,6 +33,32 @@ interface EventRow {
   currency: string | null;
 }
 
+/**
+ * Classifica erro de fetch BingX/exchange entre auth (precisa reconectar) e
+ * transient (rate limit, 5xx, timeout, geo-block).
+ *
+ * Antes: qualquer erro marcava status="error" e a UI mostrava alerta vermelho
+ * "fica desconectando sozinha". Polling 30s × 6 endpoints = qualquer hipo de
+ * rede ou maintenance window do BingX virava "broker desconectado" pro
+ * usuário, mesmo com credenciais válidas.
+ *
+ * Agora: só marca "error" em falha de auth/sig real. Transient mantém "active"
+ * e registra last_error_message + last_error_at sem alarmar a UI.
+ *
+ * Strings vêm do `request()` em lib/exchange/bingx.ts ("BingX <path>: <status>
+ * <text>") e dos códigos da própria BingX (100413/100419 = sig inválida).
+ */
+function isAuthError(msg: string): boolean {
+  const m = msg.toLowerCase();
+  // HTTP auth statuses
+  if (/\b401\b|\b403\b/.test(m)) return true;
+  // BingX error codes que indicam credencial inválida (não transient)
+  if (/code (100413|100419|100421|100001)\b/.test(m)) return true;
+  // Mensagens textuais do próprio BingX
+  if (m.includes("invalid api") || m.includes("invalid signature") || m.includes("permission denied") || m.includes("ip not allowed")) return true;
+  return false;
+}
+
 function aggregateDailyPnL(income: IncomeItem[], days: number): { date: string; pnl: number }[] {
   const REALIZED_TYPES = new Set(["REALIZED_PNL", "REALIZEDPNL", "REALIZED"]);
   const byDay = new Map<string, number>();
@@ -312,6 +338,8 @@ export async function GET(req: Request) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "unknown";
     console.error("[exchange/data] decrypt failed:", msg);
+    // Decrypt failure É auth-level: ou EXCHANGE_ENCRYPTION_KEY mudou ou row
+    // corrompida. Em ambos casos usuário precisa reconectar — marca "error".
     await supabase
       .from("exchange_connections")
       .update({ status: "error", error_message: `Falha ao descriptografar: ${msg}` })
@@ -648,10 +676,46 @@ export async function GET(req: Request) {
     return NextResponse.json({ connected: true, exchange, userId: session.userId, cached: false, ...enrichedSnapshot });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erro desconhecido";
+    // Só desconecta a UI quando é auth-fail real (chave inválida, sig errada,
+    // IP banido). Erro transient (5xx, timeout, rate limit, geo-block) mantém
+    // status="active" e devolve last cached snapshot do exchange_snapshots.
+    // Antes: 1 hipo de rede no polling = "broker desconectado" na cara do usuário.
+    if (isAuthError(msg)) {
+      await supabase
+        .from("exchange_connections")
+        .update({ status: "error", error_message: msg })
+        .eq("id", conn.id);
+      return NextResponse.json({ connected: true, exchange, error: msg, errorKind: "auth" }, { status: 502 });
+    }
+
+    // Transient: registra que falhou mas mantém ativa. UI continua mostrando
+    // dados (do snapshot ou stale) sem o alerta vermelho de "desconectada".
     await supabase
       .from("exchange_connections")
-      .update({ status: "error", error_message: msg })
+      .update({ error_message: `[transient] ${msg}` })
       .eq("id", conn.id);
-    return NextResponse.json({ connected: true, exchange, error: msg }, { status: 502 });
+
+    // Tenta servir o último snapshot do banco — fonte mais recente sem ter
+    // que rebater no exchange agora.
+    const { data: cached } = await supabase
+      .from("exchange_snapshots")
+      .select("data, fetched_at")
+      .eq("discord_user_id", session.userId)
+      .eq("exchange", exchange)
+      .eq("snapshot_type", "full")
+      .maybeSingle();
+    if (cached?.data) {
+      return NextResponse.json({
+        connected: true,
+        exchange,
+        userId: session.userId,
+        cached: true,
+        cachedAt: cached.fetched_at,
+        warning: msg,
+        errorKind: "transient",
+        ...(cached.data as Record<string, unknown>),
+      });
+    }
+    return NextResponse.json({ connected: true, exchange, error: msg, errorKind: "transient" }, { status: 502 });
   }
 }

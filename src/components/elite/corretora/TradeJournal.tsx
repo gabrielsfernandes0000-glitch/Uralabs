@@ -125,9 +125,13 @@ export function TradeJournal({
         {grouped.map((g) => {
           const expanded = openDays[g.date] ?? true;
           const subColor = g.subtotal > 0 ? "text-green-400" : g.subtotal < 0 ? "text-red-400" : "text-white/30";
-          const dateLabel = new Date(g.date + "T12:00:00Z").toLocaleDateString("pt-BR", {
+          // Sem `capitalize` CSS — pt-BR já vira "Dom., 03 De Mai." (cada palavra
+          // capitalizada). Aplica capitalização só no weekday (primeiro token).
+          const rawLabel = new Date(g.date + "T12:00:00Z").toLocaleDateString("pt-BR", {
             weekday: "short", day: "2-digit", month: "short",
           });
+          const [wd, ...rest] = rawLabel.split(" ");
+          const dateLabel = `${wd.charAt(0).toUpperCase()}${wd.slice(1).toLowerCase()} ${rest.join(" ").toLowerCase()}`;
           return (
             <div key={g.date}>
               <button
@@ -137,7 +141,7 @@ export function TradeJournal({
               >
                 <div className="flex items-center gap-2">
                   <ChevronDown className={`w-3 h-3 text-white/30 transition-transform ${expanded ? "" : "-rotate-90"}`} />
-                  <span className="text-[11.5px] font-semibold text-white/70 capitalize">{dateLabel}</span>
+                  <span className="text-[11.5px] font-semibold text-white/70">{dateLabel}</span>
                   <span className="text-[10px] text-white/25">· {g.items.length} {g.items.length === 1 ? "trade" : "trades"}</span>
                 </div>
                 <span className={`text-[12px] font-mono tabular-nums font-semibold ${subColor}`}>
