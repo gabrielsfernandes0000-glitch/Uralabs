@@ -42,45 +42,54 @@ export function DashboardHero({ bannerSlug, tierAccent, children }: DashboardHer
 
   const showBanner = !!bannerSlug && !hidden;
 
+  // Em mobile, container não usa aspect fixo — banner aparece em altura
+  // controlada (~120px) acima do conteúdo em flow. Em md+ volta pro 6/1
+  // panorâmico com conteúdo sobreposto edge-to-edge.
   return (
     <div
-      className="animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02]"
-      style={showBanner ? { aspectRatio: "6 / 1" } : undefined}
+      className={`animate-in-up relative overflow-hidden rounded-2xl bg-white/[0.02] ${
+        showBanner ? "md:aspect-[6/1]" : ""
+      }`}
     >
       {showBanner ? (
         <>
-          <CosmeticBanner slug={bannerSlug!} variant="full" />
-          {/* Mesmo stack de gradientes do /elite/perfil — URA confirmou que
-              prefere esse look. 4 camadas: horizontal edge-fade, vertical
-              topo, vertical base forte, radial atrás do avatar. */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to right, #0e0e10 0%, rgba(14,14,16,0.9) 6%, rgba(14,14,16,0.3) 18%, rgba(14,14,16,0) 34%, rgba(14,14,16,0) 66%, rgba(14,14,16,0.3) 82%, rgba(14,14,16,0.9) 94%, #0e0e10 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(14,14,16,0.35) 0%, rgba(14,14,16,0) 22%, rgba(14,14,16,0) 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(14,14,16,0) 0%, rgba(14,14,16,0.12) 55%, rgba(14,14,16,0.5) 85%, rgba(14,14,16,0.85) 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 30% 55% at 12% 85%, rgba(0,0,0,0.6), transparent 70%)",
-            }}
-          />
+          {/* No mobile, banner ocupa só os 120px do topo (h-[120px]) e dá
+              espaço pro conteúdo respirar abaixo. Em md+ ocupa o container
+              inteiro (aspect 6/1) e conteúdo sobrepõe. */}
+          <div className="absolute top-0 left-0 right-0 h-[120px] md:h-full overflow-hidden">
+            <CosmeticBanner slug={bannerSlug!} variant="full" />
+            {/* Mesmo stack de gradientes do /elite/perfil — URA confirmou que
+                prefere esse look. 4 camadas: horizontal edge-fade, vertical
+                topo, vertical base forte, radial atrás do avatar. */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to right, #0e0e10 0%, rgba(14,14,16,0.9) 6%, rgba(14,14,16,0.3) 18%, rgba(14,14,16,0) 34%, rgba(14,14,16,0) 66%, rgba(14,14,16,0.3) 82%, rgba(14,14,16,0.9) 94%, #0e0e10 100%)",
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(14,14,16,0.35) 0%, rgba(14,14,16,0) 22%, rgba(14,14,16,0) 100%)",
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(14,14,16,0) 0%, rgba(14,14,16,0.12) 55%, rgba(14,14,16,0.5) 85%, rgba(14,14,16,0.85) 100%)",
+              }}
+            />
+            <div
+              className="absolute inset-0 hidden md:block"
+              style={{
+                background:
+                  "radial-gradient(ellipse 30% 55% at 12% 85%, rgba(0,0,0,0.6), transparent 70%)",
+              }}
+            />
+          </div>
         </>
       ) : (
         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ backgroundColor: tierAccent + "30" }} />
@@ -100,11 +109,14 @@ export function DashboardHero({ bannerSlug, tierAccent, children }: DashboardHer
         </button>
       )}
 
+      {/* Mobile: conteúdo flui abaixo do banner com padding-top maior pra
+          deixar uma sobra do banner aparecendo sob o avatar.
+          Desktop (md+): conteúdo sobrepõe banner em absolute positioning. */}
       <div
         className={
           showBanner
-            ? "absolute inset-0 z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-6"
-            : "relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-6"
+            ? "relative md:absolute md:inset-0 z-10 px-5 pt-20 pb-5 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 md:gap-6"
+            : "relative z-10 p-5 md:p-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 md:gap-6"
         }
       >
         {children}

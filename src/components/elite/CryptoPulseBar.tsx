@@ -27,24 +27,24 @@ export function CryptoPulseBar({
   // Se não tem nada utilizável, não renderiza.
   if (!fearGreedCrypto && !fearGreedEquities && !globalStats && !altSeason) return null;
 
+  // Renderizado dentro do container "Pulse" da página /noticias — sem
+  // background/border próprios. Mantém divisores verticais p/ ritmo de tape.
   return (
-    <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e]">
-      <div className="flex items-stretch divide-x divide-white/[0.04] overflow-x-auto">
-        <HeaderCell />
-        {fearGreedEquities && <FGCell label="Ações (S&P)" reading={fearGreedEquities} />}
-        {fearGreedCrypto && <FGCell label="Crypto" reading={fearGreedCrypto} />}
-        {globalStats && <DominanceCell btc={globalStats.btcDominance} />}
-        {altSeason && <AltSeasonCell data={altSeason} />}
-      </div>
+    <div className="flex items-stretch divide-x divide-white/[0.04] overflow-x-auto">
+      <HeaderCell />
+      {fearGreedEquities && <FGCell label="Ações S&P" reading={fearGreedEquities} />}
+      {fearGreedCrypto && <FGCell label="Crypto" reading={fearGreedCrypto} />}
+      {globalStats && <DominanceCell btc={globalStats.btcDominance} />}
+      {altSeason && <AltSeasonCell data={altSeason} />}
     </div>
   );
 }
 
 function HeaderCell() {
   return (
-    <div className="shrink-0 px-4 py-3 flex items-center gap-2">
-      <Gauge className="w-3.5 h-3.5 text-white/40" strokeWidth={1.8} />
-      <span className="text-[11px] font-medium text-white/55">Regime</span>
+    <div className="shrink-0 px-4 py-2.5 flex items-center gap-2 bg-white/[0.015]">
+      <Gauge className="w-3 h-3 text-white/45" strokeWidth={2} />
+      <span className="text-[10px] font-bold tracking-wider uppercase text-white/55">Regime</span>
     </div>
   );
 }
@@ -52,7 +52,7 @@ function HeaderCell() {
 function FGCell({ label, reading }: { label: string; reading: FearGreedReading }) {
   const color = fgAccent(reading.value);
   return (
-    <div className="shrink-0 px-4 py-3 min-w-[160px]">
+    <div className="shrink-0 px-4 py-2.5 min-w-[160px]">
       <p className="text-[11px] text-white/40 leading-none">{label}</p>
       <div className="flex items-center gap-2.5 mt-1.5">
         <p className="text-[18px] font-semibold font-mono tabular-nums text-white leading-none">
@@ -70,7 +70,7 @@ function FGCell({ label, reading }: { label: string; reading: FearGreedReading }
 function DominanceCell({ btc }: { btc: number }) {
   const regime = btc > 55 ? "BTC forte" : btc < 45 ? "Alts fortes" : "Equilibrado";
   return (
-    <div className="shrink-0 px-4 py-3 min-w-[160px]">
+    <div className="shrink-0 px-4 py-2.5 min-w-[160px]">
       <p className="text-[11px] text-white/40 leading-none">BTC Dominance</p>
       <div className="flex items-baseline gap-2 mt-1.5">
         <p className="text-[18px] font-semibold font-mono tabular-nums text-white leading-none">

@@ -127,24 +127,39 @@ function TradingDayBar() {
           const isCurrent = i === currentIdx;
           const isPast = i < currentIdx || (currentIdx === -1 && s.endMin <= brTotalMins);
           const segColor = isCurrent
-            ? s.emphasis === "killzone" ? "#FF5500" : "rgba(255,255,255,0.45)"
+            ? s.emphasis === "killzone" ? "#FF5500" : s.emphasis === "avoid" ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.55)"
             : isPast
-            ? "rgba(255,255,255,0.12)"
-            : "rgba(255,255,255,0.05)";
+            ? "rgba(255,255,255,0.18)"
+            : "rgba(255,255,255,0.08)";
           const labelColor = isCurrent
-            ? s.emphasis === "killzone" ? "text-brand-500" : "text-white/75"
+            ? s.emphasis === "killzone" ? "text-brand-500" : "text-white"
             : isPast
-            ? "text-white/30"
-            : "text-white/25";
+            ? "text-white/45"
+            : "text-white/55";
+          // Progresso dentro do segmento atual (0..1) — barra "preenche" enquanto o tempo passa.
+          const segProgress = isCurrent
+            ? Math.min(1, Math.max(0, (brTotalMins - s.startMin) / (s.endMin - s.startMin)))
+            : isPast ? 1 : 0;
           return (
-            <div key={s.id} className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+            <div key={s.id} className="flex-1 flex flex-col items-center gap-2 min-w-0">
               <div
-                className="w-full h-[3px] rounded-full transition-all"
-                style={{ backgroundColor: segColor }}
-              />
+                className="relative w-full h-[3px] rounded-full overflow-hidden"
+                style={{ backgroundColor: isCurrent ? "rgba(255,255,255,0.06)" : segColor }}
+              >
+                {isCurrent && (
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700"
+                    style={{
+                      width: `${segProgress * 100}%`,
+                      backgroundColor: segColor,
+                      boxShadow: s.emphasis === "killzone" ? `0 0 12px ${segColor}aa` : undefined,
+                    }}
+                  />
+                )}
+              </div>
               <div className={`flex items-baseline gap-1.5 leading-none truncate ${labelColor}`}>
-                <span className={`text-[10px] ${isCurrent ? "font-bold" : "font-medium"}`}>{s.label}</span>
-                <span className="text-[9px] font-mono tabular-nums text-white/25 hidden md:inline">{s.range}</span>
+                <span className={`text-[10.5px] tracking-tight ${isCurrent ? "font-bold" : "font-medium"}`}>{s.label}</span>
+                <span className="text-[9px] font-mono tabular-nums text-white/35 hidden md:inline">{s.range}</span>
               </div>
             </div>
           );
@@ -354,14 +369,26 @@ export default async function EliteDashboard() {
       {/* ── Trading day bar — sessão NY em BRT (Elite only) ── */}
       {isElite && <TradingDayBar />}
 
-      {/* ── Primary Action (compact 1-row) + Market Pulse ── */}
+      {/* ── Primary Action (compact 1-row) + Market Pulse ──
+           Card contextual: mostra "o que fazer agora" com accent stripe
+           lateral pra reforçar hierarquia (este é o CTA principal da home). */}
       <Link
         href={primaryAction.href}
         target={primaryAction.target}
         rel={primaryAction.target === "_blank" ? "noreferrer" : undefined}
-        className="interactive animate-in-up delay-2 group block relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.035] transition-all duration-300"
+        className="interactive animate-in-up delay-2 group block relative overflow-hidden rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 border border-white/[0.04] hover:border-white/[0.08]"
       >
-        <div className="relative z-10 px-5 py-3.5 flex items-center justify-between gap-4">
+        {/* Accent stripe lateral — diferencia visualmente como ação primária */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-[3px]"
+          style={{ backgroundColor: primaryAction.accent }}
+        />
+        {/* Glow sutil atrás do ícone que reforça o accent sem chamar excesso de atenção */}
+        <div
+          className="absolute left-0 top-0 w-[180px] h-full pointer-events-none opacity-40"
+          style={{ background: `radial-gradient(ellipse 60% 80% at 0% 50%, ${primaryAction.accent}22, transparent 70%)` }}
+        />
+        <div className="relative z-10 pl-5 pr-4 py-3.5 md:py-4 flex items-center justify-between gap-3 md:gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <primaryAction.icon className="w-5 h-5 shrink-0" style={{ color: primaryAction.accent }} strokeWidth={1.8} />
             <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -371,16 +398,16 @@ export default async function EliteDashboard() {
                   <span className="relative w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryAction.accent }} />
                 </span>
               )}
-              <span className="text-[11px] font-medium shrink-0" style={{ color: primaryAction.accent }}>
+              <span className="text-[10.5px] font-bold tracking-wider uppercase shrink-0" style={{ color: primaryAction.accent }}>
                 {primaryAction.tag}
               </span>
-              <span className="text-white/15 text-[10px] shrink-0">·</span>
-              <h2 className="text-[13.5px] font-bold text-white leading-none truncate">{primaryAction.label}</h2>
+              <span className="text-white/15 text-[10px] shrink-0 hidden sm:inline">·</span>
+              <h2 className="text-[14px] font-bold text-white leading-none truncate">{primaryAction.label}</h2>
               <span className="text-[11.5px] text-white/40 leading-none truncate hidden lg:inline">— {primaryAction.description}</span>
             </div>
           </div>
           {primaryAction.tag !== "Madrugada" && (
-            <div className="flex items-center gap-1 text-[11.5px] font-bold transition-colors shrink-0 group-hover:translate-x-0.5"
+            <div className="flex items-center gap-1 text-[11.5px] font-bold transition-transform shrink-0 group-hover:translate-x-0.5"
               style={{ color: primaryAction.accent }}>
               {primaryAction.isLive ? "Entrar" : "Ir"}
               <ArrowRight className="w-3 h-3" />

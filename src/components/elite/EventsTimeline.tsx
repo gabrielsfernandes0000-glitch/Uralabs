@@ -69,7 +69,7 @@ export function EventsTimeline({ events }: { events: EconomicEvent[] }) {
       {past.length > 0 && (
         <section>
           <SectionLabel text={`Últimas ${Math.min(WINDOW_BACK_MIN / 60, 2)}h`} count={past.length} />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-3 gap-2">
             {past.map((ev) => (
               <EventCard key={ev.id} ev={ev} past />
             ))}
@@ -88,7 +88,7 @@ export function EventsTimeline({ events }: { events: EconomicEvent[] }) {
       {future.length > 0 ? (
         <section>
           <SectionLabel text={`Próximas ${WINDOW_FWD_MIN / 60}h`} count={future.length} />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-3 gap-2">
             {future.map((ev) => (
               <EventCard key={ev.id} ev={ev} />
             ))}

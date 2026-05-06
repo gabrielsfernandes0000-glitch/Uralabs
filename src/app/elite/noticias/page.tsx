@@ -139,31 +139,38 @@ export default async function NoticiasPage({
 
   const totalEvents = events.length;
   const highImpact = events.filter((e) => e.impact === "high").length;
-  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
+  // Sem `capitalize` CSS — string já é montada no formato certo. CSS capitalize
+  // estraga pt-BR (quebra "quarta-feira" em "Quarta-Feira" e "06 de mai." em "06 De Mai.").
+  const todayParts = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
+  const today = todayParts.charAt(0).toUpperCase() + todayParts.slice(1).replace(/ De /g, " de ");
 
   return (
     <NewsLangProvider>
-    <div className="space-y-5">
-      {/* ── Header 1-line — substitui hero gigante ── */}
-      <div className="flex items-center justify-between gap-3 flex-wrap animate-in-up">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-[14px] font-bold text-white/85 tracking-tight capitalize">{today}</h1>
-          <span className="text-[11px] font-mono tabular-nums text-white/45">
-            {totalEvents} {totalEvents === 1 ? "evento" : "eventos"}
-          </span>
-          {highImpact > 0 && (
-            <>
-              <span className="text-white/15 text-[10px]">·</span>
-              <span className="text-[11px] font-mono tabular-nums text-brand-500">{highImpact} alto impacto</span>
-            </>
-          )}
-          <TimestampAgo iso={new Date().toISOString()} prefix="sync" className="ml-2" />
+    <div className="space-y-4 md:space-y-5">
+      {/* ── Header — título primário + meta direita.
+           Substitui o strip de data/count/sync que parecia chrome inflado.
+           pl-12 lg:pl-0 evita colisão com o hambúrguer mobile (top-4 left-4). ── */}
+      <header className="flex items-end justify-between gap-3 flex-wrap pb-1 pl-12 lg:pl-0 animate-in-up">
+        <div className="min-w-0">
+          <h1 className="text-[22px] md:text-[24px] font-bold text-white tracking-tight leading-none">Notícias</h1>
+          <p className="text-[12px] text-white/40 mt-2 leading-tight flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className="text-white/65">{today}</span>
+            <span className="text-white/15 hidden sm:inline">·</span>
+            <span className="font-mono tabular-nums">{totalEvents} {totalEvents === 1 ? "evento" : "eventos"}</span>
+            {highImpact > 0 && (
+              <>
+                <span className="text-white/15 hidden sm:inline">·</span>
+                <span className="font-mono tabular-nums text-brand-500">{highImpact} alto impacto</span>
+              </>
+            )}
+            <TimestampAgo iso={new Date().toISOString()} prefix="sync" className="hidden md:inline-block" />
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <NewsLangToggle />
           <PushToggle />
         </div>
-      </div>
+      </header>
 
       {/* ── Killzone banners (contextuais, só aparecem quando relevantes) ── */}
       <div className="space-y-2 empty:hidden">
@@ -171,50 +178,35 @@ export default async function NoticiasPage({
         <KillzoneWarmup />
       </div>
 
-      {/* ── Preço multi-ativo (NQ/BTC/ETH/DXY/GOLD) — rotação de risco numa linha ── */}
-      <div className="animate-in-up">
+      {/* ── Pulse: preços multi-ativo (linha 1) + regime/sentiment (linha 2)
+           num único container. Corta 1 strip do topo e cria seção visual coesa. ── */}
+      <div className="animate-in-up rounded-xl border border-white/[0.05] bg-[#0a0a0c] overflow-hidden">
         <MultiAssetTape snapshots={priceSnaps} />
+        <div className="border-t border-white/[0.04]">
+          <CryptoPulseBar
+            fearGreedCrypto={fgSnapshot.crypto}
+            fearGreedEquities={fgSnapshot.equities}
+            globalStats={globalStats}
+            altSeason={altSeason}
+          />
+        </div>
       </div>
 
-      {/* ── Regime bar — 4 indicadores de sentimento + dominance ── */}
-      <div className="animate-in-up">
-        <CryptoPulseBar
-          fearGreedCrypto={fgSnapshot.crypto}
-          fearGreedEquities={fgSnapshot.equities}
-          globalStats={globalStats}
-          altSeason={altSeason}
-        />
-      </div>
-
-      {/* ── Strip horizontal — toggles + watchlist + add + drawer ── */}
+      {/* ── Filtros + watchlist (compacto, separado pra não brigar com o pulse) ── */}
       <div className="animate-in-up">
         <NoticiasStripBar />
       </div>
 
-      {/* ── Hero full-width: NowCard + EventsTimeline ── */}
-      <div className="space-y-5">
-        <div className="animate-in-up">
-          <NowCard events={events} news={news} />
-        </div>
-        <div className="animate-in-up">
-          <EventsTimeline events={events} />
-        </div>
+      {/* ── Hero: NowCard + EventsTimeline lado-a-lado em desktop largo.
+           Em mobile/tablet empilha. Reduz scroll vertical sem perder contexto. ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-4 animate-in-up">
+        <NowCard events={events} news={news} />
+        <EventsTimeline events={events} />
       </div>
 
-      {/* ── Conteúdo full-width abaixo do hero ── */}
-      <div className="space-y-5">
-        {/* Agenda estendida — calendário de eventos vem ANTES das manchetes
-            (mais acionável pro trader: o que vai impactar o mercado hoje/semana) */}
-        <div className="animate-in-up">
-          <UpcomingAgenda events={events} earnings={earnings} today={today} />
-        </div>
-
-        {/* FedWatch — card único, segue a lógica macro */}
-        <div className="animate-in-up">
-          <FedProbCard prob={fedProb} />
-        </div>
-
-        {/* Feed de manchetes — 3 hero + lista compacta (contexto pós-agenda) */}
+      {/* ── Feed de manchetes (entra antes da agenda detalhada — usuário busca
+           notícia, não calendário) ── */}
+      <div className="animate-in-up">
         <NoticiasFeedV2
           feed={news}
           filtersActive={filtersActive}
@@ -226,6 +218,17 @@ export default async function NoticiasPage({
             />
           }
         />
+      </div>
+
+      {/* ── Bloco macro de aprofundamento (FedWatch + agenda completa).
+           Quem quer detalhe macro depois de ver as manchetes desce até aqui. ── */}
+      <div className="space-y-4">
+        <div className="animate-in-up">
+          <FedProbCard prob={fedProb} />
+        </div>
+        <div className="animate-in-up">
+          <UpcomingAgenda events={events} earnings={earnings} today={today} />
+        </div>
       </div>
     </div>
     </NewsLangProvider>

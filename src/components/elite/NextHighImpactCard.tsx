@@ -57,23 +57,59 @@ export function NextHighImpactCard({ events }: { events: EconomicEvent[] }) {
       (e) => e.impact === "high" && (!e.date || e.date === todayBRT),
     );
     const allReleased = highInWindow.length > 0 && highInWindow.every((e) => !!e.actual);
+    // Próximo evento de impacto MÉDIO ainda não liberado — útil mesmo num
+    // dia "calmo" (alto impacto pode ter saído mas médios continuam mexendo
+    // o mercado em escala menor).
+    const upcomingMedium = events
+      .filter((e) => e.impact === "medium" && !e.actual)
+      .map((e) => ({ ev: e, ts: brtTimestamp(e.date ?? todayBRT, e.time) }))
+      .filter((x): x is { ev: EconomicEvent; ts: number } =>
+        x.ts !== null && x.ts >= nowMs && x.ts <= windowEndMs,
+      )
+      .sort((a, b) => a.ts - b.ts);
+    const nextMedium = upcomingMedium[0];
+    const remainingMedium = upcomingMedium.length;
+
     return (
       <Link
         href="/elite/noticias"
         className="interactive group rounded-xl bg-white/[0.02] hover:bg-white/[0.04] p-5 h-full flex flex-col transition-colors"
       >
-        <div className="flex items-center gap-2 mb-3">
-          <CalendarClock className="w-3.5 h-3.5 text-white/35" />
-          <h3 className="text-[12px] font-semibold text-white/85">Próximo evento</h3>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <CalendarClock className="w-3.5 h-3.5 text-white/35" />
+            <h3 className="text-[12px] font-semibold text-white/85">Próximo evento</h3>
+          </div>
+          <span className="text-[10px] text-white/30 font-medium uppercase tracking-wider">
+            {allReleased ? "Concluído" : "Calmo"}
+          </span>
         </div>
+
         <div className="flex-1 flex flex-col items-start justify-center">
-          <p className="text-[18px] font-semibold text-white/60 leading-tight">
+          <p className="text-[18px] font-semibold text-white/70 leading-tight">
             {allReleased ? "Tudo liberado" : "Nenhum alto impacto"}
           </p>
-          <p className="text-[11px] text-white/30 mt-1 leading-relaxed">
+          <p className="text-[11px] text-white/35 mt-1 leading-relaxed">
             {allReleased ? "Todos os releases de hoje já saíram." : "Dia pra operar só com gráfico."}
           </p>
         </div>
+
+        {nextMedium && (
+          <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-baseline gap-2">
+            <span className="text-[10px] text-white/35 font-medium">Médio</span>
+            <span className="text-[11px] text-white/65 font-mono tabular-nums">
+              {nextMedium.ev.time} {countryCode(nextMedium.ev.country)}
+            </span>
+            <span className="text-[11px] text-white/55 truncate flex-1 min-w-0">
+              · {nextMedium.ev.event}
+            </span>
+            {remainingMedium > 1 && (
+              <span className="text-[10px] text-white/35 font-mono shrink-0">
+                +{remainingMedium - 1}
+              </span>
+            )}
+          </div>
+        )}
       </Link>
     );
   }

@@ -98,8 +98,8 @@ function NavMenu({
   return (
     <nav className="flex-1 py-3 px-4 overflow-y-auto">
       {sections.map((section, idx) => (
-        <div key={section.label} className={idx > 0 ? "mt-3 pt-2 border-t border-white/[0.04]" : ""}>
-          <p className="px-4 mb-1 text-[9px] font-bold text-white/25">
+        <div key={section.label} className={idx > 0 ? "mt-4 pt-3 border-t border-white/[0.04]" : ""}>
+          <p className="px-4 mb-2 text-[10px] font-bold tracking-[0.14em] uppercase text-white/35">
             {section.label}
           </p>
           <div className="space-y-0.5">
