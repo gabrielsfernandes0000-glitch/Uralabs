@@ -133,8 +133,8 @@ const POSITIONS = [
 
 // Open orders pendentes
 const OPEN_ORDERS = [
-  { orderId: "1843001", symbol: "SOL-USDT", side: "BUY",  type: "LIMIT", price: 175.50, quantity: 5.0,  stopPrice: null,  triggerType: null, time: NOW - 2 * 3600 * 1000,  status: "NEW" },
-  { orderId: "1843002", symbol: "BTC-USDT", side: "SELL", type: "STOP_MARKET", price: null, quantity: 0.01, stopPrice: 80800, triggerType: "stop", time: NOW - 1 * 3600 * 1000, status: "NEW" },
+  { orderId: "1843001", symbol: "SOL-USDT", side: "BUY",  positionSide: "LONG",  type: "LIMIT",       price: 175.50, quantity: 5.0,  stopPrice: 0,     leverage: "10", time: NOW - 2 * 3600 * 1000 },
+  { orderId: "1843002", symbol: "BTC-USDT", side: "SELL", positionSide: "SHORT", type: "STOP_MARKET", price: 0,      quantity: 0.01, stopPrice: 80800, leverage: "10", time: NOW - 1 * 3600 * 1000 },
 ];
 
 // Symbol breakdown
