@@ -307,12 +307,24 @@ function MarkdownContent({ text, source, fetching = false }: { text: string; sou
     .map((b) => b.trim())
     .filter((b) => b.length > 0);
 
-  // Aviso só quando NÃO estamos fetchando mais E realmente o conteúdo ficou como summary
-  const showFallbackNotice = !fetching && source !== "jina" && source !== "guardian";
+  const hasContent = blocks.length > 0;
+  const isFallbackSource = !fetching && source !== "jina" && source !== "guardian";
+
+  // Sem conteúdo + fonte fallback = publisher bloqueou extração e não temos summary.
+  // Em vez de aviso amarelo seguido de vazio, dá uma mensagem direta no corpo.
+  if (!hasContent && isFallbackSource) {
+    return (
+      <div className="rounded-lg bg-white/[0.02] px-5 py-8 text-center">
+        <p className="text-[12.5px] text-white/55 leading-relaxed max-w-md mx-auto">
+          Esta fonte não permite extração do artigo aqui. Use o botão abaixo pra abrir no site original.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {showFallbackNotice && (
+      {isFallbackSource && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-amber-400/20 text-[11px] text-amber-200/80">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" aria-hidden />
           Artigo completo não disponível aqui. Veja o resumo abaixo ou abra o original.
