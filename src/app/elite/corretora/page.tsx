@@ -608,11 +608,11 @@ function PrimaryStatCell({ label, value, sub, color, accent, progress }: {
   color: string; accent: string; progress: number;
 }) {
   return (
-    <div className="lg:col-span-2 lg:px-4 first-of-type:lg:pl-0">
-      <p className="text-[9.5px] font-bold text-white/55 uppercase tracking-wider mb-1.5">{label}</p>
-      <div className="flex items-baseline gap-2 mb-2">
-        <p className={`text-[22px] font-bold font-mono tabular-nums leading-none ${color}`}>{value}</p>
-        <p className="text-[10.5px] text-white/35 font-mono tabular-nums truncate">{sub}</p>
+    <div className="px-5 py-4">
+      <p className="text-[9.5px] font-bold text-white/55 uppercase tracking-wider mb-2">{label}</p>
+      <div className="flex items-baseline gap-2 mb-2.5">
+        <p className={`text-[26px] font-bold font-mono tabular-nums leading-none ${color}`}>{value}</p>
+        <p className="text-[11px] text-white/40 font-mono tabular-nums truncate">{sub}</p>
       </div>
       <div className="h-[3px] rounded-full bg-white/[0.04] overflow-hidden">
         <div
@@ -795,8 +795,15 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Linha 1: nome da exchange + label da conta (peso visual) */}
+            <div className="flex items-baseline gap-2 flex-wrap">
               <h1 className="text-[18px] font-bold text-white tracking-tight">{exchange.name}</h1>
+              {data.label && (
+                <span className="text-[13px] text-white/50 truncate font-mono">· {data.label}</span>
+              )}
+            </div>
+            {/* Linha 2: status (conectada + realtime) — informação operacional */}
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold text-green-400 tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> conectada
               </span>
@@ -825,12 +832,22 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
                 </span>
               )}
             </div>
-            {data.label && <p className="text-[11px] text-white/30 truncate">{data.label}</p>}
           </div>
         </div>
 
         {/* Grupo ações: Conta (benignas) · destrutivas */}
         <div className="flex items-center gap-1.5">
+          {/* Mesa prop chip — só quando não configurado. Quando configurado,
+              vira card cheio abaixo via PropRulesBanner. */}
+          {!propStatus && (
+            <button
+              onClick={openPropRulesModal}
+              className="interactive-tap hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11.5px] text-white/40 hover:text-white/75 hover:bg-white/[0.03] transition-all"
+              title="Configurar limites de mesa prop"
+            >
+              <Shield className="w-3.5 h-3.5" strokeWidth={1.8} /> Mesa prop
+            </button>
+          )}
           <button onClick={() => setHideBalance(!hideBalance)} className="interactive-tap p-2 rounded-lg text-white/35 hover:text-white/75 hover:bg-white/[0.03] transition-all" title={hideBalance ? "Mostrar valores" : "Ocultar valores"}>
             {hideBalance ? <EyeOff className="w-[15px] h-[15px]" /> : <Eye className="w-[15px] h-[15px]" />}
           </button>
@@ -865,9 +882,9 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {tab === "resumo" && <>
 
-      {/* HERO — Equity curve (60%) + KPI stack (40%) */}
+      {/* HERO — Equity curve (60%) + Conta unificada (40%) */}
       <div className="animate-in-up delay-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        {/* Equity curve */}
+        {/* Equity curve — drawdown saiu pra card próprio embaixo */}
         <div className="rounded-xl surface-card p-5">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -891,26 +908,23 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
               ))}
             </div>
           </div>
-          <EquityCurve data={curve} height={170} />
-          {drawdownCurve.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-white/[0.04]">
-              <DrawdownCurve data={drawdownCurve.slice(-(period === "7d" ? 7 : period === "30d" ? 30 : drawdownCurve.length))} height={60} />
-            </div>
-          )}
+          <EquityCurve data={curve} height={210} />
         </div>
 
-        {/* KPI stack: Patrimônio (card âncora com glow) · PnL período (com tendência visual) */}
-        <div className="space-y-3">
-          {balance && (
-            <div className="relative overflow-hidden rounded-xl surface-card p-5">
-              {/* Glow sutil topo — destaca Patrimônio como métrica âncora sem
-                  poluir. Cor neutra (white/8%) pra não competir com PnL verde/vermelho. */}
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.18] to-transparent" />
+        {/* Card Conta unificado — Patrimônio (âncora) + PnL período (tendência)
+            num único surface-card. Antes eram 2 cards empilhados; agora coeso. */}
+        {balance && (
+          <div className="relative overflow-hidden rounded-xl surface-card p-5 flex flex-col">
+            {/* Glow sutil topo — Patrimônio é métrica âncora */}
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.18] to-transparent" />
+
+            {/* Section 1: Patrimônio */}
+            <div>
               <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider mb-2">Patrimônio</p>
               <p className="text-[34px] font-bold text-white leading-none font-mono tabular-nums">
                 {fmtUsd(balance.totalEquity)}
               </p>
-              <div className="flex items-center gap-3 mt-3.5 pt-3 border-t border-white/[0.04] text-[11px]">
+              <div className="flex items-center gap-3 mt-3 text-[11px] flex-wrap">
                 <span className="flex items-center gap-1.5">
                   <span className="text-white/35">Disponível</span>
                   <span className="text-white/75 font-mono tabular-nums font-semibold">{fmtUsd(balance.availableMargin)}</span>
@@ -919,7 +933,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
                   <>
                     <span className="text-white/15">·</span>
                     <span className="flex items-center gap-1.5">
-                      <span className="text-white/35">Não real.</span>
+                      <span className="text-white/35">Não realizado</span>
                       <span className={`font-mono tabular-nums font-semibold ${pnlColor(balance.unrealizedPnL)}`}>
                         {balance.unrealizedPnL >= 0 ? "+" : ""}{fmtUsd(balance.unrealizedPnL)}
                       </span>
@@ -928,60 +942,86 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
                 )}
               </div>
             </div>
-          )}
 
-          {/* PnL period — accent stripe lateral verde/vermelho dá contexto
-              imediato. Tendência fica óbvia antes do trader ler o número. */}
-          <div className="relative overflow-hidden rounded-xl surface-card p-5">
-            <div
-              className="absolute left-0 top-0 bottom-0 w-[3px]"
-              style={{
-                backgroundColor: periodPnL > 0 ? "#22C55E" : periodPnL < 0 ? "#EF4444" : "rgba(255,255,255,0.1)",
-              }}
-            />
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider">
-                PnL {period === "7d" ? "7 dias" : period === "30d" ? "30 dias" : "total"}
-              </p>
-              {periodPnL !== 0 && !hideBalance && (
-                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${pnlColor(periodPnL)}`}>
-                  {periodPnL > 0 ? <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} /> : <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />}
-                  {periodPnL > 0 ? "lucro" : "perda"}
-                </span>
-              )}
-            </div>
-            <div className="flex items-baseline gap-2">
-              <p className={`text-[30px] font-bold leading-none font-mono tabular-nums ${pnlColor(periodPnL)}`}>
-                {hideBalance ? "$••••" : fmtUsd(periodPnL)}
-              </p>
-              {equityAtStart > 0 && !hideBalance && (
-                <span className={`text-[13px] font-mono tabular-nums font-semibold ${pnlColor(periodPnL)}`}>
-                  {periodPnL >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
-                </span>
-              )}
-            </div>
-            {metrics && metrics.totalTrades > 0 && (
-              <p className="text-[11px] text-white/40 mt-3 pt-3 border-t border-white/[0.04] font-mono tabular-nums">
-                {metrics.totalTrades} trades · <span className={pnlColor(metrics.avgPnL)}>{fmtUsd(metrics.avgPnL)}</span> médio
-                {totalCommission < 0 && (
-                  <span className="text-white/25"> · taxa {fmtUsd(totalCommission)}</span>
+            {/* Divider entre Patrimônio e PnL período — sutil, mantém coesão */}
+            <div className="my-4 border-t border-white/[0.05]" />
+
+            {/* Section 2: PnL período — stripe lateral colorido */}
+            <div className="relative pl-3">
+              <div
+                className="absolute left-0 top-0 bottom-0 w-[3px] rounded-full"
+                style={{
+                  backgroundColor: periodPnL > 0 ? "#22C55E" : periodPnL < 0 ? "#EF4444" : "rgba(255,255,255,0.1)",
+                }}
+              />
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider">
+                  PnL {period === "7d" ? "7 dias" : period === "30d" ? "30 dias" : "total"}
+                </p>
+                {periodPnL !== 0 && !hideBalance && (
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${pnlColor(periodPnL)}`}>
+                    {periodPnL > 0 ? <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} /> : <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />}
+                    {periodPnL > 0 ? "lucro" : "perda"}
+                  </span>
                 )}
-              </p>
-            )}
+              </div>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <p className={`text-[28px] font-bold leading-none font-mono tabular-nums ${pnlColor(periodPnL)}`}>
+                  {hideBalance ? "$••••" : fmtUsd(periodPnL)}
+                </p>
+                {equityAtStart > 0 && !hideBalance && (
+                  <span className={`text-[13px] font-mono tabular-nums font-semibold ${pnlColor(periodPnL)}`}>
+                    {periodPnL >= 0 ? "+" : ""}{periodPct.toFixed(2)}%
+                  </span>
+                )}
+              </div>
+              {metrics && metrics.totalTrades > 0 && (
+                <p className="text-[11px] text-white/40 mt-2 font-mono tabular-nums">
+                  {metrics.totalTrades} trades · <span className={pnlColor(metrics.avgPnL)}>{fmtUsd(metrics.avgPnL)}</span> médio
+                  {totalCommission < 0 && (
+                    <span className="text-white/25"> · taxa {fmtUsd(totalCommission)}</span>
+                  )}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Drawdown — card próprio, full width. Trader vê quanto a conta
+          fica abaixo do pico anterior (risco visceral). */}
+      {drawdownCurve.length > 0 && (() => {
+        const ddSlice = drawdownCurve.slice(-(period === "7d" ? 7 : period === "30d" ? 30 : drawdownCurve.length));
+        const maxDd = ddSlice.reduce((min, p) => (p.dd < min.dd ? p : min), ddSlice[0]);
+        return (
+          <div className="rounded-xl surface-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-[10.5px] font-semibold text-white/40 uppercase tracking-wider">Drawdown</p>
+                <p className="text-[11px] text-white/30 mt-0.5">Quanto a conta fica abaixo do pico anterior</p>
+              </div>
+              {maxDd && (
+                <p className="text-[11px] text-white/40 font-mono tabular-nums">
+                  Max DD <span className="text-red-400 font-semibold">{fmtUsd(maxDd.dd)}</span>
+                </p>
+              )}
+            </div>
+            <DrawdownCurve data={ddSlice} height={80} />
+          </div>
+        );
+      })()}
 
       {/* URA call split — suas stats seguindo vs solo */}
       {metricsSplit && <UraCallSplit split={metricsSplit} />}
 
-      {/* Stats strip — Win rate e Profit factor são as métricas-âncora do
-           trader (define se o setup é lucrativo). Ganham peso visual maior
-           (col-span-2 em lg) e os 5 secundários ficam compactos do lado. */}
+      {/* Stats strip — 2 seções dentro do mesmo card:
+           Topo: Win rate + Profit factor (âncoras, mini-bar, tipografia maior)
+           Base: 5 secundárias (compactas, sem mini-bar, tipografia menor)
+           Antes mistura ficava inconsistente — agora hierarquia óbvia. */}
       {metrics && metrics.totalTrades > 0 && (
-        <div className="animate-in-up delay-2 rounded-xl surface-card px-5 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-x-4 gap-y-4 lg:gap-x-0 items-stretch">
-            {/* Métricas-âncora: Win rate + Profit factor (col-span-2 cada em lg) */}
+        <div className="animate-in-up delay-2 rounded-xl surface-card overflow-hidden">
+          {/* Métricas-âncora */}
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/[0.05]">
             <PrimaryStatCell
               label="Win rate"
               value={`${metrics.winRate.toFixed(1)}%`}
@@ -993,13 +1033,18 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
             <PrimaryStatCell
               label="Profit factor"
               value={metrics.profitFactor >= 999 ? "∞" : metrics.profitFactor.toFixed(2)}
-              sub={metrics.profitFactor >= 1 ? "lucrativo" : "perdedor"}
+              sub={metrics.profitFactor >= 1 ? "≥ 1.0 lucrativo" : "< 1.0 perde dinheiro"}
               color={metrics.profitFactor >= 1 ? "text-green-400" : "text-red-400"}
               accent={metrics.profitFactor >= 1 ? "#22C55E" : "#EF4444"}
               progress={metrics.profitFactor >= 999 ? 100 : Math.min(100, (metrics.profitFactor / 3) * 100)}
             />
+          </div>
 
-            {/* Métricas secundárias (5 cells col-span-1 cada em lg) */}
+          {/* Divider entre primária e secundária */}
+          <div className="border-t border-white/[0.05]" />
+
+          {/* Métricas secundárias — strip compacto */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 divide-x divide-y md:divide-y-0 divide-white/[0.04]">
             {[
               { label: "Expectancy", value: fmtUsd(metrics.expectancy), sub: "por trade", color: pnlColor(metrics.expectancy) },
               { label: "Média ganho", value: fmtUsd(metrics.avgWin), sub: hideBalance ? "•" : `${metrics.wins} wins`, color: "text-green-400" },
@@ -1012,7 +1057,7 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
                 color: metrics.currentStreakType === "win" ? "text-green-400" : metrics.currentStreakType === "loss" ? "text-red-400" : "text-white/40",
               },
             ].map((s, i) => (
-              <div key={i} className="lg:border-l lg:border-white/[0.04] lg:px-4 first-of-type:lg:pl-4">
+              <div key={i} className="px-4 py-3 first:border-l-0 md:first:border-l-0">
                 <p className="text-[9.5px] font-semibold text-white/35 uppercase tracking-wider mb-1">{s.label}</p>
                 <p className={`text-[15px] font-bold font-mono tabular-nums leading-tight ${s.color}`}>{s.value}</p>
                 <p className="text-[10px] text-white/25 mt-0.5 font-mono tabular-nums truncate">{s.sub}</p>

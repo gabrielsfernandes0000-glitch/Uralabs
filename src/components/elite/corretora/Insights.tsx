@@ -276,25 +276,10 @@ export function RMultiplesCard({ r }: { r: RMultiples }) {
 
 /** Banner de prop firm rules enforcement. Monitora daily loss, max loss, profit target. */
 export function PropRulesBanner({ status, onConfigure }: { status: PropStatus | null; onConfigure: () => void }) {
-  if (!status) {
-    return (
-      <button
-        type="button"
-        onClick={onConfigure}
-        className="interactive-tap w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.14] hover:bg-white/[0.02] transition-colors group"
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <Shield className="w-3.5 h-3.5 text-white/30 group-hover:text-white/55 transition-colors shrink-0" strokeWidth={1.8} />
-          <span className="text-[11.5px] text-white/55 truncate">
-            <span className="text-white/75 font-medium">Mesa prop?</span>
-            <span className="hidden sm:inline"> Configure limites pra alertar daily loss, DD e target.</span>
-          </span>
-          <span className="text-[9.5px] font-mono uppercase tracking-wider text-white/25 shrink-0">opcional</span>
-        </div>
-        <span className="text-[10.5px] text-brand-500 font-semibold shrink-0 group-hover:translate-x-0.5 transition-transform">Configurar →</span>
-      </button>
-    );
-  }
+  // Quando não configurado, o CTA vai pro header da página (chip pequeno
+  // ao lado de "+ Nova"). Banner full-width aqui só faz sentido pra quem
+  // realmente usa mesa prop e tem limites pra acompanhar.
+  if (!status) return null;
 
   const segment = (used: number, limit: number | null, pct: number, targetIsProfit = false) => {
     if (limit === null) return null;
