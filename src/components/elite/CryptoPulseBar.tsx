@@ -1,6 +1,7 @@
 import { Gauge } from "lucide-react";
 import type { GlobalStats, AltSeasonIndex } from "@/lib/crypto-pulse";
 import { classifyFG, fgAccent, type FearGreedReading } from "@/lib/fear-greed";
+import { FearGreedGauge } from "@/components/elite/FearGreedGauge";
 
 /**
  * Crypto Regime Bar — 3 indicadores que mudam setup (não decoração).
@@ -52,17 +53,12 @@ function HeaderCell() {
 function FGCell({ label, reading }: { label: string; reading: FearGreedReading }) {
   const color = fgAccent(reading.value);
   return (
-    <div className="shrink-0 px-4 py-2.5 min-w-[160px]">
-      <p className="text-[11px] text-white/40 leading-none">{label}</p>
-      <div className="flex items-center gap-2.5 mt-1.5">
-        <p className="text-[18px] font-semibold font-mono tabular-nums text-white leading-none">
-          {reading.value}
-        </p>
-        <div className="flex-1 min-w-[50px] h-[3px] rounded-full bg-white/[0.05] overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: `${reading.value}%`, backgroundColor: color }} />
-        </div>
+    <div className="shrink-0 px-4 py-2 min-w-[140px] flex items-center gap-3">
+      <FearGreedGauge value={reading.value} color={color} size={68} />
+      <div className="flex flex-col gap-1">
+        <p className="text-[11px] text-white/40 leading-none">{label}</p>
+        <p className="text-[11px] leading-none" style={{ color }}>{classifyFG(reading.value)}</p>
       </div>
-      <p className="text-[11px] mt-1.5 leading-none" style={{ color }}>{classifyFG(reading.value)}</p>
     </div>
   );
 }
