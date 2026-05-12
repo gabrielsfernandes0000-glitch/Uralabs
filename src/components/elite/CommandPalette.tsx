@@ -30,16 +30,16 @@ type Item = {
 
 const PAGES: Item[] = [
   { id: "page-dashboard",  label: "Dashboard",  hint: "Visão geral",         href: "/elite",            group: "Páginas", icon: LayoutDashboard, keywords: "home inicio" },
-  { id: "page-membros",    label: "Membros",    hint: "Todos membros",       href: "/elite/membros",    group: "Páginas", icon: Users,           keywords: "turma community comunidade" },
+  { id: "page-corretora",  label: "Corretora",  hint: "Sua conta + análise", href: "/elite/corretora",  group: "Páginas", icon: BarChart3,       keywords: "exchange binance bingx patrimonio pnl trades" },
   { id: "page-calls",      label: "Calls",      hint: "Ao vivo",             href: "/elite/calls",      group: "Páginas", icon: Radio,           keywords: "live ao vivo transmissao" },
-  { id: "page-aulas",      label: "Aulas",      hint: "Currículo Elite",     href: "/elite/aulas",      group: "Páginas", icon: BookOpen,        keywords: "curso curriculo" },
   { id: "page-graficos",   label: "Gráficos",   hint: "TradingView real-time",href: "/elite/graficos",   group: "Páginas", icon: LineChart,       keywords: "chart grafico btc nasdaq ibov ouro forex" },
+  { id: "page-aulas",      label: "Aulas",      hint: "Currículo Elite",     href: "/elite/aulas",      group: "Páginas", icon: BookOpen,        keywords: "curso curriculo" },
   { id: "page-pratica",    label: "Prática",    hint: "Treinos e cenários",  href: "/elite/pratica",    group: "Páginas", icon: Crosshair,       keywords: "treino cenario scenarios" },
   { id: "page-diario",     label: "Diário",     hint: "Prep Sheet + review", href: "/elite/diario",     group: "Páginas", icon: NotebookPen,     keywords: "prep sheet diario trade journal plano", adminOnly: true },
   { id: "page-noticias",   label: "Notícias",   hint: "Agenda + manchetes",  href: "/elite/noticias",   group: "Páginas", icon: Globe,           keywords: "news calendario cpi fomc nfp fed economia agenda" },
+  { id: "page-membros",    label: "Membros",    hint: "Todos membros",       href: "/elite/membros",    group: "Páginas", icon: Users,           keywords: "turma community comunidade" },
   { id: "page-conquistas", label: "Conquistas", hint: "Badges e timeline",   href: "/elite/conquistas", group: "Páginas", icon: Trophy,          keywords: "achievements badges", adminOnly: true },
   { id: "page-loja",       label: "Loja",       hint: "URA Coin + caixas",   href: "/elite/loja",       group: "Páginas", icon: Gift,            keywords: "coin loot box", adminOnly: true },
-  { id: "page-corretora",  label: "Corretora",  hint: "API das exchanges",   href: "/elite/corretora",  group: "Páginas", icon: BarChart3,       keywords: "exchange binance" },
   { id: "page-perfil",     label: "Perfil",     hint: "Cosméticos",          href: "/elite/perfil",     group: "Páginas", icon: Users,           keywords: "banner frame aura" },
 ];
 

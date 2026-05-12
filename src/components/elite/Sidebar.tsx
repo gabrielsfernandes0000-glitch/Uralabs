@@ -39,13 +39,14 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Dia a dia",
     items: [
-      { href: "/elite",          icon: LayoutDashboard, label: "Dashboard",  exact: true },
-      { href: "/elite/calls",    icon: Radio,           label: "Calls",      eliteOnly: true },
-      { href: "/elite/graficos", icon: LineChart,       label: "Gráficos" },
-      { href: "/elite/aulas",    icon: BookOpen,        label: "Aulas" },
-      { href: "/elite/pratica",  icon: Crosshair,       label: "Prática",    eliteOnly: true },
-      { href: "/elite/diario",   icon: NotebookPen,     label: "Diário",     eliteOnly: true, adminOnly: true },
-      { href: "/elite/noticias", icon: Globe,           label: "Notícias" },
+      { href: "/elite",           icon: LayoutDashboard, label: "Dashboard",  exact: true },
+      { href: "/elite/corretora", icon: BarChart3,       label: "Corretora",  eliteOnly: true },
+      { href: "/elite/calls",     icon: Radio,           label: "Calls",      eliteOnly: true },
+      { href: "/elite/graficos",  icon: LineChart,       label: "Gráficos" },
+      { href: "/elite/aulas",     icon: BookOpen,        label: "Aulas" },
+      { href: "/elite/pratica",   icon: Crosshair,       label: "Prática",    eliteOnly: true },
+      { href: "/elite/diario",    icon: NotebookPen,     label: "Diário",     eliteOnly: true, adminOnly: true },
+      { href: "/elite/noticias",  icon: Globe,           label: "Notícias" },
     ],
   },
   {
@@ -57,9 +58,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Conta",
     items: [
-      { href: "/elite/conquistas", icon: Trophy,    label: "Conquistas", adminOnly: true },
-      { href: "/elite/loja",       icon: Gift,      label: "Loja",       adminOnly: true },
-      { href: "/elite/corretora",  icon: BarChart3, label: "Corretora",  eliteOnly: true },
+      { href: "/elite/conquistas", icon: Trophy, label: "Conquistas", adminOnly: true },
+      { href: "/elite/loja",       icon: Gift,   label: "Loja",       adminOnly: true },
     ],
   },
 ];
