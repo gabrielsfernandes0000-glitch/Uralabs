@@ -392,38 +392,57 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div className="relative overflow-hidden rounded-xl surface-card flex flex-col">
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-500/40" />
+      {/* Stripe top na cor do tema do dia — identidade visual */}
+      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${catAccent}66, transparent)` }} />
 
-      {/* Header — missão + tema + progress */}
-      <div className="relative z-10 px-5 pt-4 pb-3 border-b border-white/[0.05]">
-        <div className="flex items-center justify-between mb-2.5">
-          <div className="flex items-center gap-3">
-            <Sparkles className="w-4.5 h-4.5 text-brand-500 shrink-0" strokeWidth={1.8} />
-            <div>
-              <h3 className="text-[13px] font-bold text-white tracking-tight">Missão do dia</h3>
-              <p className="text-[10.5px] text-white/40 mt-0.5">Tema: <span className="font-bold text-white/70">{theme}</span> · 3 cenários</p>
-            </div>
+      {/* Header — missão + tema (badge colorido) + progress dots */}
+      <div className="relative z-10 px-5 lg:px-6 pt-4 pb-4 border-b border-white/[0.05]">
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Sparkles className="w-4 h-4 text-brand-500 shrink-0" strokeWidth={2} />
+            <p className="text-[10px] font-bold text-white/55 uppercase tracking-[0.15em]">Missão do dia</p>
+            <span className="text-white/15 text-[10px]">·</span>
+            <span
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold tracking-wide"
+              style={{ color: catAccent, backgroundColor: `${catAccent}14`, border: `1px solid ${catAccent}33` }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: catAccent }} />
+              {theme}
+            </span>
+            <span className="hidden sm:inline text-[10.5px] text-white/35 font-mono tabular-nums">{scenarios.length} cenários</span>
           </div>
-          <p className="text-[11px] font-mono text-white/45">{currentIdx + 1}/{scenarios.length}</p>
+          <span className="text-[10.5px] font-mono tabular-nums text-white/55 bg-white/[0.04] px-2 py-1 rounded-md shrink-0">
+            {currentIdx + 1}<span className="text-white/25">/{scenarios.length}</span>
+          </span>
         </div>
-        {/* Progress dots */}
-        <div className="flex items-center gap-1.5">
+        {/* Progress dots — 3 checkpoints circulares, mais distintos que barra */}
+        <div className="flex items-center gap-2">
           {scenarios.map((_, i) => {
             const state = picks[i] === null ? (i === currentIdx ? "current" : "pending") : (picks[i] === scenarios[i].correct ? "correct" : "wrong");
             return (
-              <div key={i} className={`flex-1 h-1 rounded-full ${
-                state === "correct" ? "bg-green-500/60" :
-                state === "wrong"   ? "bg-red-500/60" :
-                state === "current" ? "bg-brand-500/80" :
-                                      "bg-white/[0.08]"
-              }`} />
+              <div key={i} className="flex items-center gap-2 flex-1">
+                <div
+                  className={`w-2 h-2 rounded-full shrink-0 transition-colors ${
+                    state === "correct" ? "bg-green-400" :
+                    state === "wrong"   ? "bg-red-400" :
+                    state === "current" ? "ring-2 ring-offset-2 ring-offset-[#131316]" :
+                                          "bg-white/[0.12]"
+                  }`}
+                  style={state === "current" ? { backgroundColor: catAccent, boxShadow: `0 0 0 2px ${catAccent}33` } : undefined}
+                />
+                {i < scenarios.length - 1 && (
+                  <div className={`flex-1 h-px ${
+                    state === "correct" || state === "wrong" ? "bg-white/[0.12]" : "bg-white/[0.05]"
+                  }`} />
+                )}
+              </div>
             );
           })}
         </div>
       </div>
 
       {/* Body */}
-      <div className="relative z-10 p-5">
+      <div className="relative z-10 p-5 lg:p-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIdx}
@@ -431,28 +450,35 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-4"
+            className="space-y-5"
           >
             <div>
-              <h4 className="text-[17px] font-bold text-white leading-tight mb-2">{currentScenario.title}</h4>
+              <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: catAccent }}>
+                Cenário {currentIdx + 1} de {scenarios.length}
+              </p>
+              <h4 className="text-[18px] lg:text-[19px] font-bold text-white leading-snug mb-2 tracking-tight">{currentScenario.title}</h4>
               <p className="text-[12.5px] text-white/55 leading-relaxed">{currentScenario.context}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
               {currentScenario.options.map((opt, idx) => {
                 const isPicked = currentPick === idx;
                 const isRight = idx === currentScenario.correct;
-                let cls = "border-white/[0.06] bg-[#0e0e10] text-white/60 hover:border-white/[0.14] hover:bg-white/[0.02]";
+                let cls = "border-white/[0.08] bg-white/[0.015] text-white/70 hover:border-white/[0.18] hover:bg-white/[0.04]";
+                let letterColor: string | undefined = catAccent;
                 let icon: React.ReactNode = null;
                 if (showAnswer) {
                   if (isRight) {
                     cls = "border-green-500/60 bg-green-500/[0.16] text-green-100 shadow-[0_0_0_1px_rgba(74,222,128,0.25),0_8px_32px_rgba(74,222,128,0.12)]";
+                    letterColor = undefined;
                     icon = <Check className="w-4 h-4 text-green-400 shrink-0" strokeWidth={2.5} />;
                   } else if (isPicked) {
                     cls = "border-red-500/60 bg-red-500/[0.14] text-red-100 shadow-[0_0_0_1px_rgba(248,113,113,0.2)]";
+                    letterColor = undefined;
                     icon = <X className="w-4 h-4 text-red-400 shrink-0" strokeWidth={2.5} />;
                   } else {
                     cls = "border-white/[0.04] bg-transparent text-white/20";
+                    letterColor = undefined;
                   }
                 }
                 return (
@@ -462,10 +488,15 @@ function DailyTreinoCard({ onComplete }: { onComplete: () => void }) {
                     disabled={showAnswer}
                     animate={showAnswer && (isRight || isPicked) ? { scale: [1, 1.02, 1] } : {}}
                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className={`w-full text-left px-4 py-3 rounded-lg border text-[12.5px] font-medium flex items-center gap-2.5 ${cls}`}
+                    className={`group w-full text-left px-4 py-3.5 rounded-lg border text-[12.5px] font-medium flex items-start gap-3 transition-all ${cls}`}
                   >
-                    <span className="font-mono text-white/35 shrink-0">{String.fromCharCode(65 + idx)}.</span>
-                    <span className="flex-1">{opt}</span>
+                    <span
+                      className="font-mono font-bold text-[12px] shrink-0 mt-px"
+                      style={letterColor ? { color: letterColor } : undefined}
+                    >
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <span className="flex-1 leading-relaxed">{opt}</span>
                     {icon}
                   </motion.button>
                 );
