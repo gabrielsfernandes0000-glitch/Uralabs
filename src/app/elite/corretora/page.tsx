@@ -1214,20 +1214,13 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
         </div>
       </div>
 
-      {/* Calendar heatmap — rodapé */}
+      {/* Calendar heatmap — rodapé. Grid + sidebar de stats embutidos
+          no componente; legenda também foi pra dentro junto do hover. */}
       <div className="animate-in-up delay-4 rounded-xl surface-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-[12px] font-semibold text-white/80">Calendário PnL</h2>
-            <p className="text-[10.5px] text-white/30 mt-0.5">Últimos 3 meses · hover pra detalhes</p>
-          </div>
-          <div className="flex items-center gap-3 text-[10px] text-white/30">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400/70" /> ganho
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400/70" /> perda
-            </span>
+            <p className="text-[10.5px] text-white/30 mt-0.5">Últimos 6 meses · cor = intensidade do PnL diário</p>
           </div>
         </div>
         <PnLHeatmap data={dailyPnL} />
