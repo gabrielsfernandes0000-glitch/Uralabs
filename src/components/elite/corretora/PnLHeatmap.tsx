@@ -18,14 +18,15 @@ function fmtDate(iso: string) {
 /** Calendar heatmap estilo GitHub, PnL diário. 6 meses rolling + sidebar de stats. */
 export function PnLHeatmap({ data }: { data: DayPnL[] }) {
   const [hover, setHover] = useState<DayPnL | null>(null);
-  const cellSize = 16;
+  const cellSize = 20;
   const gap = 4;
   const days = 180;
 
-  const { weeks, maxAbs, monthLabels, stats } = useMemo(() => {
+  const { weeks, maxAbs, monthLabels, stats, todayISO } = useMemo(() => {
     // Normaliza pra `days` terminando hoje
     const now = new Date();
     now.setHours(now.getHours() - 3);
+    const today = now.toISOString().slice(0, 10);
     const byDate = new Map(data.map((d) => [d.date, d.pnl]));
 
     const filled: DayPnL[] = [];
@@ -94,6 +95,7 @@ export function PnLHeatmap({ data }: { data: DayPnL[] }) {
       weeks: cols,
       maxAbs: mx,
       monthLabels: labels,
+      todayISO: today,
       stats: {
         totalPnL,
         tradedDays: traded.length,
@@ -148,20 +150,32 @@ export function PnLHeatmap({ data }: { data: DayPnL[] }) {
           <div className="flex" style={{ gap }}>
             {weeks.map((col, ci) => (
               <div key={ci} className="flex flex-col" style={{ gap }}>
-                {col.map((day, di) => (
-                  <div
-                    key={di}
-                    onMouseEnter={() => day && setHover(day)}
-                    onMouseLeave={() => setHover(null)}
-                    className="rounded-[3px] transition-all"
-                    style={{
-                      width: cellSize,
-                      height: cellSize,
-                      background: day ? colorFor(day.pnl) : "transparent",
-                      cursor: day ? "pointer" : "default",
-                    }}
-                  />
-                ))}
+                {col.map((day, di) => {
+                  // di === 0 (Dom) e di === 6 (Sáb) — mercado fechado, sem-PnL
+                  // ganha bg ainda mais discreto pra trader entender que
+                  // "vazio" lá é normal (não falha de operação).
+                  const isWeekend = di === 0 || di === 6;
+                  const isToday = day?.date === todayISO;
+                  const bg = day
+                    ? day.pnl === 0 && isWeekend
+                      ? "rgba(255,255,255,0.015)"
+                      : colorFor(day.pnl)
+                    : "transparent";
+                  return (
+                    <div
+                      key={di}
+                      onMouseEnter={() => day && setHover(day)}
+                      onMouseLeave={() => setHover(null)}
+                      className={`rounded-[3px] transition-all ${isToday ? "ring-1 ring-white/55" : ""}`}
+                      style={{
+                        width: cellSize,
+                        height: cellSize,
+                        background: bg,
+                        cursor: day ? "pointer" : "default",
+                      }}
+                    />
+                  );
+                })}
               </div>
             ))}
           </div>
