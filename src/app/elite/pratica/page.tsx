@@ -108,30 +108,46 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
   const done14 = days.filter((d) => d.done).length;
 
   return (
-    <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-5">
-      <div className="relative z-10 space-y-3.5">
-        <div className="flex items-center gap-3">
+    <div className="relative overflow-hidden rounded-xl bg-white/[0.02] p-5 lg:p-6">
+      {/* Header — contador + próximo marco em row (não empilhado) */}
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div className="flex items-center gap-3 min-w-0">
           <Flame className={`w-8 h-8 shrink-0 ${streak > 0 ? "text-brand-500" : "text-white/25"}`} strokeWidth={1.5} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-2">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
               <p className={`text-[26px] font-bold font-mono leading-none ${streak > 0 ? "text-amber-300" : "text-white/80"}`}>{streak}</p>
               <p className="text-[11px] text-white/45 font-medium">{streak === 1 ? "dia seguido" : "dias seguidos"}</p>
             </div>
-            <p className="text-[10.5px] text-white/40 mt-0.5 leading-snug">{milestone.msg}</p>
+            <p className="text-[10.5px] text-white/40 mt-1 leading-snug">{milestone.msg}</p>
           </div>
         </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[9.5px] font-bold text-white/30">Últimos 14 dias</p>
-            <p className="text-[10px] font-mono text-white/40">{done14}/14</p>
+        {milestone.next && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Trophy className="w-3 h-3 text-white/30" strokeWidth={1.8} />
+            <div className="text-right">
+              <p className="text-[9.5px] font-bold text-white/30 uppercase tracking-wider">Próximo marco</p>
+              <p className="text-[10.5px] font-bold font-mono text-white/70 mt-0.5">
+                {milestone.next - streak}d · {milestone.next} seguidos
+              </p>
+            </div>
           </div>
-          <div className="grid gap-[4px]" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
+        )}
+      </div>
+
+      {/* Grid 2 cols em desktop — 14 dias | temas cobertos
+          Em mobile empilha; em desktop os cells ficam maiores/respirados. */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10.5px] font-bold text-white/45 uppercase tracking-wider">Últimos 14 dias</p>
+            <p className="text-[10.5px] font-mono text-white/50">{done14}/14</p>
+          </div>
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
             {days.map((d) => (
               <div
                 key={d.key}
                 title={`${d.key}${d.done ? " · ✓ concluído" : d.isToday ? " · hoje" : ""}`}
-                className={`aspect-square rounded-[4px] flex items-center justify-center text-[8px] font-mono font-bold border ${
+                className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-mono font-bold border ${
                   d.done
                     ? "border-white/30 bg-white/[0.08] text-white"
                     : d.isToday
@@ -139,38 +155,25 @@ function StreakPanel({ streakVersion }: { streakVersion: number }) {
                     : "border-white/[0.05] text-white/20"
                 }`}
               >
-                {d.done ? <Check className="w-2.5 h-2.5" strokeWidth={2.5} /> : d.label}
+                {d.done ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : d.label}
               </div>
             ))}
           </div>
         </div>
 
-        {milestone.next && (
-          <div className="pt-2.5 border-t border-white/[0.05] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-3 h-3 text-white/30" strokeWidth={1.8} />
-              <p className="text-[10.5px] text-white/45">Próximo marco</p>
-            </div>
-            <p className="text-[10.5px] font-bold font-mono text-white/70">
-              {milestone.next - streak}d · {milestone.next} seguidos
-            </p>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10.5px] font-bold text-white/45 uppercase tracking-wider">Temas cobertos</p>
+            <p className="text-[10.5px] font-mono text-white/50">{themesCovered.size}/{TREINO_CATEGORIES.length}</p>
           </div>
-        )}
-
-        {/* Temas cobertos — linha horizontal compacta */}
-        <div className="pt-2.5 border-t border-white/[0.05]">
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[9.5px] font-bold text-white/30">Temas cobertos</p>
-            <p className="text-[10px] font-mono text-white/40">{themesCovered.size}/{TREINO_CATEGORIES.length}</p>
-          </div>
-          <div className="grid gap-[4px]" style={{ gridTemplateColumns: `repeat(${TREINO_CATEGORIES.length}, minmax(0, 1fr))` }}>
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${TREINO_CATEGORIES.length}, minmax(0, 1fr))` }}>
             {TREINO_CATEGORIES.map((cat) => {
               const covered = themesCovered.has(cat.key);
               return (
                 <div
                   key={cat.key}
                   title={`${cat.key}${covered ? " · ✓ coberto" : ""}`}
-                  className={`aspect-square rounded-[3px] border ${
+                  className={`aspect-square rounded-md border ${
                     covered
                       ? "border-white/30 bg-white/[0.12]"
                       : "border-white/[0.05] bg-transparent"
@@ -546,7 +549,7 @@ export default function PraticaPage() {
       </div>
 
       {/* ───── Grid principal: missão+modos (esquerda) · streak (direita) ───── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
+      <div className="space-y-6">
         {/* Coluna esquerda — hierarquia: contexto > a\u00e7\u00e3o do dia > alternativas > descoberta */}
         <div className="space-y-6">
           {/* Seção HOJE — foco do dia */}
@@ -612,11 +615,13 @@ export default function PraticaPage() {
           <div className="animate-in-up delay-3">
             <UncoveredThemesPanel streakVersion={streakVersion} />
           </div>
-        </div>
 
-        {/* Coluna direita — streak panel */}
-        <div className="animate-in-up delay-2">
-          <StreakPanel streakVersion={streakVersion} />
+          {/* Streak panel — full width no fim. Cells (14 dias + temas
+              cobertos) ganham respiro em qualquer tela; era 320px de
+              lateral, os quadradinhos viravam pixels. */}
+          <div className="animate-in-up delay-3">
+            <StreakPanel streakVersion={streakVersion} />
+          </div>
         </div>
       </div>
     </div>
