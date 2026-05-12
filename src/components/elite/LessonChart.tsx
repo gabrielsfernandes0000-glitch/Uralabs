@@ -1084,9 +1084,14 @@ export function LessonChart({ scenario }: { scenario: ChartScenario }) {
       const { createChart, CandlestickSeries, ColorType } = await import("lightweight-charts");
       if (disposed || !containerRef.current) return;
 
+      // Altura responsiva — mobile pequeno (<640px) ganha 240px pra não
+      // comer tela toda; desktop fica em 340px ou o que o cenário pediu.
+      const initialW = containerRef.current.clientWidth;
+      const chartHeight = (w: number) => w < 640 ? 240 : (data.height ?? 340);
+
       const chart = createChart(containerRef.current, {
-        width: containerRef.current.clientWidth,
-        height: data.height ?? 340,
+        width: initialW,
+        height: chartHeight(initialW),
         layout: {
           background: { type: ColorType.Solid, color: "#0e0e10" },
           textColor: "rgba(255,255,255,0.40)",
@@ -1151,7 +1156,7 @@ export function LessonChart({ scenario }: { scenario: ChartScenario }) {
       const recompute = () => {
         if (!containerRef.current || !chartRef.current || !seriesRef.current || disposed) return;
         const w = containerRef.current.clientWidth;
-        const h = data.height ?? 340;
+        const h = chartHeight(w);
         const ts = chart.timeScale();
 
         const toNum = (v: unknown): number => {
@@ -1206,7 +1211,10 @@ export function LessonChart({ scenario }: { scenario: ChartScenario }) {
 
       const ro = new ResizeObserver(() => {
         if (!containerRef.current || disposed) return;
-        chart.applyOptions({ width: containerRef.current.clientWidth });
+        const w = containerRef.current.clientWidth;
+        // Aplica altura responsiva também — usuário rotaciona device
+        // ou redimensiona window e o chart se adapta sem mount novo.
+        chart.applyOptions({ width: w, height: chartHeight(w) });
         setTimeout(recompute, 30);
       });
       ro.observe(containerRef.current);
@@ -1229,7 +1237,7 @@ export function LessonChart({ scenario }: { scenario: ChartScenario }) {
   const stepByNum = new Map((data.steps ?? []).map((s) => [s.num, s]));
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.01)] min-h-[460px] flex flex-col">
+    <div className="rounded-xl border border-white/[0.06] bg-[#0e0e10] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.01)] min-h-[300px] sm:min-h-[460px] flex flex-col">
       {/* Header */}
       <div className="px-5 py-3 border-b border-white/[0.04] flex items-center gap-2.5 bg-[#111114]">
         <div className="w-5 h-5 rounded-[5px] flex items-center justify-center" style={{ backgroundColor: C.brand + "18" }}>

@@ -129,7 +129,7 @@ function Confetti({ active, accent }: { active: boolean; accent: string }) {
 function ScenarioChart({ type }: { type: string }) {
   const charts: Record<string, React.ReactNode> = {
     "amd-sweep": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {/* Grid */}
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* Phase labels */}
@@ -159,7 +159,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "ob-bounce": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* Price drop */}
         <polyline points="30,40 60,45 90,55 120,65 150,80 170,90 185,100"
@@ -182,7 +182,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "fvg-fill": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* 3 candles creating FVG */}
         {/* Candle 1 — small */}
@@ -207,7 +207,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "premium-discount": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {/* Premium zone */}
         <rect x="30" y="10" width="540" height="85" fill="rgba(239,68,68,0.04)" stroke="rgba(239,68,68,0.12)" strokeWidth="1" rx="4" />
         <text x="50" y="35" fill="rgba(239,68,68,0.6)" fontSize="12" fontWeight="bold" fontFamily="monospace">PREMIUM</text>
@@ -226,7 +226,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "liquidity-sweep": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* Multiple equal lows — liquidity building */}
         <polyline points="40,100 80,95 110,105 140,80 170,90 200,85 230,100 250,95 270,88"
@@ -249,7 +249,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "session-asia": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {/* Session boxes */}
         <rect x="30" y="140" width="160" height="40" fill="rgba(99,102,241,0.08)" stroke="rgba(99,102,241,0.25)" strokeWidth="1.5" rx="6" />
         <text x="110" y="165" textAnchor="middle" fill="rgba(99,102,241,0.7)" fontSize="12" fontWeight="bold" fontFamily="monospace">ASIA</text>
@@ -272,7 +272,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "judas-swing": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* Daily bias arrow — bullish */}
         <rect x="30" y="20" width="80" height="35" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.20)" strokeWidth="1" rx="4" />
@@ -294,7 +294,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "smt-diverge": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* NQ line — makes higher high */}
         <polyline points="40,80 100,75 160,90 220,60 280,55 340,70 400,45 460,40 520,50 580,35"
@@ -317,7 +317,7 @@ function ScenarioChart({ type }: { type: string }) {
       </svg>
     ),
     "entry-setup": (
-      <svg viewBox="0 0 600 200" fill="none" className="w-full">
+      <svg viewBox="0 0 600 200" fill="none" className="w-full min-w-[540px]">
         {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />)}
         {/* Price action */}
         <polyline points="30,150 60,145 90,140 120,135 150,120 170,130 185,140 195,145 200,150"
@@ -351,7 +351,7 @@ function ScenarioChart({ type }: { type: string }) {
   if (!charts[type]) return null;
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0c] p-4 mb-5 overflow-hidden">
+    <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0c] p-4 mb-5 overflow-x-auto">
       <p className="text-[10px] text-white/30 mb-3 font-mono">Cenário</p>
       {charts[type]}
     </div>

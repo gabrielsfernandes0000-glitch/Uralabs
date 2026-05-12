@@ -471,7 +471,7 @@ export default function GraficosPage() {
       ref={rootRef}
       className="-mx-5 -my-6 lg:-mx-10 lg:-my-8 h-[100vh] flex flex-col bg-[#0a0a0c] overflow-hidden"
     >
-      <div className="shrink-0 h-[44px] flex items-center gap-2 px-3 border-b border-white/[0.05] bg-[#0b0b0d]">
+      <div className="shrink-0 h-[44px] flex items-center gap-2 px-3 border-b border-white/[0.05] bg-[#0b0b0d] overflow-x-auto">
         <button
           onClick={() => setPickerOpen(true)}
           title="Trocar símbolo (clique ou busque)"

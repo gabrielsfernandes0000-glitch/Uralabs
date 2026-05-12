@@ -644,7 +644,7 @@ function DashboardTabs({ tab, setTab, journalCount }: {
     { id: "journal", label: "Journal", sub: `${journalCount} trades` },
   ];
   return (
-    <div className="border-b border-white/[0.05] flex items-center gap-1 -mx-1">
+    <div className="border-b border-white/[0.05] flex items-center gap-1 -mx-1 overflow-x-auto">
       {tabs.map((t) => {
         const active = tab === t.id;
         return (
