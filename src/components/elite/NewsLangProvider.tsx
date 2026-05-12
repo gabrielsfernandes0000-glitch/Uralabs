@@ -31,7 +31,11 @@ const LS_KEY = "ura.news.lang";
 const SS_KEY = "ura.news.translations";
 
 export function NewsLangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("en");
+  // Default PT — projeto é BR. Headlines em EN ficam estranhas pra trader
+  // brasileiro acompanhando macro/crypto. Quem prefere EN troca no toggle
+  // (preferência persiste em localStorage). Cache em sessionStorage zera
+  // o flicker EN→PT em navegações dentro da mesma sessão.
+  const [lang, setLang] = useState<Lang>("pt");
   const [translations, setTranslations] = useState<Record<string, Translation>>({});
   const [loading, setLoading] = useState(false);
 
