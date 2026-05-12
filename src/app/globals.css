@@ -152,15 +152,13 @@ body {
 .animate-in-scale { animation: animate-in-scale 0.3s ease-out backwards; }
 .animate-in-fade { animation: animate-in-fade 0.3s ease-out backwards; }
 
-/* Stagger delays — cascata curta. Delay 4+ fica colado em delay-3 pra evitar onda longa. */
-.delay-1 { animation-delay: 0.04s; }
-.delay-2 { animation-delay: 0.08s; }
-.delay-3 { animation-delay: 0.12s; }
-.delay-4 { animation-delay: 0.12s; }
-.delay-5 { animation-delay: 0.12s; }
-.delay-6 { animation-delay: 0.12s; }
-.delay-7 { animation-delay: 0.12s; }
-.delay-8 { animation-delay: 0.12s; }
+/* Stagger delays zerados — URA reportou sensação de "carrega umas coisas
+   antes das outras". O stagger 40-120ms era sutil mas perceptível,
+   especialmente quando combinado com elementos lentos (TickerTape externo).
+   Agora todos os elementos da página entram em sincronia. Classes
+   preservadas pra não exigir refactor em ~30+ páginas que as usam. */
+.delay-1, .delay-2, .delay-3, .delay-4,
+.delay-5, .delay-6, .delay-7, .delay-8 { animation-delay: 0s; }
 
 /* Respect user's prefers-reduced-motion — disable entrance animations */
 @media (prefers-reduced-motion: reduce) {
