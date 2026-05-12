@@ -28,15 +28,25 @@ export function CryptoPulseBar({
   // Se não tem nada utilizável, não renderiza.
   if (!fearGreedCrypto && !fearGreedEquities && !globalStats && !altSeason) return null;
 
-  // Renderizado dentro do container "Pulse" da página /noticias — sem
-  // background/border próprios. Mantém divisores verticais p/ ritmo de tape.
+  // Mobile: header como banda full-width no topo + grid 2-col com as cells
+  //   (até 4 cells = 2 linhas). Tudo visível, sem scroll horizontal.
+  // Desktop (sm+): tape horizontal original, scroll opcional se houver
+  //   mais cells do que cabe.
   return (
-    <div className="flex items-stretch divide-x divide-white/[0.04] overflow-x-auto">
-      <HeaderCell />
-      {fearGreedEquities && <FGCell label="Ações S&P" reading={fearGreedEquities} />}
-      {fearGreedCrypto && <FGCell label="Crypto" reading={fearGreedCrypto} />}
-      {globalStats && <DominanceCell btc={globalStats.btcDominance} />}
-      {altSeason && <AltSeasonCell data={altSeason} />}
+    <div>
+      {/* Header mobile-only — banda full-width */}
+      <div className="sm:hidden px-4 py-2 flex items-center gap-2 bg-white/[0.015] border-b border-white/[0.04]">
+        <Gauge className="w-3 h-3 text-white/45" strokeWidth={2} />
+        <span className="text-[10px] font-bold tracking-wider uppercase text-white/55">Regime</span>
+      </div>
+      {/* Grid 2-col em mobile, flex tape em sm+ */}
+      <div className="grid grid-cols-2 sm:flex sm:items-stretch divide-x divide-y sm:divide-y-0 divide-white/[0.04] sm:overflow-x-auto">
+        <div className="hidden sm:flex"><HeaderCell /></div>
+        {fearGreedEquities && <FGCell label="Ações S&P" reading={fearGreedEquities} />}
+        {fearGreedCrypto && <FGCell label="Crypto" reading={fearGreedCrypto} />}
+        {globalStats && <DominanceCell btc={globalStats.btcDominance} />}
+        {altSeason && <AltSeasonCell data={altSeason} />}
+      </div>
     </div>
   );
 }
@@ -53,11 +63,11 @@ function HeaderCell() {
 function FGCell({ label, reading }: { label: string; reading: FearGreedReading }) {
   const color = fgAccent(reading.value);
   return (
-    <div className="shrink-0 px-4 py-2 min-w-[140px] flex items-center gap-3">
+    <div className="px-4 py-2 sm:shrink-0 sm:min-w-[140px] flex items-center gap-3">
       <FearGreedGauge value={reading.value} color={color} size={68} />
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 min-w-0">
         <p className="text-[11px] text-white/40 leading-none">{label}</p>
-        <p className="text-[11px] leading-none" style={{ color }}>{classifyFG(reading.value)}</p>
+        <p className="text-[11px] leading-none truncate" style={{ color }}>{classifyFG(reading.value)}</p>
       </div>
     </div>
   );
@@ -66,7 +76,7 @@ function FGCell({ label, reading }: { label: string; reading: FearGreedReading }
 function DominanceCell({ btc }: { btc: number }) {
   const regime = btc > 55 ? "BTC forte" : btc < 45 ? "Alts fortes" : "Equilibrado";
   return (
-    <div className="shrink-0 px-4 py-2.5 min-w-[160px]">
+    <div className="px-4 py-2.5 sm:shrink-0 sm:min-w-[160px]">
       <p className="text-[11px] text-white/40 leading-none">BTC Dominance</p>
       <div className="flex items-baseline gap-2 mt-1.5">
         <p className="text-[18px] font-semibold font-mono tabular-nums text-white leading-none">
@@ -80,7 +90,7 @@ function DominanceCell({ btc }: { btc: number }) {
 
 function AltSeasonCell({ data }: { data: AltSeasonIndex }) {
   return (
-    <div className="shrink-0 px-4 py-3 min-w-[180px]">
+    <div className="px-4 py-3 sm:shrink-0 sm:min-w-[180px]">
       <p className="text-[11px] text-white/40 leading-none">Altcoin Season</p>
       <div className="flex items-center gap-2.5 mt-1.5">
         <p className="text-[18px] font-semibold font-mono tabular-nums text-white leading-none">
