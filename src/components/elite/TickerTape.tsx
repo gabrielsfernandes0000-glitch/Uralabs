@@ -38,6 +38,21 @@ export function TickerTape({ symbols = DEFAULT_SYMBOLS }: { symbols?: TickerSymb
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [loaded, setLoaded] = useState(false);
 
+  // Em mobile <640px, limita a 5 símbolos. O widget TV embed tem altura
+  // fixa (46px) e mostra logo da TV no canto direito — quando passam 6+
+  // tickers em viewport estreito, o logo sobrepõe o último ticker
+  // (URA reportou bug visual). Desktop continua com a lista cheia.
+  const [effectiveSymbols, setEffectiveSymbols] = useState(symbols);
+  useEffect(() => {
+    const update = () => {
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+      setEffectiveSymbols(isMobile && symbols.length > 5 ? symbols.slice(0, 5) : symbols);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [symbols]);
+
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -62,7 +77,7 @@ export function TickerTape({ symbols = DEFAULT_SYMBOLS }: { symbols?: TickerSymb
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
     script.async = true;
     script.innerHTML = JSON.stringify({
-      symbols,
+      symbols: effectiveSymbols,
       showSymbolLogo: true,
       isTransparent: true,
       displayMode: "adaptive",
@@ -80,7 +95,7 @@ export function TickerTape({ symbols = DEFAULT_SYMBOLS }: { symbols?: TickerSymb
       clearTimeout(fallback);
       if (host) host.innerHTML = "";
     };
-  }, [symbols]);
+  }, [effectiveSymbols]);
 
   return (
     <div

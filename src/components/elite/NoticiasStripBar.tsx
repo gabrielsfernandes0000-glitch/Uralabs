@@ -110,9 +110,9 @@ export function NoticiasStripBar() {
 
   return (
     <>
-      <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e] px-3 py-2 flex items-center gap-2 flex-wrap lg:flex-nowrap">
+      <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e] px-3 py-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:flex-wrap lg:flex-nowrap">
         {/* Toggles + Mais (esquerda, agrupados) */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
           <button
             type="button"
             onClick={toggleFilter}
