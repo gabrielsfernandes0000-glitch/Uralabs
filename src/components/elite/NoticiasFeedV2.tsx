@@ -12,6 +12,7 @@ import { useReadState } from "@/hooks/useReadState";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { clusterNews, scoreNews } from "@/lib/news-urgency";
 import { applyT, useNewsLang } from "./NewsLangProvider";
+import { NOTICIAS_FILTER_KEY, NOTICIAS_FILTER_EVENT } from "./NoticiasStripBar";
 
 const INITIAL_ROWS = 12;
 
@@ -30,10 +31,29 @@ export function NoticiasFeedV2({
 }) {
   const [openItem, setOpenItem] = useState<MarketNews | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [watchlistFilterActive, setWatchlistFilterActive] = useState(false);
   const prefetched = useRef<Set<string>>(new Set());
   const { isRead, markRead } = useReadState();
   const { items: watchlist } = useWatchlist();
   const { lang, translations, ensureTranslated } = useNewsLang();
+
+  // Sincroniza com o toggle "Só watchlist" do StripBar. Quando ativo, o CSS
+  // global esconde cards fora da watchlist — se mantemos o slice de 12,
+  // o user vê quase nada porque a maioria dos 12 fica display:none. Solução:
+  // quando filtro ativo, render TODOS os clusters (sem slice) e CSS cuida
+  // de esconder os não-matched. Sem botão "Ver mais" enganoso.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      setWatchlistFilterActive(localStorage.getItem(NOTICIAS_FILTER_KEY) === "1");
+    } catch {}
+    const onChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ enabled: boolean }>).detail;
+      if (detail) setWatchlistFilterActive(detail.enabled);
+    };
+    window.addEventListener(NOTICIAS_FILTER_EVENT, onChange);
+    return () => window.removeEventListener(NOTICIAS_FILTER_EVENT, onChange);
+  }, []);
 
   // Cluster similar headlines — mesma notícia em várias fontes vira 1 item + badge "+3 fontes"
   const clusters = useMemo(() => {
@@ -43,8 +63,10 @@ export function NoticiasFeedV2({
 
   const displayed = clusters;
 
-  const visible = expanded ? displayed : displayed.slice(0, INITIAL_ROWS);
-  const overflowCount = Math.max(0, displayed.length - INITIAL_ROWS);
+  // Filtro de watchlist via CSS escapa do React: pular slice quando ativo.
+  const skipSlice = watchlistFilterActive || expanded;
+  const visible = skipSlice ? displayed : displayed.slice(0, INITIAL_ROWS);
+  const overflowCount = watchlistFilterActive ? 0 : Math.max(0, displayed.length - INITIAL_ROWS);
 
   // Quando liga PT, pede tradução do feed INTEIRO (não só visível). Assim "ver
   // mais" não precisa esperar nem retriggerar fetch — já chega traduzido.

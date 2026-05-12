@@ -7,7 +7,9 @@ import { useBookmarks } from "@/hooks/useBookmarks";
 import { BeginnerModeToggle } from "./BeginnerModeToggle";
 import { NoticiasToolsDrawer } from "./NoticiasToolsDrawer";
 
-const FILTER_KEY = "ura:noticias:watchlist-only:v1";
+export const NOTICIAS_FILTER_KEY = "ura:noticias:watchlist-only:v1";
+export const NOTICIAS_FILTER_EVENT = "ura:noticias:watchlist-filter:change";
+const FILTER_KEY = NOTICIAS_FILTER_KEY;
 
 // Match permissivo: BTC na watchlist libera TODA a categoria crypto, e por aí
 // vai. Antes só passava news com o ticker exato no headline — 47 cripto viravam
@@ -44,6 +46,11 @@ export function NoticiasStripBar() {
     const next = !onlyWatchlist;
     setOnlyWatchlist(next);
     try { localStorage.setItem(FILTER_KEY, next ? "1" : "0"); } catch {}
+    // Broadcast pra FeedV2 (que precisa pular o slice de 12 inicial quando
+    // filtro tá ativo — senão "Ver mais 18" vira "ver mais 3 visíveis").
+    try {
+      window.dispatchEvent(new CustomEvent(NOTICIAS_FILTER_EVENT, { detail: { enabled: next } }));
+    } catch {}
   };
 
   // Injeta CSS pra esconder cards fora da watchlist quando ativo
