@@ -17,7 +17,6 @@ import {
 } from "@/lib/treino-scenarios";
 import { GUIDED_TREINOS } from "@/lib/pratica-treinos";
 import { TodayEventsBanner } from "@/components/elite/TodayEventsBanner";
-import { EventBonusTreinoCard } from "@/components/elite/EventBonusTreinoCard";
 
 /* ────────────────────────────────────────────
    Prática — hub enxuto: Hero · Missão do dia · Streak · 3 atalhos.
@@ -558,10 +557,7 @@ export default function PraticaPage() {
               <h2 className="text-[13px] font-semibold text-white/90">Hoje</h2>
               <span className="text-[11px] text-white/40">· o que fazer agora</span>
             </div>
-            <div className="animate-in-up delay-0">
-              <EventBonusTreinoCard />
-            </div>
-            <div className="animate-in-up delay-1 relative">
+            <div className="animate-in-up delay-0 relative">
               <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl bg-brand-500/70 z-10" />
               <DailyTreinoCard onComplete={() => setStreakVersion((v) => v + 1)} />
             </div>
