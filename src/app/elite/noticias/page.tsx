@@ -1,4 +1,4 @@
-import { TrendingUp } from "lucide-react";
+import { Suspense } from "react";
 import { getSupabaseAnon } from "@/lib/supabase";
 import type { EconomicEvent, MarketNews, NewsCategory } from "@/lib/market-news";
 import { NoticiasFeedV2 } from "@/components/elite/NoticiasFeedV2";
@@ -7,18 +7,16 @@ import { NewsLangProvider } from "@/components/elite/NewsLangProvider";
 import { NewsLangToggle } from "@/components/elite/NewsLangToggle";
 import { NowCard } from "@/components/elite/NowCard";
 import { EventsTimeline } from "@/components/elite/EventsTimeline";
-import { UpcomingAgenda } from "@/components/elite/UpcomingAgenda";
 import { NoticiasStripBar } from "@/components/elite/NoticiasStripBar";
 import { KillzoneBanner, KillzoneWarmup } from "@/components/elite/KillzoneBanner";
-import { CryptoPulseBar } from "@/components/elite/CryptoPulseBar";
-import { MultiAssetTape } from "@/components/elite/MultiAssetTape";
 import { PushToggle } from "@/components/elite/PushToggle";
 import { TimestampAgo } from "@/components/elite/LiveBadge";
-import { fetchFearGreedSnapshot } from "@/lib/fear-greed";
-import { fetchGlobalStats, fetchAltSeasonIndex } from "@/lib/crypto-pulse";
-import { fetchUpcomingEarnings } from "@/lib/earnings";
-import { fetchNextFedMeetingProb } from "@/lib/fed-watch";
-import { fetchPriceSnapshots } from "@/lib/price-snapshot";
+import { NoticiasRealtimeListener } from "@/components/elite/NoticiasRealtimeListener";
+import {
+  PulseStripAsync, PulseStripSkeleton,
+  FedWatchAsync,   FedWatchSkeleton,
+  UpcomingAgendaAsync, UpcomingAgendaSkeleton,
+} from "./sections";
 import {
   parseNewsFilters,
   parseCalendarFilters,
@@ -125,16 +123,9 @@ export default async function NoticiasPage({
   const sp = await searchParams;
   const newsFilters = parseNewsFilters(sp);
   const calFilters = parseCalendarFilters(sp);
-  const [dataRes, fgSnapshot, globalStats, altSeason, earnings, fedProb, priceSnaps] = await Promise.all([
-    loadData(newsFilters, calFilters),
-    fetchFearGreedSnapshot().catch(() => ({ crypto: null, equities: null })),
-    fetchGlobalStats().catch(() => null),
-    fetchAltSeasonIndex().catch(() => null),
-    fetchUpcomingEarnings(7).catch(() => []),
-    fetchNextFedMeetingProb().catch(() => null),
-    fetchPriceSnapshots(["NQ", "BTC", "ETH", "DXY", "GOLD"]).catch(() => ({} as Record<string, null>)),
-  ]);
-  const { events, news, counts: catCounts } = dataRes;
+  // Caminho crítico: só Supabase (events + news). APIs externas (FG, FedWatch,
+  // earnings, prices) viraram server components em <Suspense> e streamam.
+  const { events, news, counts: catCounts } = await loadData(newsFilters, calFilters);
   const filtersActive = hasActiveNewsFilters(newsFilters);
 
   const totalEvents = events.length;
@@ -146,6 +137,7 @@ export default async function NoticiasPage({
 
   return (
     <NewsLangProvider>
+    <NoticiasRealtimeListener />
     <div className="space-y-4 md:space-y-5">
       {/* ── Header — título primário + meta direita.
            Substitui o strip de data/count/sync que parecia chrome inflado.
@@ -178,18 +170,12 @@ export default async function NoticiasPage({
         <KillzoneWarmup />
       </div>
 
-      {/* ── Pulse: preços multi-ativo (linha 1) + regime/sentiment (linha 2)
-           num único container. Corta 1 strip do topo e cria seção visual coesa. ── */}
-      <div className="animate-in-up rounded-xl border border-white/[0.05] bg-[#0a0a0c] overflow-hidden">
-        <MultiAssetTape snapshots={priceSnaps} />
-        <div className="border-t border-white/[0.04]">
-          <CryptoPulseBar
-            fearGreedCrypto={fgSnapshot.crypto}
-            fearGreedEquities={fgSnapshot.equities}
-            globalStats={globalStats}
-            altSeason={altSeason}
-          />
-        </div>
+      {/* ── Pulse strip: preços + regime. APIs externas — streamam via Suspense
+           pra não bloquear o feed crítico. ── */}
+      <div className="animate-in-up">
+        <Suspense fallback={<PulseStripSkeleton />}>
+          <PulseStripAsync />
+        </Suspense>
       </div>
 
       {/* ── Filtros + watchlist (compacto, separado pra não brigar com o pulse) ── */}
@@ -221,13 +207,17 @@ export default async function NoticiasPage({
       </div>
 
       {/* ── Bloco macro de aprofundamento (FedWatch + agenda completa).
-           Quem quer detalhe macro depois de ver as manchetes desce até aqui. ── */}
+           Streamam via Suspense — não bloqueiam o feed crítico. ── */}
       <div className="space-y-4">
         <div className="animate-in-up">
-          <FedProbCard prob={fedProb} />
+          <Suspense fallback={<FedWatchSkeleton />}>
+            <FedWatchAsync />
+          </Suspense>
         </div>
         <div className="animate-in-up">
-          <UpcomingAgenda events={events} earnings={earnings} today={today} />
+          <Suspense fallback={<UpcomingAgendaSkeleton />}>
+            <UpcomingAgendaAsync events={events} today={today} />
+          </Suspense>
         </div>
       </div>
     </div>
@@ -235,44 +225,5 @@ export default async function NoticiasPage({
   );
 }
 
-function FedProbCard({ prob }: { prob: Awaited<ReturnType<typeof fetchNextFedMeetingProb>> }) {
-  if (!prob) return null; // escondido sem dados — evita ruído
-
-  const meeting = new Date(`${prob.meetingDate}T00:00:00`);
-  const meetingLabel = meeting.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-  const color = prob.dominant.direction === "cut" ? "#10B981" : prob.dominant.direction === "hike" ? "#EF4444" : "rgba(255,255,255,0.7)";
-
-  const rows: Array<[string, number]> = [
-    ["Corte 50bps", prob.cuts50],
-    ["Corte 25bps", prob.cuts25],
-    ["Manter", prob.hold],
-    ["Alta 25bps", prob.hikes25],
-    ["Alta 50bps", prob.hikes50],
-  ];
-
-  return (
-    <div className="rounded-xl border border-white/[0.05] bg-[#0c0c0e] p-5">
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-3.5 h-3.5 text-white/55" strokeWidth={1.8} />
-          <h3 className="text-[12px] font-bold text-white/75">FedWatch</h3>
-          <span className="text-[10px] font-mono tabular-nums text-white/35">{meetingLabel}</span>
-        </div>
-        <span className="text-[14px] font-bold" style={{ color }}>
-          {prob.dominant.label} <span className="text-white/40 text-[11px] font-mono">{(prob.dominant.pct * 100).toFixed(0)}%</span>
-        </span>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-        {rows.map(([label, pct]) => (
-          <div key={label}>
-            <p className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-white/35">{label}</p>
-            <p className="text-[14px] font-bold font-mono tabular-nums text-white/85 mt-1">{(pct * 100).toFixed(0)}%</p>
-            <div className="mt-1.5 h-[3px] rounded-full bg-white/[0.05] overflow-hidden">
-              <div className="h-full rounded-full bg-white/60" style={{ width: `${Math.min(100, pct * 100)}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// FedProbCard inline foi movido pra ./sections.tsx (FedWatchAsync) pra
+// streamar via Suspense em vez de bloquear o caminho crítico.

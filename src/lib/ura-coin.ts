@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getSupabaseAnon } from "@/lib/supabase";
 
 /**
@@ -176,26 +177,33 @@ export async function callEdgeFunction<T>(
 
 // ─── User state (edge function) ──────────────────────────────────────────
 
-/** Puxa balance, recent openings e achievements numa chamada só. */
-export async function getUserState(userId: string, recentLimit = 10): Promise<UserState> {
-  const empty: UserState = {
-    balance: { balance: 0, lifetime_earned: 0, lifetime_spent: 0 },
-    recent_openings: [],
-    achievements: [],
-    discord_activity: null,
-    streak: { days: 0, claims_today: 0 },
-    cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
-  };
-  const res = await callEdgeFunction<UserState>("ura-coin-user-state", {
-    user_id: userId,
-    recent_limit: recentLimit,
-  });
-  if (!res.ok) {
-    console.warn("[ura-coin] getUserState:", res.error);
-    return empty;
-  }
-  return res.data;
-}
+/** Puxa balance, recent openings e achievements numa chamada só.
+ *
+ * Memoizado com React `cache()` — dedup chamadas com mesmos args dentro do
+ * mesmo request. Layout (/elite) e Dashboard (/elite/page) ambos pediam
+ * `(userId, 0)` durante a mesma navegação → 1 fetch agora, não 2. API
+ * routes (1 chamada por request) não são afetadas. */
+export const getUserState = cache(
+  async (userId: string, recentLimit = 10): Promise<UserState> => {
+    const empty: UserState = {
+      balance: { balance: 0, lifetime_earned: 0, lifetime_spent: 0 },
+      recent_openings: [],
+      achievements: [],
+      discord_activity: null,
+      streak: { days: 0, claims_today: 0 },
+      cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
+    };
+    const res = await callEdgeFunction<UserState>("ura-coin-user-state", {
+      user_id: userId,
+      recent_limit: recentLimit,
+    });
+    if (!res.ok) {
+      console.warn("[ura-coin] getUserState:", res.error);
+      return empty;
+    }
+    return res.data;
+  },
+);
 
 /** Só o saldo — usado no sidebar. Compat mantido; internamente chama getUserState. */
 export async function getUserBalance(userId: string): Promise<UserCoinBalance> {
