@@ -1182,9 +1182,11 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
 
       {tab === "analise" && <>
 
-      {/* Analytics row — Setup insights em 3 colunas */}
+      {/* Analytics row — Setup insights em 3 colunas. items-stretch (default)
+          pra cards manterem altura uniforme mesmo com empty states de
+          tamanhos diferentes; cada card aplica h-full + flex internamente. */}
       {(rMultiples || eventExposure || tagStats.length > 0) && (
-        <div className="animate-in-up grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div className="animate-in-up grid grid-cols-1 lg:grid-cols-3 gap-4">
           {rMultiples && <RMultiplesCard r={rMultiples} />}
           {eventExposure && <EventExposureCard exposure={eventExposure} />}
           <TagBreakdown tags={tagStats} />
@@ -1192,8 +1194,8 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
       )}
 
       {/* Breakdowns row — Símbolo · Hora · Dia da semana em 3 colunas */}
-      <div className="animate-in-up delay-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-        <div className="rounded-xl surface-card p-5">
+      <div className="animate-in-up delay-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="rounded-xl surface-card p-5 h-full flex flex-col">
           <div className="flex items-center gap-2.5 mb-3.5">
             <TrendingUp className="w-3.5 h-3.5 text-white/45" />
             <h2 className="text-[12px] font-semibold text-white/80">Por símbolo</h2>
@@ -1201,12 +1203,12 @@ function Dashboard({ exchange, data, onRefresh, onDisconnect, refreshing, onAddM
           <SymbolBreakdown rows={symbolBreakdown} />
         </div>
 
-        <div className="rounded-xl surface-card p-5">
+        <div className="rounded-xl surface-card p-5 h-full flex flex-col">
           <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por hora (BRT)</h2>
           <HourlyBreakdown rows={hourlyBreakdown} />
         </div>
 
-        <div className="rounded-xl surface-card p-5">
+        <div className="rounded-xl surface-card p-5 h-full flex flex-col">
           <h2 className="text-[12px] font-semibold text-white/80 mb-3.5">Por dia da semana</h2>
           <DowBreakdown rows={dowBreakdown} />
         </div>

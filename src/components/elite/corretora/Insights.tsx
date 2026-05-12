@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield } from "lucide-react";
+import { Shield, Target, CalendarRange, Hash } from "lucide-react";
 
 interface Metrics {
   totalTrades: number;
@@ -150,17 +150,22 @@ export function EventExposureCard({ exposure }: { exposure: EventExposure }) {
   if (exposure.totalTrades === 0) return null;
   if (exposure.exposedClosed === 0) {
     return (
-      <div className="rounded-xl surface-card p-5">
-        <h2 className="text-[12px] font-semibold text-white/80 mb-1.5">Eventos econômicos</h2>
-        <p className="text-[11px] text-white/40">
-          Nenhum trade perto de high-impact nos últimos 7 dias. Você evitou os picos de volatilidade.
-        </p>
+      <div className="rounded-xl surface-card p-5 h-full flex flex-col">
+        <h2 className="text-[12px] font-semibold text-white/80">Eventos econômicos</h2>
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-4">
+          <div className="w-9 h-9 rounded-lg bg-white/[0.03] flex items-center justify-center">
+            <CalendarRange className="w-4 h-4 text-white/30" strokeWidth={1.8} />
+          </div>
+          <p className="text-[11px] text-white/40 leading-relaxed max-w-[260px]">
+            Nenhum trade perto de high-impact nos últimos 7 dias. Você evitou os picos de volatilidade.
+          </p>
+        </div>
       </div>
     );
   }
   const color = exposure.exposedWinRate >= 50 ? "text-green-400" : "text-red-400";
   return (
-    <div className="rounded-xl surface-card p-5">
+    <div className="rounded-xl surface-card p-5 h-full flex flex-col">
       <h2 className="text-[12px] font-semibold text-white/80 mb-3">Eventos econômicos</h2>
       <div className="space-y-2">
         <p className="text-[11.5px] text-white/60 leading-relaxed">
@@ -191,17 +196,22 @@ export function EventExposureCard({ exposure }: { exposure: EventExposure }) {
 export function TagBreakdown({ tags }: { tags: TagStat[] }) {
   if (!tags.length) {
     return (
-      <div className="rounded-xl surface-card p-5">
-        <h2 className="text-[12px] font-semibold text-white/80 mb-2">Por setup</h2>
-        <p className="text-[11px] text-white/35 leading-relaxed">
-          Clique em qualquer trade do journal pra marcar tags (FVG, BOS, OTE, etc). Depois de 10+ trades tagueados, o breakdown por setup aparece aqui.
-        </p>
+      <div className="rounded-xl surface-card p-5 h-full flex flex-col">
+        <h2 className="text-[12px] font-semibold text-white/80">Por setup</h2>
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-4">
+          <div className="w-9 h-9 rounded-lg bg-white/[0.03] flex items-center justify-center">
+            <Hash className="w-4 h-4 text-white/30" strokeWidth={1.8} />
+          </div>
+          <p className="text-[11px] text-white/40 leading-relaxed max-w-[260px]">
+            Marque tags (FVG, BOS, OTE...) nos trades do Journal. Após 10+ trades tagueados, o breakdown aparece aqui.
+          </p>
+        </div>
       </div>
     );
   }
   const maxAbs = Math.max(...tags.map((t) => Math.abs(t.pnl)));
   return (
-    <div className="rounded-xl surface-card p-5">
+    <div className="rounded-xl surface-card p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-[12px] font-semibold text-white/80">Por setup</h2>
         <p className="text-[10px] text-white/25">{tags.length} tags</p>
@@ -233,17 +243,22 @@ export function TagBreakdown({ tags }: { tags: TagStat[] }) {
 export function RMultiplesCard({ r }: { r: RMultiples }) {
   if (r.count === 0) {
     return (
-      <div className="rounded-xl surface-card p-5">
-        <h2 className="text-[12px] font-semibold text-white/80 mb-2">R-multiples</h2>
-        <p className="text-[11px] text-white/35 leading-relaxed">
-          Informe o stop loss de cada trade no detalhe pra ver seu retorno em R (risco unitário). R positivo = lucrou mais que arriscou.
-        </p>
+      <div className="rounded-xl surface-card p-5 h-full flex flex-col">
+        <h2 className="text-[12px] font-semibold text-white/80">R-multiples</h2>
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-4">
+          <div className="w-9 h-9 rounded-lg bg-white/[0.03] flex items-center justify-center">
+            <Target className="w-4 h-4 text-white/30" strokeWidth={1.8} />
+          </div>
+          <p className="text-[11px] text-white/40 leading-relaxed max-w-[260px]">
+            Informe o stop loss de cada trade no detalhe pra ver seu retorno em R (risco unitário). R positivo = lucrou mais que arriscou.
+          </p>
+        </div>
       </div>
     );
   }
   const color = (n: number) => n > 0 ? "text-green-400" : n < 0 ? "text-red-400" : "text-white/40";
   return (
-    <div className="rounded-xl surface-card p-5">
+    <div className="rounded-xl surface-card p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-[12px] font-semibold text-white/80">R-multiples</h2>
         <p className="text-[10px] text-white/25">{r.count} trades com stop</p>
