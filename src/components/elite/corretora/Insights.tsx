@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Target, CalendarRange, Hash } from "lucide-react";
+import { Shield, Target, Calendar, Hash } from "lucide-react";
 
 interface Metrics {
   totalTrades: number;
@@ -154,7 +154,7 @@ export function EventExposureCard({ exposure }: { exposure: EventExposure }) {
         <h2 className="text-[12px] font-semibold text-white/80">Eventos econômicos</h2>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-4">
           <div className="w-9 h-9 rounded-lg bg-white/[0.03] flex items-center justify-center">
-            <CalendarRange className="w-4 h-4 text-white/30" strokeWidth={1.8} />
+            <Calendar className="w-4 h-4 text-white/30" strokeWidth={1.8} />
           </div>
           <p className="text-[11px] text-white/40 leading-relaxed max-w-[260px]">
             Nenhum trade perto de high-impact nos últimos 7 dias. Você evitou os picos de volatilidade.
