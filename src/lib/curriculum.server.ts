@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { getSupabaseAnon } from "@/lib/supabase";
 import type { ModuleData, LessonData } from "@/lib/curriculum";
 import { CURRICULUM as FALLBACK_CURRICULUM } from "@/lib/curriculum";
@@ -56,25 +57,33 @@ function shapeModule(m: DbModule, lessons: DbLesson[]): ModuleData {
 
 /** Fetch full curriculum (modules + lessons) from Supabase.
  * Falls back to the hardcoded TS curriculum if the query fails, so the site
- * never breaks because of a DB hiccup. Called from server components only. */
-export async function getCurriculum(): Promise<ModuleData[]> {
-  try {
-    const sb = getSupabaseAnon();
-    const [modulesRes, lessonsRes] = await Promise.all([
-      sb.from("course_modules").select("*").eq("active", true).order("sort_order"),
-      sb.from("lessons").select("*").eq("published", true),
-    ]);
+ * never breaks because of a DB hiccup. Called from server components only.
+ *
+ * Cached cross-request via `unstable_cache` — catálogo só muda quando admin
+ * publica/edita aulas. TTL 1h + tag pra invalidação on-demand quando
+ * precisar (revalidateTag("curriculum") em qualquer mutação). */
+export const getCurriculum = unstable_cache(
+  async (): Promise<ModuleData[]> => {
+    try {
+      const sb = getSupabaseAnon();
+      const [modulesRes, lessonsRes] = await Promise.all([
+        sb.from("course_modules").select("*").eq("active", true).order("sort_order"),
+        sb.from("lessons").select("*").eq("published", true),
+      ]);
 
-    if (modulesRes.error || lessonsRes.error) throw modulesRes.error ?? lessonsRes.error;
-    if (!modulesRes.data?.length) throw new Error("no modules");
+      if (modulesRes.error || lessonsRes.error) throw modulesRes.error ?? lessonsRes.error;
+      if (!modulesRes.data?.length) throw new Error("no modules");
 
-    const modules = modulesRes.data as DbModule[];
-    const lessons = (lessonsRes.data ?? []) as DbLesson[];
-    return modules.map((m) => shapeModule(m, lessons));
-  } catch {
-    return FALLBACK_CURRICULUM;
-  }
-}
+      const modules = modulesRes.data as DbModule[];
+      const lessons = (lessonsRes.data ?? []) as DbLesson[];
+      return modules.map((m) => shapeModule(m, lessons));
+    } catch {
+      return FALLBACK_CURRICULUM;
+    }
+  },
+  ["curriculum"],
+  { tags: ["curriculum"], revalidate: 3600 },
+);
 
 export async function getTotalLessons(): Promise<number> {
   const curr = await getCurriculum();

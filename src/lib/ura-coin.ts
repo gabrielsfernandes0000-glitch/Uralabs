@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { getSupabaseAnon } from "@/lib/supabase";
 
 /**
@@ -224,14 +225,29 @@ export async function getUserAchievementUnlocks(userId: string): Promise<UserAch
 // ─── Catalog (anon client + RLS anon_read) ───────────────────────────────
 
 /** Caixas ativas + seus prêmios com chances calculadas. Marca exhausted hoje. */
+// Catálogo de loja (boxes + prizes + weights) — muda só quando admin
+// adiciona/desativa prêmios. Cached cross-request com TTL 1h. Invalida via
+// revalidateTag("loja-catalogo") em mutações.
+const fetchLojaCatalogCached = unstable_cache(
+  async () => {
+    const sb = getSupabaseAnon();
+    const [boxesRes, prizesRes, weightsRes] = await Promise.all([
+      sb.from("loot_boxes").select("*").eq("active", true).order("sort_order").order("cost_coins"),
+      sb.from("prizes").select("*").eq("active", true),
+      sb.from("loot_box_prizes").select("*"),
+    ]);
+    return { boxesRes, prizesRes, weightsRes };
+  },
+  ["loja-catalogo"],
+  { tags: ["loja-catalogo"], revalidate: 3600 },
+);
+
 export async function getActiveBoxesWithPrizes(): Promise<BoxWithPrizes[]> {
   const sb = getSupabaseAnon();
   const today = todayInSaoPaulo();
 
-  const [boxesRes, prizesRes, weightsRes, budgetRes] = await Promise.all([
-    sb.from("loot_boxes").select("*").eq("active", true).order("sort_order").order("cost_coins"),
-    sb.from("prizes").select("*").eq("active", true),
-    sb.from("loot_box_prizes").select("*"),
+  const [{ boxesRes, prizesRes, weightsRes }, budgetRes] = await Promise.all([
+    fetchLojaCatalogCached(),
     sb.from("daily_budget").select("category, exhausted").eq("date", today),
   ]);
 

@@ -168,6 +168,10 @@ function NavRow({
       href={href}
       onClick={onNavigate}
       onMouseEnter={() => router.prefetch(href)}
+      // touchstart prefetch — mobile não tem hover, então prefetch dispara
+      // no início do toque (uns 100-300ms antes do click). Ganho real na
+      // sensação de "instantâneo" no celular.
+      onTouchStart={() => router.prefetch(href)}
       className={`relative flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
         isActive ? "text-white" : locked ? "text-white/25 hover:text-white/50 hover:bg-white/[0.02]" : "text-white/35 hover:text-white/70 hover:bg-white/[0.02]"
       }`}
@@ -229,6 +233,7 @@ function NavGroup({
           href={href}
           onClick={() => { toggle(); onNavigate(); }}
           onMouseEnter={() => router.prefetch(href)}
+          onTouchStart={() => router.prefetch(href)}
           className={`flex-1 relative flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200 group ${
             isActive ? "text-white" : locked ? "text-white/25 hover:text-white/50 hover:bg-white/[0.02]" : "text-white/35 hover:text-white/70 hover:bg-white/[0.02]"
           }`}
