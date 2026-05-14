@@ -1,9 +1,10 @@
-"use client";
-
+// Server component — sem "use client". Mantém estática, só faz fetch
+// do PriceTickerTape (async). Antes era "use client" desnecessário
+// porque o TickerTape (TV widget) era client; agora não precisa mais.
 import Link from "next/link";
 import { Radio, Clock, Bell, Trophy } from "lucide-react";
 import { TodayEventsBanner } from "@/components/elite/TodayEventsBanner";
-import { TickerTape } from "@/components/elite/TickerTape";
+import { PriceTickerTape } from "@/components/elite/PriceTickerTape";
 
 function CallsHero() {
   const accent = "#FF5500";
@@ -60,7 +61,7 @@ export default function CallsPage() {
       <div className="animate-in-up"><CallsHero /></div>
 
       <div className="animate-in-up delay-1">
-        <TickerTape />
+        <PriceTickerTape />
       </div>
 
       <div className="animate-in-up delay-2">

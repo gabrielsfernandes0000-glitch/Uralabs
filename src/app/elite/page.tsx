@@ -9,7 +9,7 @@ import { RecentSurpriseCard } from "@/components/elite/RecentSurpriseCard";
 import { loadLastReleasedEvent, loadTodayEvents } from "@/lib/events-today";
 import { getUserState } from "@/lib/ura-coin";
 import { DashboardHero } from "@/components/elite/DashboardHero";
-import { TickerTape } from "@/components/elite/TickerTape";
+import { PriceTickerTape } from "@/components/elite/PriceTickerTape";
 import { NextHighImpactCard } from "@/components/elite/NextHighImpactCard";
 import { DashboardMetrics } from "@/components/elite/DashboardMetrics";
 
@@ -351,17 +351,17 @@ export default async function EliteDashboard() {
           </div>
       </DashboardHero>
 
-      {/* ── Ticker tape — preços real-time dos ativos que o trader URA acompanha ── */}
+      {/* ── Ticker tape — server-rendered, carrega junto com o resto da página
+           (era widget TradingView externo, demorava 1-2s extra pra montar) ── */}
       <div className="animate-in-up delay-1">
-        <TickerTape
-          symbols={[
-            { proName: "OANDA:NAS100USD",   title: "Nasdaq" },
-            { proName: "OANDA:SPX500USD",   title: "S&P 500" },
-            { proName: "BINANCE:BTCUSDT",   title: "BTC" },
-            { proName: "BINANCE:ETHUSDT",   title: "ETH" },
-            { proName: "CAPITALCOM:DXY",    title: "DXY" },
-            { proName: "OANDA:XAUUSD",      title: "Ouro" },
-            { proName: "BINANCE:SOLUSDT",   title: "SOL" },
+        <PriceTickerTape
+          tickers={[
+            { symbol: "NQ",   label: "Nasdaq" },
+            { symbol: "BTC",  label: "BTC" },
+            { symbol: "ETH",  label: "ETH" },
+            { symbol: "SOL",  label: "SOL" },
+            { symbol: "DXY",  label: "DXY" },
+            { symbol: "GOLD", label: "Ouro" },
           ]}
         />
       </div>

@@ -165,6 +165,22 @@ body {
   .animate-in-up, .animate-in-scale, .animate-in-fade { animation: none; }
 }
 
+/* ── PriceTickerTape — marquee horizontal. Loop seamless via duplicação
+   do conteúdo + translateX -50%. Pausa on hover (trader quer ler valor
+   sem ter que seguir o movimento). */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-marquee {
+  animation: ticker-scroll 60s linear infinite;
+  will-change: transform;
+}
+.ticker-marquee:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-marquee { animation: none; }
+}
+
 /* ── Interactive affordance — aplicar em Links/buttons de navegação e ação.
    Hover: sobe 1px. Active: pressiona 2% (tap feedback).
    Transições curtas, GPU-accelerated (transform/opacity apenas). */
