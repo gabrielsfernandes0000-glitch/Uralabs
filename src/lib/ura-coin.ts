@@ -180,31 +180,53 @@ export async function callEdgeFunction<T>(
 
 /** Puxa balance, recent openings e achievements numa chamada só.
  *
- * Memoizado com React `cache()` — dedup chamadas com mesmos args dentro do
- * mesmo request. Layout (/elite) e Dashboard (/elite/page) ambos pediam
- * `(userId, 0)` durante a mesma navegação → 1 fetch agora, não 2. API
- * routes (1 chamada por request) não são afetadas. */
+ * 2 níveis de cache:
+ * 1. `unstable_cache` (Next) — cross-request por userId, TTL 30s. Toda
+ *    navegação dentro de 30s não chama a edge function de novo. Saldo
+ *    pode ficar ~30s desatualizado após compra; mutações importantes
+ *    (open box, claim prêmio, equip cosmético) chamam
+ *    `revalidateTag(\`user-state-${userId}\`)` pra invalidar na hora.
+ * 2. `React.cache()` (per-request) — dedup quando layout + page chamam
+ *    `(userId, 0)` na mesma navegação. Sem isso seriam 2 fetches.
+ *
+ * API routes (1 chamada por request, não revalida nada da UI) usam o
+ * cache normalmente — não precisa bypass.
+ */
+async function fetchUserStateFromEdge(userId: string, recentLimit: number): Promise<UserState> {
+  const empty: UserState = {
+    balance: { balance: 0, lifetime_earned: 0, lifetime_spent: 0 },
+    recent_openings: [],
+    achievements: [],
+    discord_activity: null,
+    streak: { days: 0, claims_today: 0 },
+    cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
+  };
+  const res = await callEdgeFunction<UserState>("ura-coin-user-state", {
+    user_id: userId,
+    recent_limit: recentLimit,
+  });
+  if (!res.ok) {
+    console.warn("[ura-coin] getUserState:", res.error);
+    return empty;
+  }
+  return res.data;
+}
+
 export const getUserState = cache(
   async (userId: string, recentLimit = 10): Promise<UserState> => {
-    const empty: UserState = {
-      balance: { balance: 0, lifetime_earned: 0, lifetime_spent: 0 },
-      recent_openings: [],
-      achievements: [],
-      discord_activity: null,
-      streak: { days: 0, claims_today: 0 },
-      cosmetics: { banner: null, profile_design: null, avatar_frame: null, avatar_effect: null },
-    };
-    const res = await callEdgeFunction<UserState>("ura-coin-user-state", {
-      user_id: userId,
-      recent_limit: recentLimit,
-    });
-    if (!res.ok) {
-      console.warn("[ura-coin] getUserState:", res.error);
-      return empty;
-    }
-    return res.data;
+    const cached = unstable_cache(
+      () => fetchUserStateFromEdge(userId, recentLimit),
+      ["user-state", userId, String(recentLimit)],
+      { tags: [`user-state-${userId}`], revalidate: 30 },
+    );
+    return cached();
   },
 );
+
+/** Tag pra invalidação manual quando mutação muda o user state. Use em
+ * `revalidateTag(USER_STATE_TAG(userId))` após open-box / claim-prize /
+ * equip-cosmetic etc. */
+export const USER_STATE_TAG = (userId: string) => `user-state-${userId}`;
 
 /** Só o saldo — usado no sidebar. Compat mantido; internamente chama getUserState. */
 export async function getUserBalance(userId: string): Promise<UserCoinBalance> {

@@ -165,6 +165,25 @@ body {
   .animate-in-up, .animate-in-scale, .animate-in-fade { animation: none; }
 }
 
+/* ── View Transitions API — anima navegação entre rotas (Chrome 111+,
+   Edge, Safari 18+). Browser nativo, zero JS. Em navegadores que não
+   suportam, navegação acontece igual ao default (sem regressão).
+   Crossfade 180ms é o suficiente pra sentir "snap" sem atrasar nada. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 /* ── PriceTickerTape — marquee horizontal. Loop seamless via duplicação
    do conteúdo + translateX -50%. Pausa on hover (trader quer ler valor
    sem ter que seguir o movimento). */

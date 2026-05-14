@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getSession } from "@/lib/session";
-import { callEdgeFunction } from "@/lib/ura-coin";
+import { callEdgeFunction, USER_STATE_TAG } from "@/lib/ura-coin";
 
 export const runtime = "nodejs";
 
@@ -48,5 +49,8 @@ export async function POST(req: Request) {
     cosmetic_id: cosmeticId,
   });
   if (!res.ok) return NextResponse.json({ error: res.error }, { status: res.status });
+  // Cosmetic equipado entra no `state.cosmetics` (banner/frame/effect que
+  // o layout aplica na sidebar) — invalida cache.
+  revalidateTag(USER_STATE_TAG(session.userId), "max");
   return NextResponse.json(res.data);
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getSession } from "@/lib/session";
-import { callEdgeFunction } from "@/lib/ura-coin";
+import { callEdgeFunction, USER_STATE_TAG } from "@/lib/ura-coin";
 
 export const runtime = "nodejs";
 
@@ -50,5 +51,7 @@ export async function POST(req: Request) {
   if (!res.ok) {
     return json(res.status, { error: res.error });
   }
+  // Invalida cache do user state (claim consome o redemption pending).
+  revalidateTag(USER_STATE_TAG(session.userId), "max");
   return json(200, res.data);
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getSession } from "@/lib/session";
-import { callEdgeFunction } from "@/lib/ura-coin";
+import { callEdgeFunction, USER_STATE_TAG } from "@/lib/ura-coin";
 
 export const runtime = "nodejs";
 
@@ -34,5 +35,9 @@ export async function POST(req: Request) {
   if (!res.ok) {
     return json(res.status, { error: res.error });
   }
+  // Invalida o cache do user state (TTL 30s no unstable_cache) — saldo de
+  // coins e recent openings precisam atualizar imediatamente após open.
+  // Next 16 exige segundo argumento "max" pra expirar na hora.
+  revalidateTag(USER_STATE_TAG(session.userId), "max");
   return json(200, res.data);
 }
