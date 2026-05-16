@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Play, Check, CheckCircle, Clock,
   FileText, Download, BookOpen, ChevronDown, ChevronUp, RotateCcw,
@@ -974,8 +975,8 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
       {/* Compact header — back + lesson title + meta in one block */}
       <div>
         {/* Smart back: usa router.back() se tem histórico (preserva scroll do /elite/aulas),
-            senão fallback pra navegação direta. */}
-        <button
+            senão fallback pra navegação direta. Apple-style press feedback. */}
+        <motion.button
           type="button"
           onClick={() => {
             if (typeof window !== "undefined" && window.history.length > 1) {
@@ -984,11 +985,14 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
               router.push("/elite/aulas");
             }
           }}
+          whileHover={{ x: -2 }}
+          whileTap={{ scale: 0.95, x: -1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
           className="inline-flex items-center gap-1.5 text-[12px] text-white/30 hover:text-white/60 transition-colors mb-3"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Voltar para aulas
-        </button>
+        </motion.button>
         <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
           <span className="text-[10px] font-bold font-mono"
             style={{ color: accent + "CC" }}>

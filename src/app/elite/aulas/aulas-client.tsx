@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { Play, Check, Lock, Clock, BookOpen, FileText, Calendar } from "lucide-react";
 import { LessonThumb, lessonThumbKind } from "@/components/elite/LessonThumb";
 import type { ModuleData, LessonData } from "@/lib/curriculum";
+
+/* Apple-style spring — usado em todas as interações de press/hover.
+   Stiffness alto + damping equilibrado dá aquele toque "snappy" mas suave. */
+const SPRING_SNAP = { type: "spring" as const, stiffness: 400, damping: 28 };
+const SPRING_SOFT = { type: "spring" as const, stiffness: 260, damping: 24 };
 
 /* ────────────────────────────────────────────
    Curriculum Data — Elite 4.0 (fetched server-side, injected via props)
@@ -24,27 +30,39 @@ type Module = Omit<ModuleData, "lessons"> & { lessons: Lesson[] };
 function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; index: number }) {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
+  const prefersReducedMotion = useReducedMotion();
 
   const handleClick = () => {
     if (!lesson.locked) router.push(`/elite/aulas/${lesson.id}`);
   };
 
+  /* Apple-style hover/tap: lift -3px + scale 1.01 no hover, scale 0.97 no press.
+     Spring snappy pra feedback imediato. Respeita prefers-reduced-motion. */
+  const interactiveProps = lesson.locked || prefersReducedMotion
+    ? {}
+    : {
+        whileHover: { y: -3, scale: 1.01 },
+        whileTap: { scale: 0.97 },
+        transition: SPRING_SNAP,
+      };
+
   return (
-    <div
+    <motion.div
       className="relative cursor-pointer h-full"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
+      {...interactiveProps}
     >
       <div
-        className={`relative overflow-hidden rounded-xl border transition-all duration-300 h-full flex flex-col ${
+        className={`relative overflow-hidden rounded-xl border h-full flex flex-col ${
           lesson.locked
             ? "border-white/[0.04] opacity-45"
-            : "border-white/[0.08] hover:border-white/[0.18] hover:-translate-y-0.5"
+            : "border-white/[0.08] hover:border-white/[0.18] transition-colors duration-200"
         }`}
         style={
           hovered && !lesson.locked
-            ? { boxShadow: `0 16px 60px ${mod.accentHex}20` }
+            ? { boxShadow: `0 20px 60px ${mod.accentHex}25, 0 0 0 1px ${mod.accentHex}15` }
             : undefined
         }
       >
@@ -104,7 +122,7 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
