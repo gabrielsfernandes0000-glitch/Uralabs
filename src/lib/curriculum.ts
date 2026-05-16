@@ -80,7 +80,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Leitura SMC",
     subtitle: "Tijolos da análise",
     description: "Order Block, FVG, Breaker, liquidez. O vocabulário do Smart Money.",
-    accentHex: "#FF5500",
+    accentHex: "#FF6E32",
     lessons: [
       lesson("premium-discount", "Premium & Discount + Fibonacci 50%", "Por que o meio do gráfico é cassino", "20min"),
       lesson("varejo-vs-smart-money", "Varejo vs Smart Money", "Operar contra a manada — o conceito por trás de tudo", "15min"),
@@ -97,7 +97,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Estratégia & Sessões",
     subtitle: "O GPS do trader",
     description: "AMD, sessões, daily bias, Standard Deviation. Onde e quando operar.",
-    accentHex: "#FF5500",
+    accentHex: "#FF8C42",
     lessons: [
       lesson("amd-juda-sweep", "AMD — Ciclo, Juda Swing e Sweep", "O padrão central do mercado em todos os timeframes", "25min"),
       lesson("sessoes-killzones", "As 3 Sessões + Kill Zones + Abertura NY", "Ásia acumula, Londres manipula, NY distribui", "22min"),
@@ -113,7 +113,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Execução & Setups",
     subtitle: "Os 3 setups",
     description: "Unicórnio, Continuação, AMD+Sweep. Confluência, R/R, gestão da operação.",
-    accentHex: "#FF5500",
+    accentHex: "#E64435",
     lessons: [
       lesson("ordem-marcacao", "Ordem de Marcação + Checklist + Fluxograma", "Antes de clicar: o passo a passo da análise", "18min"),
       lesson("confluencia-setups", "Confluência + Os 3 Setups (visão geral)", "O que é confluência e como ela define probabilidade", "15min"),
@@ -143,7 +143,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Psicologia do Trader",
     subtitle: "Jogo mental",
     description: "60% mental, 40% estratégia. Travas, espiral da morte, hábitos consistentes.",
-    accentHex: "#FF5500",
+    accentHex: "#A67C4F",
     lessons: [
       lesson("espiral-da-morte", "Espiral da Morte + Amígdala + Travas", "Como o cérebro te trai e como blindar com travas físicas", "25min"),
       lesson("numero-redondo", "Número Redondo + Lucro Não é Seu + Casos", "Erros reais do URA e o que aprender com eles", "20min"),
@@ -156,7 +156,7 @@ export const CURRICULUM: ModuleData[] = [
     title: "Aplicação & Consolidação",
     subtitle: "Da teoria ao gráfico",
     description: "Pirâmide do método, estudo de caso de trade real, próximos passos.",
-    accentHex: "#C9A461",
+    accentHex: "#D9BE83",
     lessons: [
       lesson("piramide-conceitos", "A Pirâmide do Operacional + Os 3 Conceitos", "Mapa mental único + P/D, CHoCH/BOS, FVG válido revisitados", "22min"),
       lesson("estudo-caso-trade", "Estudo de Caso — Trade Real do Início ao Fim", "Os 3 setups aplicados num trade real do Nasdaq", "25min"),
