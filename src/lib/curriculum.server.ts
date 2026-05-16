@@ -61,7 +61,10 @@ function shapeModule(m: DbModule, lessons: DbLesson[]): ModuleData {
  *
  * Cached cross-request via `unstable_cache` — catálogo só muda quando admin
  * publica/edita aulas. TTL 1h + tag pra invalidação on-demand quando
- * precisar (revalidateTag("curriculum") em qualquer mutação). */
+ * precisar (revalidateTag("curriculum") em qualquer mutação).
+ *
+ * Cache key bumped pra v2 em 2026-05-16 quando reseed da paleta dos módulos
+ * (warm spectrum brand-aligned) precisou invalidar dados antigos do cache. */
 export const getCurriculum = unstable_cache(
   async (): Promise<ModuleData[]> => {
     try {
@@ -81,8 +84,8 @@ export const getCurriculum = unstable_cache(
       return FALLBACK_CURRICULUM;
     }
   },
-  ["curriculum"],
-  { tags: ["curriculum"], revalidate: 3600 },
+  ["curriculum-v2"],
+  { tags: ["curriculum", "curriculum-v2"], revalidate: 3600 },
 );
 
 export async function getTotalLessons(): Promise<number> {
