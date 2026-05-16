@@ -71,6 +71,7 @@ export const CURRICULUM: ModuleData[] = [
       lesson("tradingview-setup", "TradingView — Setup, Ferramentas e PO3", "Configuração clean, ferramentas essenciais, indicador PO3", "20min"),
       lesson("timeframes-top-down", "Timeframes e Análise Top-Down", "Como ler do semanal ao 1 minuto sem se perder", "18min"),
       lesson("candle-mercados", "Candle, Mercados e Notícias 3★", "Anatomia do candle, BingX, NASDAQ e o cuidado com macro", "20min"),
+      lesson("gestao-capital-risco", "Gerenciamento de Capital e Risco", "Regra do 1% diário, 2.5% semanal e position sizing", "20min"),
     ],
   },
   {
