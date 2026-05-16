@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "missing ?tag=" }, { status: 400 });
   }
 
-  revalidateTag(tag);
+  // Next 16 exige 2º arg "max" no revalidateTag (deprecated sem).
+  revalidateTag(tag, "max");
   return NextResponse.json({ ok: true, tag, revalidated_at: Date.now() });
 }
