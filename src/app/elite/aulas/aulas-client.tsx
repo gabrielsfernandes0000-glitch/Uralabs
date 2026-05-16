@@ -48,22 +48,9 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
             : undefined
         }
       >
-        {/* Thumbnail area — 16:9 ratio */}
+        {/* Thumbnail area — 16:9 ratio · pictograma sempre 100% visível */}
         <div className="relative aspect-video overflow-hidden">
           <LessonThumb kind={lessonThumbKind(lesson.id)} accent={mod.accentHex} />
-
-          {/* Darken overlay for title readability */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "linear-gradient(to bottom, transparent 40%, rgba(14,14,16,0.55) 75%, rgba(14,14,16,0.85) 100%)"
-          }} />
-
-          {/* Title — overlaid bottom */}
-          <div className="absolute bottom-0 left-0 right-0 px-3.5 pb-3 pt-8 pointer-events-none">
-            <h3 className={`text-[15px] font-bold tracking-tight leading-tight line-clamp-2 ${lesson.locked ? "text-white/40" : "text-white"}`}
-              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-              {lesson.title}
-            </h3>
-          </div>
 
           {/* Lock overlay */}
           {lesson.locked && (
@@ -92,9 +79,13 @@ function NetflixCard({ lesson, mod, index }: { lesson: Lesson; mod: Module; inde
           )}
         </div>
 
-        {/* Content — altura fixa pra uniformizar cards entre módulos
-            (senão descrição de 1 linha vs 2 linhas deixa altura diferente). */}
-        <div className="px-4 py-3 bg-[#141417] flex flex-col gap-2 min-h-[82px]">
+        {/* Content — título + subtitle + duração. Altura fixa pra uniformizar cards
+            entre módulos (título longo de 2 linhas vs curto de 1 não deixa altura diferente). */}
+        <div className="px-4 py-3 bg-[#141417] flex flex-col gap-1.5 min-h-[112px]">
+          <h3 className={`text-[14px] font-bold tracking-tight leading-tight line-clamp-2 ${lesson.locked ? "text-white/40" : "text-white"}`}>
+            {lesson.title}
+          </h3>
+
           <p className={`text-[11px] leading-relaxed line-clamp-2 flex-1 ${lesson.locked ? "text-white/20" : "text-white/45"}`}>
             {lesson.subtitle}
           </p>
