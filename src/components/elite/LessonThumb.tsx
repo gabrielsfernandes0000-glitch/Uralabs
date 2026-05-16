@@ -59,14 +59,7 @@ export type ThumbKind =
 function ThumbBase({ accent, children }: { accent: string; children: React.ReactNode }) {
   return (
     <div className="absolute inset-0 overflow-hidden select-none" style={{ background: "#0a0a0c" }}>
-      {/* Glow accent muito sutil — uma fonte de luz só */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse 60% 50% at 50% 110%, ${accent}18, transparent 70%)`,
-        }}
-      />
-      {/* Linha accent no topo */}
+      {/* Linha accent no topo — única indicação de cor além do pictograma */}
       <div
         className="absolute top-0 left-0 right-0 h-px"
         style={{ background: `linear-gradient(90deg, transparent, ${accent}50, transparent)` }}
