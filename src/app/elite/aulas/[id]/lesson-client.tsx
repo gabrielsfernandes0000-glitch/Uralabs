@@ -973,10 +973,22 @@ export default function LessonClient({ lessonId, lesson, mod, index, prev, next,
 
       {/* Compact header — back + lesson title + meta in one block */}
       <div>
-        <Link href="/elite/aulas" className="inline-flex items-center gap-1.5 text-[12px] text-white/30 hover:text-white/60 transition-colors mb-3">
+        {/* Smart back: usa router.back() se tem histórico (preserva scroll do /elite/aulas),
+            senão fallback pra navegação direta. */}
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/elite/aulas");
+            }
+          }}
+          className="inline-flex items-center gap-1.5 text-[12px] text-white/30 hover:text-white/60 transition-colors mb-3"
+        >
           <ArrowLeft className="w-3.5 h-3.5" />
           Voltar para aulas
-        </Link>
+        </button>
         <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
           <span className="text-[10px] font-bold font-mono"
             style={{ color: accent + "CC" }}>

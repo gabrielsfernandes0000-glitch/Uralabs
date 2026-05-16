@@ -507,19 +507,23 @@ export default function AulasClient({ curriculum: raw }: { curriculum: ModuleDat
     lessons: m.lessons.map((l) => ({ ...l, completed: false, locked: false })),
   }));
 
+  /* Animações .animate-in-up removidas das seções: rodavam toda vez que a
+     página montava (inclusive em back navigation), dando sensação de "reload".
+     A View Transitions API global já faz crossfade entre rotas, suficiente.
+     Mantida só no Hero pra dar um leve respiro no primeiro paint. */
   return (
     <div className="space-y-14">
       <div className="animate-in-up"><Hero curriculum={curriculum} /></div>
 
-      {curriculum.map((mod, i) => (
-        <div key={mod.id} className={`animate-in-up delay-${Math.min(i + 1, 8)}`}>
+      {curriculum.map((mod) => (
+        <div key={mod.id}>
           <ModuleSection mod={mod} />
         </div>
       ))}
 
-      <div className="animate-in-up delay-8"><LivesSection /></div>
+      <div><LivesSection /></div>
 
-      <div className="animate-in-up delay-8 text-center py-6">
+      <div className="text-center py-6">
         <p className="text-[12px] text-white/30">
           Conteúdo exclusivo Elite 4.0 · Aulas gravadas + lives semanais + calls diárias
         </p>
