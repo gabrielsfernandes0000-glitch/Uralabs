@@ -14,22 +14,22 @@ export interface ModuleTreino {
 
 export const MODULE_TREINOS: Record<string, ModuleTreino[]> = {
   base: [
-    { id: "t-candles", title: "Leitura de Candle", desc: "Identifique o que cada candle diz sobre compradores vs vendedores.", requiredLesson: "leitura-candle", difficulty: "Iniciante" },
-    { id: "t-risco", title: "Calcule o Risco", desc: "Posicione stop e alvo. Qual o tamanho do lote?", requiredLesson: "risco", difficulty: "Iniciante" },
+    { id: "t-candles", title: "Leitura de Candle", desc: "Identifique o que cada candle diz sobre compradores vs vendedores.", requiredLesson: "candle-mercados", difficulty: "Iniciante" },
+    { id: "t-risco", title: "Calcule o Risco", desc: "Posicione stop e alvo. Qual o tamanho do lote?", requiredLesson: "rr-lotes-pavios", difficulty: "Iniciante" },
   ],
   "leitura-smc": [
-    { id: "t-obs", title: "Marque os Order Blocks", desc: "Encontre as zonas onde os institucionais se posicionaram.", requiredLesson: "order-blocks", difficulty: "Intermediário" },
-    { id: "t-fvg", title: "Identifique FVGs", desc: "Marque os Fair Value Gaps e diga quais serão preenchidos.", requiredLesson: "fvg-breaker", difficulty: "Intermediário" },
+    { id: "t-obs", title: "Marque os Order Blocks", desc: "Encontre as zonas onde os institucionais se posicionaram.", requiredLesson: "order-block", difficulty: "Intermediário" },
+    { id: "t-fvg", title: "Identifique FVGs", desc: "Marque os Fair Value Gaps e diga quais serão preenchidos.", requiredLesson: "fvg", difficulty: "Intermediário" },
     { id: "t-premium", title: "Premium ou Discount?", desc: "Defina as zonas usando Fibonacci 50%.", requiredLesson: "premium-discount", difficulty: "Intermediário" },
-    { id: "t-liquidez", title: "Onde Está a Liquidez?", desc: "Mapeie os pools que os big players vão buscar.", requiredLesson: "liquidez", difficulty: "Intermediário" },
+    { id: "t-liquidez", title: "Onde Está a Liquidez?", desc: "Mapeie os pools que os big players vão buscar.", requiredLesson: "bsl-ssl", difficulty: "Intermediário" },
   ],
   estrategia: [
-    { id: "t-sessoes", title: "Qual Sessão Operar?", desc: "Identifique a sessão e o comportamento esperado.", requiredLesson: "sessoes", difficulty: "Avançado" },
-    { id: "t-amd", title: "Leitura AMD Completa", desc: "Identifique Acumulação, Manipulação e Distribuição.", requiredLesson: "amd", difficulty: "Avançado" },
+    { id: "t-sessoes", title: "Qual Sessão Operar?", desc: "Identifique a sessão e o comportamento esperado.", requiredLesson: "sessoes-killzones", difficulty: "Avançado" },
+    { id: "t-amd", title: "Leitura AMD Completa", desc: "Identifique Acumulação, Manipulação e Distribuição.", requiredLesson: "amd-juda-sweep", difficulty: "Avançado" },
     { id: "t-bias", title: "Monte o Viés do Dia", desc: "Defina se o dia é bullish ou bearish.", requiredLesson: "daily-bias", difficulty: "Avançado" },
   ],
   execucao: [
-    { id: "t-entrada", title: "Execute o Trade", desc: "Cenário completo: zona, entrada, stop e alvo.", requiredLesson: "entrada-saida", difficulty: "Avançado" },
+    { id: "t-entrada", title: "Execute o Trade", desc: "Cenário completo: zona, entrada, stop e alvo.", requiredLesson: "setup-unicornio", difficulty: "Avançado" },
   ],
 };
 
